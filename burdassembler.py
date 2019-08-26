@@ -6,6 +6,8 @@ import sys
 import click
 from tqdm import tqdm
 
+import PdfProperties
+
 # Todo: make code nicer
 # Todo: Gui
 
@@ -34,36 +36,56 @@ def assemble_pages(rows, columns, input_path, output_path):
         print(f"Filepath{input_path} not found")
         sys.exit(1)
 
-    number_of_pages = reader.getNumPages()
-    ROWS = rows
-    COLS = columns
-    X_OFFSET = 483.307
-    Y_OFFSET = 729.917
+    pageproperties = PdfProperties(rows, columns, reader.getPage(1).mediaBox[2], reader.getPage(1).mediaBox[3], reader.getNumPages())
+    # ROWS = rows
+    # COLS = columns
+    # X_OFFSET = reader.getPage(1).mediaBox[2]  # 483.307
+    # Y_OFFSET = reader.getPage(1).mediaBox[3]  # 729.917
 
     x_position = 0.0
     y_position = 0.0
     colscount = 0
-    rowscount = 0
 
-    # collage = list(PyPDF2.pdf.PageObject.createBlankPage(None, 10, 10)) * calculate_pages_needed(COLS, ROWS)
-    collage = PyPDF2.pdf.PageObject.createBlankPage(None, COLS * X_OFFSET, ROWS * Y_OFFSET)
+# STEP 1: put together a complete pdf with all pages as a collage
 
-    for pagenumber in tqdm(range(1, number_of_pages)):
+    collage = PyPDF2.pdf.PageObject.createBlankPage(None, pageproperties.COLS * pageproperties.X_OFFSET, pageproperties.ROWS * pageproperties.Y_OFFSET)
+
+    for pagenumber in tqdm(range(1, pageproperties.number_of_pages)):
         # page 0 in the pdf is typically the overview and not part of the pattern
 
-        if colscount == COLS:
+        if colscount == pageproperties.COLS:
             x_position = 0.0
-            y_position += Y_OFFSET
+            y_position += pageproperties.Y_OFFSET
             colscount = 0
-            rowscount = rows+1
 
         collage.mergeTranslatedPage(reader.getPage(pagenumber), x_position, y_position, True)
-        x_position += X_OFFSET
+        x_position += pageproperties.X_OFFSET
         colscount = colscount+1
+
+# STEP 2: chop up PDF collage into A0 pages
+    chopped_up_collage = [collage for i in range(0, calculate_pages_needed(pageproperties.COLS, pageproperties.ROWS))]
+    colsleft = pageproperties.COLS
+    rowsleft = pageproperties.ROWS
+    for page in chopped_up_collage:
+        page.cropBox.upperRight = (pageproperties.X_OFFSET * 4, pageproperties.Y_OFFSET * 4)
+
+
+
+#     >> > reader = PyPDF2.PdfFileReader(open("notes/pullicollage.pdf", "rb"))
+#     >> > page = reader.getPage(0)
+#     >> > croppedpage = page
+#     >> > croppedpage = page
+#     >> > croppedpage.cropBox.upperRight = (483.307, 729.917) is 1 A4 page
+#     >> > output = PyPDF2.PdfFileWriter()
+#     >> > output.addPage(croppedpage)
+#     >> > with open("out.pdf", "wb") as out_f:
+#         ...
+#         output.write(out_f)
+
+    # STEP 3: Write to disk
 
     writer = PyPDF2.PdfFileWriter()
     writer.addPage(collage)
-
     try:
         output = open(pathlib.Path(output_path), "wb")
     except OSError:
