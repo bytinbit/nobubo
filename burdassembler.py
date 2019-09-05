@@ -6,8 +6,6 @@ import sys
 import click
 from tqdm import tqdm
 
-import PdfProperties
-
 # Todo: make code nicer
 # Todo: Gui
 
@@ -36,11 +34,13 @@ def assemble_pages(rows, columns, input_path, output_path):
         print(f"Filepath{input_path} not found")
         sys.exit(1)
 
-    pageproperties = PdfProperties(rows, columns, reader.getPage(1).mediaBox[2], reader.getPage(1).mediaBox[3], reader.getNumPages())
-    # ROWS = rows
-    # COLS = columns
-    # X_OFFSET = reader.getPage(1).mediaBox[2]  # 483.307
-    # Y_OFFSET = reader.getPage(1).mediaBox[3]  # 729.917
+    number_of_pages = reader.getNumPages()
+    ROWS = rows
+    COLS = columns
+    X_OFFSET = float(reader.getPage(1).mediaBox[2])  # 483.307
+    print(f"X_OFFSET {X_OFFSET}")
+    Y_OFFSET = float(reader.getPage(1).mediaBox[3])  # 729.917
+    print(f"Y_OFFSET: {Y_OFFSET}")
 
     x_position = 0.0
     y_position = 0.0
@@ -48,28 +48,63 @@ def assemble_pages(rows, columns, input_path, output_path):
 
 # STEP 1: put together a complete pdf with all pages as a collage
 
-    collage = PyPDF2.pdf.PageObject.createBlankPage(None, pageproperties.COLS * pageproperties.X_OFFSET, pageproperties.ROWS * pageproperties.Y_OFFSET)
+    collage = PyPDF2.pdf.PageObject.createBlankPage(None, COLS * X_OFFSET, ROWS * Y_OFFSET)
 
-    for pagenumber in tqdm(range(1, pageproperties.number_of_pages)):
+    for pagenumber in tqdm(range(1, number_of_pages)):
         # page 0 in the pdf is typically the overview and not part of the pattern
 
-        if colscount == pageproperties.COLS:
+        if colscount == COLS:
             x_position = 0.0
-            y_position += pageproperties.Y_OFFSET
+            y_position += float(Y_OFFSET)
             colscount = 0
 
         collage.mergeTranslatedPage(reader.getPage(pagenumber), x_position, y_position, True)
-        x_position += pageproperties.X_OFFSET
+        x_position += float(X_OFFSET)
         colscount = colscount+1
 
 # STEP 2: chop up PDF collage into A0 pages
-    chopped_up_collage = [collage for i in range(0, calculate_pages_needed(pageproperties.COLS, pageproperties.ROWS))]
-    colsleft = pageproperties.COLS
-    rowsleft = pageproperties.ROWS
+    chopped_up_collage = [collage for i in range(0, calculate_pages_needed(COLS, ROWS))]
+    colsleft = COLS
+    rowsleft = ROWS
+
+    # initial coordinates for 1 A0 page
+    x_lowerleft = 0.0
+    y_lowerleft = 0.0
+
+    x_upperright = X_OFFSET * 4
+    y_upperright = Y_OFFSET * 4
+    print(f"original x_upperright {x_upperright}")
+    print(f"original y_upperright {y_upperright}")
+
+    n = 1
+    k = 1
+
     for page in chopped_up_collage:
-        page.cropBox.upperRight = (pageproperties.X_OFFSET * 4, pageproperties.Y_OFFSET * 4)
 
+        page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
+        print(f"lower Left of page.cropBox: {page.cropBox.lowerLeft}")
+        page.cropBox.upperRight = (x_upperright, y_upperright)
+        print(f"upper Right of page.cropBox: {page.cropBox.upperRight}")
 
+        # update new startpositions of next a0 page
+        print("update positions: ")
+        x_lowerleft = n * 4 * X_OFFSET
+        y_lowerleft = 0 * 4 * Y_OFFSET
+        print(f"new x_lowerleft {x_lowerleft}")
+        print(f"new y_lowerleft {y_lowerleft}")
+        # y_lowerleft
+        x_upperright = n * 4 * X_OFFSET
+        y_upperright = 0 * 4 * Y_OFFSET
+        print(f"new x_upperright {x_upperright}")
+        print(f"new y_upperright {y_upperright}")
+        # y_lowerleft
+        n = n+1
+
+        if (colsleft - 4) >= 0:
+            colsleft = colsleft - 4
+        if (rowsleft - 4) >= 0:
+            rowsleft = rowsleft - 4
+        print("----------------------")
 
 #     >> > reader = PyPDF2.PdfFileReader(open("notes/pullicollage.pdf", "rb"))
 #     >> > page = reader.getPage(0)
@@ -83,16 +118,15 @@ def assemble_pages(rows, columns, input_path, output_path):
 #         output.write(out_f)
 
     # STEP 3: Write to disk
-
     writer = PyPDF2.PdfFileWriter()
-    writer.addPage(collage)
+    for page in chopped_up_collage:
+        writer.addPage(page)
     try:
         output = open(pathlib.Path(output_path), "wb")
     except OSError:
         print("Could not write file to disk.")
         sys.exit(1)
     writer.write(output)
-
     output.close()
 
 
