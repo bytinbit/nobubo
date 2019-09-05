@@ -1,24 +1,25 @@
-import math
 import PyPDF2
-import pathlib
 import sys
 import click
-from pprint import pprint
+import pathlib
 
 
 @click.command()
 @click.argument("rows", type=click.INT)
 @click.argument("columns", type=click.INT)
-def assemble(rows, columns):
-    reader = PyPDF2.PdfFileReader("notes/collage_kleid2013.pdf", "rb")
+@click.argument("number_of_output_pages", type=click.INT)
+@click.argument("input_path", type=click.STRING)
+def chop_up_collage(rows, columns, number_of_output_pages, input_path):
+    p = pathlib.Path(input_path)
+    reader = PyPDF2.PdfFileReader(open(p, "rb"))
     collage = reader.getPage(0)
     ROWS = rows
     COLS = columns
+    pages_needed = number_of_output_pages
     X_OFFSET = 483.307
     Y_OFFSET = 729.917
 
-    chopped_up_collage = [collage for i in range(0, 4)]
-    rowsleft = ROWS
+    chopped_up_collage = [collage for i in range(0, pages_needed)]
 
     pagecounter = 1
 
@@ -46,43 +47,52 @@ def assemble(rows, columns):
 
         page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
         print(f"values of current lower left of page.cropBox: {page.cropBox.lowerLeft}")
+        # --------------------------------------------
 
         # apply transformation to upper right, y-value
         print(f"\npositions upper right: ")
-        if (ROWS - (n * 4) < 0):
-            y = ROWS * y_upperright
+        if ROWS - (n * 4) < 0:
+            y_upperright = ROWS * Y_OFFSET
+            print(f"\ty_upperright: n {n} * 4 * y_offset = {y_upperright}")
+
         else:
             y_upperright = n * 4 * Y_OFFSET
+            print(f"\ty_upperright: n {n} * 4 * y_offset = {y_upperright}")
 
         # apply transformation to upper right, x-value
-        if (COLS - (m * 4) > 0): # still on the same horizontal line
+        if COLS - (m * 4) > 0:  # still on the same horizontal line
             x_upperright = m * 4 * X_OFFSET
-            if (COLS - (m * 4) == 0):  # end of line reached, colsamount mod 4 == 0
-                k = 0
-                n = n + 1
-                l = l + 1
+            print(f"\tx_upperright: m {m} * 4 * x_offset = {x_upperright}")
             # update new horizontal startpositions (on same horizontal line)
+            page.cropBox.upperRight = (x_upperright, y_upperright)
+            print(f"values of current upper right of page.cropBox: {page.cropBox.upperRight}\n")
             k = k + 1
             m = m + 1
-
+        elif COLS - (m * 4) == 0:  # end of line reached, colsamount mod 4 == 0
+            x_upperright = m * 4 * X_OFFSET
             print(f"\tx_upperright: m {m} * 4 * x_offset = {x_upperright}")
-        else:  # less than 4 pages left for cols
-            print(f" mod 4 != 0, ")
-            x_upperright = COLS * X_OFFSET
-            print(f"\tx_upperright: {COLS} * x_offset = {x_upperright}")
+            page.cropBox.upperRight = (x_upperright, y_upperright)
+            print(f"values of current upper right of page.cropBox: {page.cropBox.upperRight}\n")
             k = 0
             m = 1
             n = n + 1
             l = l + 1
 
-        page.cropBox.upperRight = (x_upperright, y_upperright)
-        print(f"values of current upper right of page.cropBox: {page.cropBox.upperRight}\n")
+        else:  # COLS - (m * 4) < 0:   # end of line reached, but less than 4 pages left for cols
+            x_upperright = COLS * X_OFFSET
+            print(f"\tx_upperright: {COLS} * x_offset = {x_upperright}")
+            page.cropBox.upperRight = (x_upperright, y_upperright)
+            print(f"values of current upper right of page.cropBox: {page.cropBox.upperRight}\n")
+            k = 0
+            m = 1
+            n = n + 1
+            l = l + 1
 
         writer.addPage(page)
         print("----------------------------------")
 
         try:
-            output = open(f"temp/test_collage{pagecounter}.pdf", "wb")
+            output = open(f"chopped_collage/{p.stem}_{pagecounter}.pdf", "wb")
         except OSError:
             print("Could not write file to disk.")
             sys.exit(1)
@@ -92,5 +102,5 @@ def assemble(rows, columns):
 
 
 if __name__ == '__main__':
-    assemble()
+    chop_up_collage()
 
