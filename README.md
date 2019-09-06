@@ -11,12 +11,14 @@ Nobubo to the rescue! This tool assembles the pages of a digital pdf pattern and
 * An overview sheet that shows what the assembled pattern should look like in the end. In case of Burda pattern it's on the first page of the pattern pdf.
 * Some version of Python 3
 
-## Usage Example:
-Mock overview sheet:
+## Example
+Mock overview sheet and how it will be split up:
 
-< SAMPLE IMAGE>
+<img src="img/nobubo.png" alt="sample" style="zoom:50%;" />
 
 This pattern has a 5x6 format, so 5 rows and 6 columns. This means the final pdf collage will comprise four A0 pages to print, since 16 A4 pages fit on one A0 page.
+
+The pattern is built up from the bottom left to the upper right.
 
 Command example: 
 ```
