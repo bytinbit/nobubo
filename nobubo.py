@@ -132,19 +132,28 @@ def calculate_pages_needed(rows, cols):
 @click.argument("columns", type=click.INT)
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
-def main(rows, columns, input_path, output_path):
+@click.option("-c", is_flag=True, help="Only returns a huge collage with all assembled A4 pages.")
+def main(rows, columns, input_path, output_path, c):
     """
-    Creates a collage from single A4 Burda pattern pages.
-    The pages are assembled following an overview picture of all the assembled pages.
-    This overview is usually provided along with the pattern pages in the same pdf
-    and shown on the first page of the pattern pdf.\n
+    Creates a collage from digital pattern pages and then chops it up into a desired format.
+    The collage is assembled following an overview sheet of all the assembled pages.
+    This overview is usually provided along with the pattern pages in the same pdf.
+    It is assumed to be the first page of the pattern pdf.
 
-    [ROWS] The amount of rows you count in the overview page.\n
+    Currently, only A4 to A0 is supported, thus nobubo creates A0 pages out of provided A4 pages.
+
     \t WARNING: In rare cases, the overview doesn't match the true amount and arrangement of pages.
     The resulting collage and pages will thus be mismatching and there's no solution to this yet.
-    [COLUMNS] The amount of columns you count in the overview.\n
-    [INPUT]: Path to the input file, including the filename.\n
-    [OUTPUT]: Path to the output file, including the filename.\n
+
+    [ROWS]: The amount of rows you count in the overview page.
+
+    [COLUMNS]: The amount of columns you count in the overview page.
+
+    [INPUT]: Path to the input file, including the filename.
+
+    [OUTPUT]: Path to the output file, including the filename.
+
+    The author does not take any responsibility if you face any fit issues or other problems later on.
 
     """
     try:
@@ -159,13 +168,22 @@ def main(rows, columns, input_path, output_path):
                         "X_OFFSET": float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
                         "Y_OFFSET": float(reader.getPage(1).mediaBox[3]),  # Y_OFFSET: # 729.917
                        }
+    if c:
+        collage = assemble(reader, input_properties)
+        print(f"Successfully assembled collage from {input_path}.")
+        writer = PyPDF2.PdfFileWriter()
+        writer.addPage(collage)
+        write_chops(writer, output_path)
+        print(f"-c flag set, only collage written to {output_path}. \nEnjoy your beautiful collage :)")
+    else:
+        collage = assemble(reader, input_properties)
+        print(f"Successfully assembled collage from {input_path}.\n")
 
-    collage = assemble(reader, input_properties)
-    print(f"Successfully assembled collage from {input_path}.\n")
-    written_chops = chop_up_for_a0(collage, input_properties)
-    print(f"Successfully chopped up the collage.\n")
-    write_chops(written_chops, output_path)
-    print(f"Final pdf written to {output_path}.\nEnjoy your sewing :)")
+        written_chops = chop_up_for_a0(collage, input_properties)
+        print(f"Successfully chopped up the collage.\n")
+
+        write_chops(written_chops, output_path)
+        print(f"Final pdf written to {output_path}.\nEnjoy your sewing :)")
 
 
 if __name__ == '__main__':
