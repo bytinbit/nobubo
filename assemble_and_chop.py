@@ -1,3 +1,4 @@
+from copy import copy
 import math
 import PyPDF2
 import pathlib
@@ -5,6 +6,7 @@ import sys
 
 import click
 from tqdm import tqdm
+
 
 def assemble(input_pdf, input_properties):
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
@@ -28,15 +30,16 @@ def assemble(input_pdf, input_properties):
 
     return collage
 
-def chop_up(assembled_collage, input_properties):
-    collage = assembled_collage.getPage(0)
-    chopped_up_collage = [collage for i in range(0, calculate_pages_needed(input_properties["ROWS"], input_properties["COLS"]))]
+
+def chop_up_for_a0(assembled_collage, input_properties):
+    """
+    Takes the collage with all assembled pattern pages, divides them so that they fit on a A0 sheet.
+    """
+    chopped_up_collage = [assembled_collage for i in range(0, calculate_pages_needed(input_properties["ROWS"], input_properties["COLS"]))]
     ROWS = input_properties["ROWS"]
     COLS = input_properties["COLS"]
     X_OFFSET = input_properties["X_OFFSET"]
     Y_OFFSET = input_properties["Y_OFFSET"]
-
-    pagecounter = 1
 
     # initial coordinates for 1 A0 page
     x_lowerleft = 0.0
@@ -49,9 +52,12 @@ def chop_up(assembled_collage, input_properties):
     m = 1  # controls upper right x
     n = 1  # controls upper right y
 
-    for page in chopped_up_collage:
+    pagecounter = 1
+    writer = PyPDF2.PdfFileWriter()
+
+    for elem in chopped_up_collage:
+        page = copy(elem)
         print(f"------------- page {pagecounter} -------------")
-        writer = PyPDF2.PdfFileWriter()
 
         # apply transformation to lower left
         print("positions lower left: ")
@@ -104,18 +110,20 @@ def chop_up(assembled_collage, input_properties):
             l = l + 1
 
         writer.addPage(page)
-        print("----------------------------------")
 
-        try:
-            output = open(f"chopped_collage/{p.stem}_{pagecounter}.pdf", "wb")
-        except OSError:
-            print("Could not write file to disk.")
-            sys.exit(1)
-        writer.write(output)
-        output.close()
-        pagecounter = pagecounter+1
+    return writer
 
-    return 0
+
+def write_chops(pypdf2_writer, output_path):
+
+    try:
+        output = open(output_path, "wb")
+        print(f"Final pdf written to {output_path}.")
+    except OSError:
+        print("Could not write file to disk.")
+        sys.exit(1)
+    pypdf2_writer.write(output)
+    output.close()
 
 
 def calculate_pages_needed(rows, cols):
@@ -134,6 +142,8 @@ def main(rows, columns, input_path, output_path):
     This overview is usually provided along with the pattern pages and shown on the first page of the pattern pdf.\n
 
     [ROWS] The amount of rows you count in the overview.\n
+    \t WARNING: In rare cases, the overview doesn't match the true amount and arrangement of pages.
+    The resulting collage and pages will thus be mismatching.
     [COLUMNS] The amount of columns you count in the overview.\n
     [INPUT]: Path to the input file, including the filename.\n
     [OUTPUT]: Path to the output file, including the filename.\n
@@ -146,15 +156,15 @@ def main(rows, columns, input_path, output_path):
         sys.exit(1)
 
     input_properties = {"ROWS": rows,
-                      "COLS": columns,
-                      "number_of_pages": reader.getNumPages(),
-                      "X_OFFSET": float(reader.getPage(1).mediaBox[2]),
-                      "Y_OFFSET": float(reader.getPage(1).mediaBox[3]),}
-    # X_OFFSET: # 483.307
-    # Y_OFFSET: # 729.917
+                        "COLS": columns,
+                        "number_of_pages": reader.getNumPages(),
+                        "X_OFFSET": float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
+                        "Y_OFFSET": float(reader.getPage(1).mediaBox[3]),  # Y_OFFSET: # 729.917
+                       }
 
     collage = assemble(reader, input_properties)
-    chops = chop_up(collage, input_properties)
+    written_chops = chop_up_for_a0(collage, input_properties)
+    write_chops(written_chops, output_path)
 
 
 if __name__ == '__main__':

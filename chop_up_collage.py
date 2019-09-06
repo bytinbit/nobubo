@@ -1,5 +1,6 @@
 import PyPDF2
 import sys
+from copy import copy
 import click
 import pathlib
 
@@ -34,9 +35,11 @@ def chop_up_collage(rows, columns, number_of_output_pages, input_path):
     m = 1  # controls upper right x
     n = 1  # controls upper right y
 
-    for page in chopped_up_collage:
+    writer = PyPDF2.PdfFileWriter()
+
+    for elem in chopped_up_collage:
         print(f"------------- page {pagecounter} -------------")
-        writer = PyPDF2.PdfFileWriter()
+        page = copy(elem)
 
         # apply transformation to lower left
         print("positions lower left: ")
@@ -88,17 +91,18 @@ def chop_up_collage(rows, columns, number_of_output_pages, input_path):
             n = n + 1
             l = l + 1
 
+        pagecounter = pagecounter + 1
         writer.addPage(page)
         print("----------------------------------")
 
-        try:
-            output = open(f"chopped_collage/{p.stem}_{pagecounter}.pdf", "wb")
-        except OSError:
-            print("Could not write file to disk.")
-            sys.exit(1)
-        writer.write(output)
-        output.close()
-        pagecounter = pagecounter+1
+    try:
+        output = open(f"chopped_collage/{p.stem}_choppedup.pdf", "wb")
+    except OSError:
+        print("Could not write file to disk.")
+        sys.exit(1)
+    writer.write(output)
+    output.close()
+
 
 
 if __name__ == '__main__':
