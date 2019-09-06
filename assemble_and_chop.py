@@ -9,6 +9,9 @@ from tqdm import tqdm
 
 
 def assemble(input_pdf, input_properties):
+    """
+    Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
+    """
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
                                                     input_properties["COLS"] * input_properties["X_OFFSET"],
                                                     input_properties["ROWS"] * input_properties["Y_OFFSET"])
@@ -33,14 +36,16 @@ def assemble(input_pdf, input_properties):
 
 def chop_up_for_a0(assembled_collage, input_properties):
     """
-    Takes the collage with all assembled pattern pages, divides them so that they fit on a A0 sheet.
+    Takes a collage with all assembled pattern pages, divides them so that they fit on a A0 sheet.
     """
-    pages_needed = calculate_pages_needed(input_properties["ROWS"], input_properties["COLS"])
-    chopped_up_collage = [assembled_collage for i in range(0, pages_needed)]
+
+    chopped_up_collage = [assembled_collage for i in range(0, calculate_pages_needed(input_properties["ROWS"], input_properties["COLS"]))]
+
     ROWS = input_properties["ROWS"]
     COLS = input_properties["COLS"]
     X_OFFSET = input_properties["X_OFFSET"]
     Y_OFFSET = input_properties["Y_OFFSET"]
+    A4 = 4  # 4 A4 fit on 1 A0 page
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = {"x": 0, "y": 0}
@@ -56,32 +61,31 @@ def chop_up_for_a0(assembled_collage, input_properties):
     for elem in chopped_up_collage:
         page = copy(elem)
 
-        # apply transformation to lower left
-        x_lowerleft = lowerleft_factor["x"] * 4 * X_OFFSET
-        y_lowerleft = lowerleft_factor["y"] * 4 * Y_OFFSET
+        # apply transformation to lower left x and y
+        x_lowerleft = lowerleft_factor["x"] * A4 * X_OFFSET
+        y_lowerleft = lowerleft_factor["y"] * A4 * Y_OFFSET
 
         page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
 
         # apply transformation to upper right, y-value
-        rowsleft = ROWS - (upper_right_factor["y"] * 4)
+        rowsleft = ROWS - (upper_right_factor["y"] * A4)
         if rowsleft < 0:
             y_upperright = ROWS * Y_OFFSET
         else:
-            y_upperright = upper_right_factor["y"] * 4 * Y_OFFSET
+            y_upperright = upper_right_factor["y"] * A4 * Y_OFFSET
 
         # apply transformation to upper right, x-value
-        colselft = COLS - (upper_right_factor["x"] * 4)
+        colselft = COLS - (upper_right_factor["x"] * A4)
         if colselft > 0:  # still on the same horizontal line
-            x_upperright = upper_right_factor["x"] * 4 * X_OFFSET
+            x_upperright = upper_right_factor["x"] * A4 * X_OFFSET
 
-            # update new horizontal startpositions on same horizontal line
             page.cropBox.upperRight = (x_upperright, y_upperright)
 
             lowerleft_factor["x"] = lowerleft_factor["x"] + 1
             upper_right_factor["x"] = upper_right_factor["x"] + 1
         else:
             if colselft == 0:  # end of line reached, colsamount mod 4 == 0
-                x_upperright = upper_right_factor["x"] * 4 * X_OFFSET
+                x_upperright = upper_right_factor["x"] * A4 * X_OFFSET
             if colselft < 0: # end of line reached, but less than 4 pages left for cols
                 x_upperright = COLS * X_OFFSET
 
@@ -122,12 +126,13 @@ def calculate_pages_needed(rows, cols):
 def main(rows, columns, input_path, output_path):
     """
     Creates a collage from single A4 Burda pattern pages.
-    The pages are assembled to look like an overview picture of all the assembled pages.
-    This overview is usually provided along with the pattern pages and shown on the first page of the pattern pdf.\n
+    The pages are assembled following an overview picture of all the assembled pages.
+    This overview is usually provided along with the pattern pages in the same pdf
+    and shown on the first page of the pattern pdf.\n
 
-    [ROWS] The amount of rows you count in the overview.\n
+    [ROWS] The amount of rows you count in the overview page.\n
     \t WARNING: In rare cases, the overview doesn't match the true amount and arrangement of pages.
-    The resulting collage and pages will thus be mismatching.
+    The resulting collage and pages will thus be mismatching and there's no solution to this yet.
     [COLUMNS] The amount of columns you count in the overview.\n
     [INPUT]: Path to the input file, including the filename.\n
     [OUTPUT]: Path to the output file, including the filename.\n
