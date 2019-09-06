@@ -35,79 +35,63 @@ def chop_up_for_a0(assembled_collage, input_properties):
     """
     Takes the collage with all assembled pattern pages, divides them so that they fit on a A0 sheet.
     """
-    chopped_up_collage = [assembled_collage for i in range(0, calculate_pages_needed(input_properties["ROWS"], input_properties["COLS"]))]
+    pages_needed = calculate_pages_needed(input_properties["ROWS"], input_properties["COLS"])
+    chopped_up_collage = [assembled_collage for i in range(0, pages_needed)]
     ROWS = input_properties["ROWS"]
     COLS = input_properties["COLS"]
     X_OFFSET = input_properties["X_OFFSET"]
     Y_OFFSET = input_properties["Y_OFFSET"]
 
-    # initial coordinates for 1 A0 page
-    x_lowerleft = 0.0
-    y_lowerleft = 0.0
+    # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
+    lowerleft_factor = {"x": 0, "y": 0}
+    # lower_left_xfactor = 0  # k
+    # lower_left_yfactor = 0  # l
 
-    # only two points are needed to crop, lower left (x, y) and upper right (x, y)
-    k = 0  # controls lower-left x
-    l = 0  # controls lower-left y
+    upper_right_factor = {"x": 1, "y": 1}
+    # upper_right_xfactor = 1  # m
+    # upper_right_yfactor = 1  # n
 
-    m = 1  # controls upper right x
-    n = 1  # controls upper right y
-
-    pagecounter = 1
     writer = PyPDF2.PdfFileWriter()
 
     for elem in chopped_up_collage:
         page = copy(elem)
-        print(f"------------- page {pagecounter} -------------")
 
         # apply transformation to lower left
-        print("positions lower left: ")
-        x_lowerleft = k * 4 * X_OFFSET
-        y_lowerleft = l * 4 * Y_OFFSET
-        print(f"\tx_lowerleft: k {k} * 4 * x_offset = {x_lowerleft}")
-        print(f"\ty_lowerleft: l {l} * 4 * y_offset = {y_lowerleft}")
+        x_lowerleft = lowerleft_factor["x"] * 4 * X_OFFSET
+        y_lowerleft = lowerleft_factor["y"] * 4 * Y_OFFSET
 
         page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
-        print(f"values of current lower left of page.cropBox: {page.cropBox.lowerLeft}")
-        # --------------------------------------------
 
         # apply transformation to upper right, y-value
-        print(f"\npositions upper right: ")
-        if ROWS - (n * 4) < 0:
+        rowsleft = ROWS - (upper_right_factor["y"] * 4)
+        if rowsleft < 0:
             y_upperright = ROWS * Y_OFFSET
-            print(f"\ty_upperright: n {n} * 4 * y_offset = {y_upperright}")
-
         else:
-            y_upperright = n * 4 * Y_OFFSET
-            print(f"\ty_upperright: n {n} * 4 * y_offset = {y_upperright}")
+            y_upperright = upper_right_factor["y"] * 4 * Y_OFFSET
 
         # apply transformation to upper right, x-value
-        if COLS - (m * 4) > 0:  # still on the same horizontal line
-            x_upperright = m * 4 * X_OFFSET
-            print(f"\tx_upperright: m {m} * 4 * x_offset = {x_upperright}")
-            # update new horizontal startpositions (on same horizontal line)
-            page.cropBox.upperRight = (x_upperright, y_upperright)
-            print(f"values of current upper right of page.cropBox: {page.cropBox.upperRight}\n")
-            k = k + 1
-            m = m + 1
-        elif COLS - (m * 4) == 0:  # end of line reached, colsamount mod 4 == 0
-            x_upperright = m * 4 * X_OFFSET
-            print(f"\tx_upperrreaderight: m {m} * 4 * x_offset = {x_upperright}")
-            page.cropBox.upperRight = (x_upperright, y_upperright)
-            print(f"values of current upper right of page.cropBox: {page.cropBox.upperRight}\n")
-            k = 0
-            m = 1
-            n = n + 1
-            l = l + 1
+        colselft = COLS - (upper_right_factor["x"] * 4)
+        if colselft > 0:  # still on the same horizontal line
+            x_upperright = upper_right_factor["x"] * 4 * X_OFFSET
 
-        else:  # COLS - (m * 4) < 0:   # end of line reached, but less than 4 pages left for cols
-            x_upperright = COLS * X_OFFSET
-            print(f"\tx_upperright: {COLS} * x_offset = {x_upperright}")
+            # update new horizontal startpositions on same horizontal line
             page.cropBox.upperRight = (x_upperright, y_upperright)
-            print(f"values of current upper right of page.cropBox: {page.cropBox.upperRight}\n")
-            k = 0
-            m = 1
-            n = n + 1
-            l = l + 1
+
+            lowerleft_factor["x"] = lowerleft_factor["x"] + 1
+            upper_right_factor["x"] = upper_right_factor["x"] + 1
+        else:
+            if colselft == 0:  # end of line reached, colsamount mod 4 == 0
+                x_upperright = upper_right_factor["x"] * 4 * X_OFFSET
+            if colselft < 0: # end of line reached, but less than 4 pages left for cols
+                x_upperright = COLS * X_OFFSET
+
+            page.cropBox.upperRight = (x_upperright, y_upperright)
+
+            lowerleft_factor["x"] = 0
+            lowerleft_factor["y"] = lowerleft_factor["y"] + 1
+
+            upper_right_factor["x"] = 1
+            upper_right_factor["y"] = upper_right_factor["y"] + 1
 
         writer.addPage(page)
 
@@ -119,7 +103,7 @@ def write_chops(pypdf2_writer, output_path):
     try:
         output = open(output_path, "wb")
         print(f"Final pdf written to {output_path}.")
-    except OSError:
+    except IOError:
         print("Could not write file to disk.")
         sys.exit(1)
     pypdf2_writer.write(output)
