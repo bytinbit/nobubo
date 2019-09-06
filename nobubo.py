@@ -152,8 +152,11 @@ def main(rows, columns, input_path, output_path):
                        }
 
     collage = assemble(reader, input_properties)
+    print(f"Successfully assembled collage from {input_path}.")
     written_chops = chop_up_for_a0(collage, input_properties)
+    print(f"Successfully chopped up the collage.")
     write_chops(written_chops, output_path)
+    print(f"Final pdf written to {output_path}.\nEnjoy your sewing :)")
 
 
 if __name__ == '__main__':
