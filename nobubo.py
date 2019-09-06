@@ -24,15 +24,15 @@ def assemble(input_pdf, input_properties):
     try:
         for pagenumber in NobuboBar().iter(range(1, input_properties["number_of_pages"])):
         # for pagenumber in tqdm(range(1, input_properties["number_of_pages"])):
-            # page 0 in the pdf is typically the overview and not part of the pattern
+        # page 0 in the pdf is typically the overview and not part of the pattern
 
             if colscount == input_properties["COLS"]:
                 x_position = 0.0
-                y_position += float(input_properties["Y_OFFSET"])
+                y_position += input_properties["Y_OFFSET"]
                 colscount = 0
 
             collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), x_position, y_position, True)
-            x_position += float(input_properties["X_OFFSET"])
+            x_position += input_properties["X_OFFSET"]
             colscount = colscount + 1
     except NobuboError:
         print("There was an error while assembling the collage. Aborted.")
@@ -165,8 +165,8 @@ def main(rows, columns, input_path, output_path, c):
     input_properties = {"ROWS": rows,
                         "COLS": columns,
                         "number_of_pages": reader.getNumPages(),
-                        "X_OFFSET": float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
-                        "Y_OFFSET": float(reader.getPage(1).mediaBox[3]),  # Y_OFFSET: # 729.917
+                        "X_OFFSET": reader.getPage(1).mediaBox[2],  # X_OFFSET: # 483.307
+                        "Y_OFFSET": reader.getPage(1).mediaBox[3],  # Y_OFFSET: # 729.917
                        }
     if c:
         collage = assemble(reader, input_properties)
