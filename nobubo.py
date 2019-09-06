@@ -165,8 +165,8 @@ def main(rows, columns, input_path, output_path, c):
     input_properties = {"ROWS": rows,
                         "COLS": columns,
                         "number_of_pages": reader.getNumPages(),
-                        "X_OFFSET": reader.getPage(1).mediaBox[2],  # X_OFFSET: # 483.307
-                        "Y_OFFSET": reader.getPage(1).mediaBox[3],  # Y_OFFSET: # 729.917
+                        "X_OFFSET": float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
+                        "Y_OFFSET": float(reader.getPage(1).mediaBox[3]),  # Y_OFFSET: # 729.917
                        }
     if c:
         collage = assemble(reader, input_properties)
