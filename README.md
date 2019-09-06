@@ -26,9 +26,9 @@ python nobubo.py 5 6 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacke
 * `"home/alice/patterns/jacket.pdf"` denotes the path to the original digital pattern
 * `"home/alice/patterns/jacket_a0.pdf"` denotes the path and name to the final collage
 
-## USAGE WARNING
-Please double-check the overview with the amount of pdf pages given.
+## WARNINGS
+Please double-check and compare the overview sheet with the amount of pdf pages given. I had two rare cases where the overview sheet did not match the actual amount of pdf pages, e.g. the overview showed 32 A4 pages (4x8), but the actual pdf had 54 pages. Obviously, the pattern vendor did a mistake there. In one case, the final A0 output was surprisingly fine, in the other, the pages not included in the overview were not assembled properly. I have no solution to this problem (yet).
 
-I had two rare cases where the overview sheet did not match the actual amount of pdf pages, e.g. the overview had 32 A4 pages (4x8), but the actual pdf had 54 pages. Obviously, the pattern issuer did a mistake there. In one case, the final A0 output was fine, in the other, the pages not covered in the overview did not match.
+When you print the final pdf pages, please double-check and measure the control square. 
 
-Please double-check if the control square on the output pattern is correct. I do not take any responsibility if Nobubo leads to ill-matching garments or any other problems.
+I do not take any responsibility if Nobubo leads to ill-matching garments or any other problems whatsoever. You use this tool at your own risk.
