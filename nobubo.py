@@ -7,6 +7,8 @@ import sys
 import click
 from tqdm import tqdm
 
+from utils import NobuboError
+
 
 def assemble(input_pdf, input_properties):
     """
@@ -19,18 +21,22 @@ def assemble(input_pdf, input_properties):
     y_position = 0.0
     colscount = 0
 
-    for pagenumber in tqdm(range(1, input_properties["number_of_pages"])):
-        # page 0 in the pdf is typically the overview and not part of the pattern
+    print(f"Assembling the collage - this may take some time.")
+    try:
+        for pagenumber in tqdm(range(1, input_properties["number_of_pages"])):
+            # page 0 in the pdf is typically the overview and not part of the pattern
 
-        if colscount == input_properties["COLS"]:
-            x_position = 0.0
-            y_position += float(input_properties["Y_OFFSET"])
-            colscount = 0
+            if colscount == input_properties["COLS"]:
+                x_position = 0.0
+                y_position += float(input_properties["Y_OFFSET"])
+                colscount = 0
 
-        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), x_position, y_position, True)
-        x_position += float(input_properties["X_OFFSET"])
-        colscount = colscount + 1
-
+            collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), x_position, y_position, True)
+            x_position += float(input_properties["X_OFFSET"])
+            colscount = colscount + 1
+    except NobuboError:
+        print("There was an error while assembling the collage. Aborted.")
+        sys.exit(1)
     return collage
 
 
@@ -58,46 +64,50 @@ def chop_up_for_a0(assembled_collage, input_properties):
 
     writer = PyPDF2.PdfFileWriter()
 
-    for elem in chopped_up_collage:
-        page = copy(elem)
+    try:
+        for elem in chopped_up_collage:
+            page = copy(elem)
 
-        # apply transformation to lower left x and y
-        x_lowerleft = lowerleft_factor["x"] * A4 * X_OFFSET
-        y_lowerleft = lowerleft_factor["y"] * A4 * Y_OFFSET
+            # apply transformation to lower left x and y
+            x_lowerleft = lowerleft_factor["x"] * A4 * X_OFFSET
+            y_lowerleft = lowerleft_factor["y"] * A4 * Y_OFFSET
 
-        page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
+            page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
 
-        # apply transformation to upper right, y-value
-        rowsleft = ROWS - (upper_right_factor["y"] * A4)
-        if rowsleft < 0:
-            y_upperright = ROWS * Y_OFFSET
-        else:
-            y_upperright = upper_right_factor["y"] * A4 * Y_OFFSET
+            # apply transformation to upper right, y-value
+            rowsleft = ROWS - (upper_right_factor["y"] * A4)
+            if rowsleft < 0:
+                y_upperright = ROWS * Y_OFFSET
+            else:
+                y_upperright = upper_right_factor["y"] * A4 * Y_OFFSET
 
-        # apply transformation to upper right, x-value
-        colselft = COLS - (upper_right_factor["x"] * A4)
-        if colselft > 0:  # still on the same horizontal line
-            x_upperright = upper_right_factor["x"] * A4 * X_OFFSET
-
-            page.cropBox.upperRight = (x_upperright, y_upperright)
-
-            lowerleft_factor["x"] = lowerleft_factor["x"] + 1
-            upper_right_factor["x"] = upper_right_factor["x"] + 1
-        else:
-            if colselft == 0:  # end of line reached, cols % 4 == 0
+            # apply transformation to upper right, x-value
+            colselft = COLS - (upper_right_factor["x"] * A4)
+            if colselft > 0:  # still on the same horizontal line
                 x_upperright = upper_right_factor["x"] * A4 * X_OFFSET
-            if colselft < 0: # end of line reached, but less than 4 pages left for cols
-                x_upperright = COLS * X_OFFSET
 
-            page.cropBox.upperRight = (x_upperright, y_upperright)
+                page.cropBox.upperRight = (x_upperright, y_upperright)
 
-            lowerleft_factor["x"] = 0
-            lowerleft_factor["y"] = lowerleft_factor["y"] + 1
+                lowerleft_factor["x"] = lowerleft_factor["x"] + 1
+                upper_right_factor["x"] = upper_right_factor["x"] + 1
+            else:
+                if colselft == 0:  # end of line reached, cols % 4 == 0
+                    x_upperright = upper_right_factor["x"] * A4 * X_OFFSET
+                if colselft < 0: # end of line reached, but less than 4 pages left for cols
+                    x_upperright = COLS * X_OFFSET
 
-            upper_right_factor["x"] = 1
-            upper_right_factor["y"] = upper_right_factor["y"] + 1
+                page.cropBox.upperRight = (x_upperright, y_upperright)
 
-        writer.addPage(page)
+                lowerleft_factor["x"] = 0
+                lowerleft_factor["y"] = lowerleft_factor["y"] + 1
+
+                upper_right_factor["x"] = 1
+                upper_right_factor["y"] = upper_right_factor["y"] + 1
+
+            writer.addPage(page)
+    except NobuboError:
+        print("There was an error chopping up the collage. Aborted.")
+        sys.exit(1)
 
     return writer
 
@@ -106,7 +116,6 @@ def write_chops(pypdf2_writer, output_path):
 
     try:
         output = open(output_path, "wb")
-        print(f"Final pdf written to {output_path}.")
     except IOError:
         print("Could not write file to disk.")
         sys.exit(1)
@@ -140,8 +149,8 @@ def main(rows, columns, input_path, output_path):
     """
     try:
         reader = PyPDF2.PdfFileReader(open(pathlib.Path(input_path), "rb"))
-    except OSError:
-        print(f"Filepath{input_path} not found")
+    except IOError:
+        print(f"Filepath{input_path} not found.")
         sys.exit(1)
 
     input_properties = {"ROWS": rows,
@@ -152,9 +161,9 @@ def main(rows, columns, input_path, output_path):
                        }
 
     collage = assemble(reader, input_properties)
-    print(f"Successfully assembled collage from {input_path}.")
+    print(f"Successfully assembled collage from {input_path}.\n")
     written_chops = chop_up_for_a0(collage, input_properties)
-    print(f"Successfully chopped up the collage.")
+    print(f"Successfully chopped up the collage.\n")
     write_chops(written_chops, output_path)
     print(f"Final pdf written to {output_path}.\nEnjoy your sewing :)")
 
