@@ -5,9 +5,8 @@ import pathlib
 import sys
 
 import click
-from tqdm import tqdm
 
-from utils import NobuboError
+from utils import NobuboError, NobuboBar
 
 
 def assemble(input_pdf, input_properties):
@@ -21,9 +20,10 @@ def assemble(input_pdf, input_properties):
     y_position = 0.0
     colscount = 0
 
-    print(f"Assembling the collage - this may take some time.")
+    print(f"Please be patient, this may take some time.")
     try:
-        for pagenumber in tqdm(range(1, input_properties["number_of_pages"])):
+        for pagenumber in NobuboBar().iter(range(1, input_properties["number_of_pages"])):
+        # for pagenumber in tqdm(range(1, input_properties["number_of_pages"])):
             # page 0 in the pdf is typically the overview and not part of the pattern
 
             if colscount == input_properties["COLS"]:
