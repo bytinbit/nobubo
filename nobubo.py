@@ -115,7 +115,7 @@ def write_chops(pypdf2_writer, output_path):
 
 
 def calculate_pages_needed(rows, cols):
-    return math.ceil((cols * rows)/16)
+    return math.ceil(rows/4) * math.ceil(cols/4)
 
 
 @click.command()
