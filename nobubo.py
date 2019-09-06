@@ -84,7 +84,7 @@ def chop_up_for_a0(assembled_collage, input_properties):
             lowerleft_factor["x"] = lowerleft_factor["x"] + 1
             upper_right_factor["x"] = upper_right_factor["x"] + 1
         else:
-            if colselft == 0:  # end of line reached, colsamount mod 4 == 0
+            if colselft == 0:  # end of line reached, cols % 4 == 0
                 x_upperright = upper_right_factor["x"] * A4 * X_OFFSET
             if colselft < 0: # end of line reached, but less than 4 pages left for cols
                 x_upperright = COLS * X_OFFSET
