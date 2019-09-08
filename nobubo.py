@@ -141,7 +141,7 @@ def main(rows, columns, input_path, output_path, c):
     """
     try:
         with open(pathlib.Path(input_path), "rb") as inputfile:
-            reader = PyPDF2.PdfFileReader(inputfile)
+            reader = PyPDF2.PdfFileReader(inputfile, strict=False)
             input_properties = PDFProperties(rows=rows,
                                              columns=columns,
                                              number_of_pages=reader.getNumPages(),
