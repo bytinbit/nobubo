@@ -40,21 +40,15 @@ def assemble(input_pdf, input_properties):
 
 def chop_up_for_a0(assembled_collage, input_properties):
     """
-    Takes a collage with all assembled pattern pages, divides them so that they fit on a A0 sheet.
+    Takes a collage with all assembled pattern pages, divides them up so that they fit on a A0 sheet.
     """
 
     chopped_up_collage = [assembled_collage for _ in range(0, calculate_pages_needed(input_properties.rows, input_properties.columns))]
-
     A4 = 4  # 4 A4 fit on 1 A0 page
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = Factor(x=0, y=0)
-    # lower_left_xfactor = 0  # k
-    # lower_left_yfactor = 0  # l
-
-    upperright_factor = Factor(x=1, y=1)
-    # upper_right_xfactor = 1  # m
-    # upper_right_yfactor = 1  # n
+    lowerleft_factor = Factor(x=0, y=0)  # k, l
+    upperright_factor = Factor(x=1, y=1)  # m, n
 
     writer = PyPDF2.PdfFileWriter()
 
@@ -76,7 +70,7 @@ def chop_up_for_a0(assembled_collage, input_properties):
 
         # apply transformation to upper right, x-value
         colselft = input_properties.columns - (upperright_factor.x * A4)
-        if colselft > 0:  # still on the same horizontal line
+        if colselft > 0:  # still assembling the same horizontal line
             x_upperright = upperright_factor.x * A4 * input_properties.x_offset
 
             page.cropBox.upperRight = (x_upperright, y_upperright)
