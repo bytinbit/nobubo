@@ -133,8 +133,8 @@ def calculate_pages_needed(rows, cols):
 @click.argument("columns", type=click.INT)
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
-@click.option("-c", is_flag=True, help="Only returns a huge collage with all assembled A4 pages.")
-def main(rows, columns, input_path, output_path, c):
+@click.option("-c", "--collage-only", is_flag=True, help="Only returns a huge collage with all assembled A4 pages.")
+def main(rows, columns, input_path, output_path, collage_only):
     """
     Creates a collage from digital pattern pages and then chops it up into a desired format.
     The collage is assembled following an overview sheet of all the assembled pages.
@@ -165,7 +165,7 @@ def main(rows, columns, input_path, output_path, c):
                                              number_of_pages=reader.getNumPages(),
                                              x_offset=float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
                                              y_offset=float(reader.getPage(1).mediaBox[3]))  # Y_OFFSET: # 729.917
-            if c:
+            if collage_only:
                 collage = assemble(reader, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
                 writer = PyPDF2.PdfFileWriter()
