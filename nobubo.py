@@ -7,31 +7,33 @@ import sys
 import click
 import progress.bar
 
+from utils import Factor, PDFProperties
+
 
 def assemble(input_pdf, input_properties):
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
     """
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
-                                                    input_properties["COLS"] * input_properties["X_OFFSET"],
-                                                    input_properties["ROWS"] * input_properties["Y_OFFSET"])
+                                                    input_properties.columns * input_properties.x_offset,
+                                                    input_properties.rows * input_properties.y_offset)
     x_position = 0.0
     y_position = 0.0
     colscount = 0
 
     print(f"Please be patient, this may take some time.")
     bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
-    for pagenumber in bar.iter(range(1, input_properties["number_of_pages"])):
+    for pagenumber in bar.iter(range(1, input_properties.number_of_pages)):
     # for pagenumber in tqdm(range(1, input_properties["number_of_pages"])):
     # page 0 in the pdf is typically the overview and not part of the pattern
 
-        if colscount == input_properties["COLS"]:
+        if colscount == input_properties.columns:
             x_position = 0.0
-            y_position += input_properties["Y_OFFSET"]
+            y_position += input_properties.y_offset
             colscount = 0
 
         collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), x_position, y_position, expand=True)
-        x_position += input_properties["X_OFFSET"]
+        x_position += input_properties.x_offset
         colscount += 1
     return collage
 
@@ -41,20 +43,16 @@ def chop_up_for_a0(assembled_collage, input_properties):
     Takes a collage with all assembled pattern pages, divides them so that they fit on a A0 sheet.
     """
 
-    chopped_up_collage = [assembled_collage for _ in range(0, calculate_pages_needed(input_properties["ROWS"], input_properties["COLS"]))]
+    chopped_up_collage = [assembled_collage for _ in range(0, calculate_pages_needed(input_properties.rows, input_properties.columns))]
 
-    ROWS = input_properties["ROWS"]
-    COLS = input_properties["COLS"]
-    X_OFFSET = input_properties["X_OFFSET"]
-    Y_OFFSET = input_properties["Y_OFFSET"]
     A4 = 4  # 4 A4 fit on 1 A0 page
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = {"x": 0, "y": 0}
+    lowerleft_factor = Factor(x=0, y=0)
     # lower_left_xfactor = 0  # k
     # lower_left_yfactor = 0  # l
 
-    upperright_factor = {"x": 1, "y": 1}
+    upperright_factor = Factor(x=1, y=1)
     # upper_right_xfactor = 1  # m
     # upper_right_yfactor = 1  # n
 
@@ -64,40 +62,40 @@ def chop_up_for_a0(assembled_collage, input_properties):
         page = copy(elem)
 
         # apply transformation to lower left x and y
-        x_lowerleft = lowerleft_factor["x"] * A4 * X_OFFSET
-        y_lowerleft = lowerleft_factor["y"] * A4 * Y_OFFSET
+        x_lowerleft = lowerleft_factor.x * A4 * input_properties.x_offset
+        y_lowerleft = lowerleft_factor.y * A4 * input_properties.y_offset
 
         page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
 
         # apply transformation to upper right, y-value
-        rowsleft = ROWS - (upperright_factor["y"] * A4)
+        rowsleft = input_properties.rows - (upperright_factor.y * A4)
         if rowsleft < 0:
-            y_upperright = ROWS * Y_OFFSET
+            y_upperright = input_properties.rows * input_properties.y_offset
         else:
-            y_upperright = upperright_factor["y"] * A4 * Y_OFFSET
+            y_upperright = upperright_factor.y * A4 * input_properties.y_offset
 
         # apply transformation to upper right, x-value
-        colselft = COLS - (upperright_factor["x"] * A4)
+        colselft = input_properties.columns - (upperright_factor.x * A4)
         if colselft > 0:  # still on the same horizontal line
-            x_upperright = upperright_factor["x"] * A4 * X_OFFSET
+            x_upperright = upperright_factor.x * A4 * input_properties.x_offset
 
             page.cropBox.upperRight = (x_upperright, y_upperright)
 
-            lowerleft_factor["x"] += 1
-            upperright_factor["x"] += 1
+            lowerleft_factor.x += 1
+            upperright_factor.x += 1
         else:
             if colselft == 0:  # end of line reached, cols % 4 == 0
-                x_upperright = upperright_factor["x"] * A4 * X_OFFSET
+                x_upperright = upperright_factor.x * A4 * input_properties.x_offset
             if colselft < 0: # end of line reached, but less than 4 pages left for cols
-                x_upperright = COLS * X_OFFSET
+                x_upperright = input_properties.columns * input_properties.x_offset
 
             page.cropBox.upperRight = (x_upperright, y_upperright)
 
-            lowerleft_factor["x"] = 0
-            lowerleft_factor["y"] += 1
+            lowerleft_factor.x = 0
+            lowerleft_factor.y += 1
 
-            upperright_factor["x"] = 1
-            upperright_factor["y"] += 1
+            upperright_factor.x = 1
+            upperright_factor.y += 1
 
         writer.addPage(page)
 
@@ -150,13 +148,11 @@ def main(rows, columns, input_path, output_path, c):
     try:
         with open(pathlib.Path(input_path), "rb") as inputfile:
             reader = PyPDF2.PdfFileReader(inputfile)
-            input_properties = {
-                "ROWS": rows,
-                "COLS": columns,
-                "number_of_pages": reader.getNumPages(),
-                "X_OFFSET": float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
-                "Y_OFFSET": float(reader.getPage(1).mediaBox[3]),  # Y_OFFSET: # 729.917
-            }
+            input_properties = PDFProperties(rows=rows,
+                                             columns=columns,
+                                             number_of_pages=reader.getNumPages(),
+                                             x_offset=float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
+                                             y_offset=float(reader.getPage(1).mediaBox[3]))  # Y_OFFSET: # 729.917
             if c:
                 collage = assemble(reader, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
