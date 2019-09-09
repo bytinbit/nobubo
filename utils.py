@@ -16,15 +16,22 @@
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 
 import attr
+import typing
 
 
 @attr.s
 class PDFProperties:
-    rows: int = attr.ib()
-    columns: int = attr.ib()
     number_of_pages: int = attr.ib()
     x_offset: float = attr.ib()
     y_offset: float = attr.ib()
+
+
+@attr.s
+class Layout:
+    overview: int = attr.ib()
+    rows: int = attr.ib()
+    columns: int = attr.ib()
+
 
 @attr.s
 class Factor:
