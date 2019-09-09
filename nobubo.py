@@ -40,7 +40,7 @@ def assemble(input_pdf, layout, input_properties):
     y_position = 0.0
     colscount = 0
 
-    print(f"Please be patient, this may take some time.")
+    print(f"Creating collage... Please be patient, this may take some time.")
     bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
     for pagenumber in bar.iter(range(layout.overview, last_page)):
 
@@ -59,7 +59,7 @@ def chop_up_for_a0(assembled_collage, layout, input_properties):
     """
     Takes a collage with all assembled pattern pages, divides them up so that they fit on a A0 sheet.
     """
-
+    print(f"\nChopping up the collage...")
     chopped_up_collage = [assembled_collage for _ in range(0, calculate_pages_needed(layout.rows, layout.columns))]
     A4 = 4  # 4 A4 fit on 1 A0 page
 
@@ -174,10 +174,11 @@ def main(layout, collage_only, input_path, output_path):
             output_path = pathlib.Path(output_path)
             overviewcounter = 1
             for layout_elem in layout_list:
+                print(f"Assembling overview {overviewcounter} of {len(layout_list)}")
                 collage = assemble(reader, layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
-                new_filename = f"{output_path.stem}_collage{overviewcounter}{output_path.suffix}"
+                new_filename = f"{output_path.stem}_{overviewcounter}{output_path.suffix}"
                 new_outputpath = output_path.parent / new_filename
 
                 if collage_only:
