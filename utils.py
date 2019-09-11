@@ -16,7 +16,6 @@
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 
 import attr
-import typing
 
 
 @attr.s

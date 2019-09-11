@@ -24,11 +24,14 @@ import sys
 
 import click
 import progress.bar
+import typing
 
-from utils import Factor, PDFProperties, Layout
+import utils
 
 
-def assemble(input_pdf, layout, input_properties):
+def assemble(input_pdf: PyPDF2.PdfFileReader,
+             layout: utils.Layout,
+             input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
     """
@@ -55,7 +58,9 @@ def assemble(input_pdf, layout, input_properties):
     return collage
 
 
-def chop_up_for_a0(assembled_collage, layout, input_properties):
+def chop_up_for_a0(assembled_collage: PyPDF2.pdf.PageObject,
+                   layout: utils.Layout,
+                   input_properties: utils.PDFProperties) -> PyPDF2.PdfFileWriter:
     """
     Takes a collage with all assembled pattern pages, divides them up so that they fit on a A0 sheet.
     """
@@ -64,13 +69,13 @@ def chop_up_for_a0(assembled_collage, layout, input_properties):
     A4 = 4  # 4 A4 fit on 1 A0 page
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = Factor(x=0, y=0)  # k, l
-    upperright_factor = Factor(x=1, y=1)  # m, n
+    lowerleft_factor = utils.Factor(x=0, y=0)  # k, l
+    upperright_factor = utils.Factor(x=1, y=1)  # m, n
 
     writer = PyPDF2.PdfFileWriter()
 
     for elem in chopped_up_collage:
-        page = copy(elem)
+        page = copy(elem)  # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
         # apply transformation to lower left x and y
         x_lowerleft = lowerleft_factor.x * A4 * input_properties.x_offset
@@ -94,10 +99,10 @@ def chop_up_for_a0(assembled_collage, layout, input_properties):
 
             lowerleft_factor.x += 1
             upperright_factor.x += 1
-        else:
-            if colselft == 0:  # end of line reached, cols % 4 == 0
+        else:  # end of line rechad
+            if colselft == 0:  # cols % 4 == 0
                 x_upperright = upperright_factor.x * A4 * input_properties.x_offset
-            if colselft < 0:  # end of line reached, but less than 4 pages left for cols
+            if colselft < 0:  # less than 4 pages left for cols
                 x_upperright = layout.columns * input_properties.x_offset
 
             page.cropBox.upperRight = (x_upperright, y_upperright)
@@ -113,7 +118,7 @@ def chop_up_for_a0(assembled_collage, layout, input_properties):
     return writer
 
 
-def write_chops(pypdf2_writer, output_path):
+def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
 
     try:
         with open(output_path, "wb") as output:
@@ -123,7 +128,7 @@ def write_chops(pypdf2_writer, output_path):
         sys.exit(1)
 
 
-def calculate_pages_needed(rows, cols):
+def calculate_pages_needed(rows: int, cols: int) -> int:
     return math.ceil(rows/4) * math.ceil(cols/4)
 
 
@@ -140,8 +145,11 @@ def main(layout, collage_only, input_path, output_path):
     Nobubo assumes that overview sheets and the pattern pages are in the same pdf.
 
     Currently, only A4 to A0 is supported, thus Nobubo creates A0 pages out of provided A4 pages.
+    In order for Nobubo to run, you need the original pdf pattern.
+    Create a backup of the original if you're afraid to have it damaged in any way.
+    The author take no responsibility if you face any fit issues or other problems now or later on.
 
-    Arguments:
+    Explanation of arguments:
 
     \t-l, -layout:
 
@@ -150,13 +158,12 @@ def main(layout, collage_only, input_path, output_path):
     \t\tROWS: amount of rows you count in the overview sheet
 
     \t\tCOLUMNS: amount of columns you count in the overview sheet
+
     \t[-c] Optional flag that only creates a huge collage without chopping it up.
 
     INPUT: Path to the input file, including filename.
 
     OUTPUT: Path to the output file, including filename.
-
-    The author does not take any responsibility if you face any fit issues or other problems later on.
 
     The following example has 2 overview sheets at page 1 and 34 with differing layouts:
 
@@ -166,15 +173,15 @@ def main(layout, collage_only, input_path, output_path):
     try:
         with open(pathlib.Path(input_path), "rb") as inputfile:
             reader = PyPDF2.PdfFileReader(inputfile, strict=False)
-            input_properties = PDFProperties(number_of_pages=reader.getNumPages(),
+            input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
                                              x_offset=float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
                                              y_offset=float(reader.getPage(1).mediaBox[3]),)  # Y_OFFSET: # 729.917
-            layout_list = [Layout(overview=data[0], rows=data[1], columns=data[2]) for data in layout]
+            layout_list = [utils.Layout(overview=data[0], rows=data[1], columns=data[2]) for data in layout]
 
             output_path = pathlib.Path(output_path)
             overviewcounter = 1
             for layout_elem in layout_list:
-                print(f"Assembling overview {overviewcounter} of {len(layout_list)}")
+                print(f"Assembling overview {overviewcounter} of {len(layout_list)}\n")
                 collage = assemble(reader, layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
