@@ -24,7 +24,6 @@ import sys
 
 import click
 import progress.bar
-import typing
 
 import utils
 
@@ -133,7 +132,7 @@ def calculate_pages_needed(rows: int, cols: int) -> int:
 
 
 @click.command()
-@click.option("-l", "--layout", nargs=3, type=click.INT, multiple=True, required=True, help="Layout of the pdf. Can be used multiple times if more than 1 overview sheets per pdf exists.", metavar="OVERVIEW ROWS COLUMNS")
+@click.option("-l", "--layout", nargs=3, type=click.INT, multiple=True, required=True, help="Layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.", metavar="OVERVIEW ROWS COLUMNS")
 @click.option("-c", "--collage-only", is_flag=True, help="Only returns a huge collage with all assembled A4 pages that belong to one overview sheet.")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
@@ -168,6 +167,8 @@ def main(layout, collage_only, input_path, output_path):
     The following example has 2 overview sheets at page 1 and 34 with differing layouts:
 
     python3 nobubo.py -l 1 4 8 -l 34 3 7 -c "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
+
+    If no overview sheet is in the pattern pdf itself, write 0, e.g. -l 0 4 8.
 
     """
     try:

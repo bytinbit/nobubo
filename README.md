@@ -1,27 +1,29 @@
 # Nobubo
 Digital sewing patterns are very handy: No shipping costs and cheaper than physical patterns. There is one drawback: Many digital patterns are distributed in A4 size, and it is up to the sewist to assemble them.
 
-A jacket has around 50 A4 pages that must be glued or taped together. This usually results in an apartment covered in A4 pages and a final collage in which printer irregularities lead to ill-matching pattern lines. Many indie pattern companies already sell their digital patterns as A4 and A0 in the same pattern purchase, but there are still other companies that only provide A4.
+A jacket pattern has around 50 A4 pages that must be glued or taped together. This usually results in an apartment covered in A4 pages and a final collage in which printer irregularities lead to ill-matching pattern lines. Many indie pattern companies already sell their digital patterns as A4 and A0 in the same pattern purchase, but there are still other companies that only provide A4.
 
-Nobubo to the rescue! This tool assembles the pages of a digital pdf pattern and chops it into a desired output size. I developed and tested Nobubo with several download patterns from Burda, and it currently (and only) assembles A4 to fit one or more A0 pages.
+That's why I wrote Nobubo: This tool assembles the pages of a digital pdf pattern and chops it into a desired output size. I developed and tested Nobubo with several download patterns from Burda, and it currently (and only) assembles A4 to fit one or more A0 pages. However, you can also just create a huge collage of all the pattern pages.
 
 ## Prerequisites
 * A digital pattern where each page is made to be printed on A4. If you haven't purchased a digital pattern, Nobubo is useless.
 * Each page is cropped already, so that only the pattern is visible (no white borders around the pattern)
-* At least one overview sheet that shows what the assembled pattern should look like in the end. Nobubo assumes that the overview sheet is together with the pattern in the same pdf.
+* At least one overview sheet that shows what the assembled pattern should look like in the end. Nobubo assumes the overview sheet to come together with the pattern in the same pdf, but it can also be separate.
 * Python 3.6
 
 ## Usage
-`` 
-python nobubo.py  -l OVERVIEW ROWS COLUMNS [-c] INPUTPATH OUTPUTPATH
-``
+```bash
+$ python nobubo.py  -l OVERVIEW ROWS COLUMNS [-c] INPUTPATH OUTPUTPATH
+```
+
+Have a look at `mock_pattern.pdf` in the repo to test it with Nobubo and see how it works.
 
 ### Example with one overview sheet
 
-This example pattern has 5 rows and 6 columns on one overview sheet (see also picture below):
+This example pattern has 5 rows and 6 columns on one overview sheet on page 1 (see also picture below):
 
-```
-python nobubo.py -l 1 5 6 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf" 
+```bash
+$ python nobubo.py -l 1 5 6 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
 ```
 * `-l` or `--layout ` is followed by three numbers:
   * `1`: the page on which the overview sheet is located
@@ -40,19 +42,34 @@ Please note: The pattern is built up from the bottom left to the upper right.
 
 ### Example with two overview sheets
 
-` python3 nobubo.py -l 1 4 8 -l 34 3 7 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"`
+```bash
+$ python3 nobubo.py -l 1 4 8 -l 34 3 7 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
+```
 
-The first overview sheet is on page 1 with 4 rows, 8 columns (`-l 1 4 8`). 
+The first overview sheet is on page 1 with 4 rows, 8 columns: `-l 1 4 8`. 
 
-The second overview sheet is on page 34 with 3 rows, 7 columns (`-l 34 3 7`).
+The second overview sheet is on page 34 with 3 rows, 7 columns: `-l 34 3 7`.
 
 ### Example with just a collage
 
+``` bash
+$ python3 nobubo.py -l 1 4 8 -l 34 3 7 -c "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
+```
 
+This prints only two pdfs (=2 overview sheets) which contain each a huge collage.
+
+### Example with no overview sheet
+
+Some pattern companies provide the overview sheet separately, for example in the pdf together with the sewing instruction. Then, the pattern pdf really and only contains the A4 pages of the pattern. In this case, write a `0` for the overview sheet:
+
+```bash
+$ python nobubo.py -l 0 5 6 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
+```
 
 ## WARNINGS
-Please double-check and compare the overview sheet with the amount of pdf pages given. I had two rare cases where the overview sheet did not match the actual amount of pdf pages, e.g. the overview showed 32 A4 pages (4x8), but the actual pdf had 54 pages. Obviously, the pattern vendor did a mistake there. In one case, the final A0 output was surprisingly fine, in the other, the pages not included in the overview were not assembled properly. I have no solution to this problem (yet).
+* Please double-check and compare the overview sheet with the amount of pdf pages given (rows * columns = amount of pages needed). 
 
-When you print the final pdf pages, please double-check and measure the control square. Don't forget to print "as is", with any scaling or fitting off.
+* If the result is wrong, check if you counted the rows and columns correctly of if a second overview sheet hides in the later pages.
+* When you print the final pattern pages,  double-check and measure the control square. Don't forget to print "as is", with any scaling or fitting off.
 
-I do not take any responsibility if Nobubo leads to ill-matching garments or any other problems whatsoever. You use this tool at your own risk. Please look at the licence if you want to improve the tool yourself.
+**I do not take any responsibility if Nobubo leads to ill-matching garments or any other problems whatsoever. You use this tool at your own risk. If in doubt, make a backup of your original pattern pdf. Please have a look at the license if you want to improve the tool yourself.**
