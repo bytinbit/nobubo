@@ -28,8 +28,9 @@ class PDFProperties:
 @attr.s
 class Layout:
     overview: int = attr.ib()
-    rows: int = attr.ib()
     columns: int = attr.ib()
+    rows: int = attr.ib()
+
 
 
 @attr.s

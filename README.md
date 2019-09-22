@@ -13,7 +13,7 @@ That's why I wrote Nobubo: This tool assembles the pages of a digital pdf patter
 
 ## Usage
 ```bash
-$ python nobubo.py  -l OVERVIEW ROWS COLUMNS [-c] INPUTPATH OUTPUTPATH
+$ python nobubo.py  -l OVERVIEW COLUMNS ROWS [-c] INPUTPATH OUTPUTPATH
 ```
 
 Have a look at `mock_pattern.pdf` in the repo to test it with Nobubo and see how it works.
@@ -23,16 +23,16 @@ Have a look at `mock_pattern.pdf` in the repo to test it with Nobubo and see how
 This example pattern has 5 rows and 6 columns on one overview sheet on page 1 (see also picture below):
 
 ```bash
-$ python nobubo.py -l 1 5 6 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
+$ python nobubo.py -l 1 6 5 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
 ```
 * `-l` or `--layout ` is followed by three numbers:
   * `1`: the page on which the overview sheet is located
-  * `5 6`: rows and columns you count in the overview sheet
+  * `6 5`: columns and rows you count in the overview sheet
 * `"home/alice/patterns/jacket.pdf"`: the path to the original pattern including filename.
 * `"home/alice/patterns/jacket_a0.pdf"`: the path where the collage should be saved, including filename.
 * an optional `-c` flag only creates a huge collage and doesn't chop it up (see example below)
 
-The pdf has 5 rows and 6 columns, which means the final pdf collage will comprise four A0 pages to print, since 16 A4 pages fit on one A0 page. This is how the sample overview sheet might look like and how it will be split up:
+The pdf has 6 columns and 5 rows, which means the final pdf collage will comprise four A0 pages to print, since 16 A4 pages fit on one A0 page. This is how the sample overview sheet might look like and how it will be split up:
 
 <img src="img/nobubo.png" alt="sample pattern" width=50%/>
 
@@ -43,17 +43,17 @@ Please note: The pattern is built up from the bottom left to the upper right.
 ### Example with two overview sheets
 
 ```bash
-$ python3 nobubo.py -l 1 4 8 -l 34 3 7 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
+$ python3 nobubo.py -l 1 8 4 -l 34 7 3 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
 ```
 
-The first overview sheet is on page 1 with 4 rows, 8 columns: `-l 1 4 8`. 
+The first overview sheet is on page 1 with 4 rows, 8 columns: `-l 1 8 4`. 
 
-The second overview sheet is on page 34 with 3 rows, 7 columns: `-l 34 3 7`.
+The second overview sheet is on page 34 with 3 rows, 7 columns: `-l 34 7 3`.
 
 ### Example with just a collage
 
 ``` bash
-$ python3 nobubo.py -l 1 4 8 -l 34 3 7 -c "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
+$ python3 nobubo.py -l 1 8 4 -l 34 7 3 -c "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
 ```
 
 This prints only two pdfs (=2 overview sheets) which contain each a huge collage.
@@ -63,7 +63,7 @@ This prints only two pdfs (=2 overview sheets) which contain each a huge collage
 Some pattern companies provide the overview sheet separately, for example in the pdf together with the sewing instruction. Then, the pattern pdf really and only contains the A4 pages of the pattern. In this case, write a `0` for the overview sheet:
 
 ```bash
-$ python nobubo.py -l 0 5 6 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
+$ python nobubo.py -l 0 6 5 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
 ```
 
 ## WARNINGS

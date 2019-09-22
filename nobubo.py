@@ -35,7 +35,7 @@ def assemble(input_pdf: PyPDF2.PdfFileReader,
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
     It is assembled from bottom left to the top right.
     """
-    last_page = layout.overview + (layout.rows * layout.columns)
+    last_page = layout.overview + (layout.columns * layout.rows)
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
                                                     layout.columns * input_properties.x_offset,
                                                     layout.rows * input_properties.y_offset)
@@ -65,7 +65,7 @@ def chop_up_for_a0(assembled_collage: PyPDF2.pdf.PageObject,
     Takes a collage with all assembled pattern pages, divides them up so that they fit on a A0 sheet.
     """
     print(f"\nChopping up the collage...")
-    chopped_up_collage = [assembled_collage for _ in range(0, _calculate_pages_needed(layout.rows, layout.columns))]
+    chopped_up_collage = [assembled_collage for _ in range(0, _calculate_pages_needed(layout.columns,layout.rows))]
     A4 = 4  # 4 A4 fit on 1 A0 page
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
@@ -128,12 +128,12 @@ def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
         sys.exit(1)
 
 
-def _calculate_pages_needed(rows: int, cols: int) -> int:
+def _calculate_pages_needed(cols: int, rows: int) -> int:
     return math.ceil(rows/4) * math.ceil(cols/4)
 
 
 @click.command()
-@click.option("-l", "--layout", nargs=3, type=click.INT, multiple=True, required=True, help="Layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.", metavar="OVERVIEW ROWS COLUMNS")
+@click.option("-l", "--layout", nargs=3, type=click.INT, multiple=True, required=True, help="Layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.", metavar="OVERVIEW COLUMNS ROWS")
 @click.option("-c", "--collage-only", is_flag=True, help="Only returns a huge collage with all assembled A4 pages that belong to one overview sheet.")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
@@ -143,11 +143,12 @@ def main(layout, collage_only, input_path, output_path):
     The collage is assembled according to one or several overview sheets.
     These overviews are usually provided along with the pattern pages in the same pdf.
     Nobubo assumes that overview sheets and the pattern pages are in the same pdf.
+    If no overview sheet is in the pattern pdf itself, write 0 in the arguments given, e.g. -l 0 8 4 (see below).
 
     Currently, only A4 to A0 is supported, thus Nobubo creates A0 pages out of provided A4 pages.
     In order for Nobubo to run, you need the original pdf pattern.
     Create a backup of the original if you're afraid to have it damaged in any way.
-    The author take no responsibility if you face any fit issues or other problems now or later on.
+    The author takes no responsibility if you face any fit issues or other problems now or later on.
 
     Explanation of arguments:
 
@@ -155,9 +156,9 @@ def main(layout, collage_only, input_path, output_path):
 
     \t\tOVERVIEW: page number of overview
 
-    \t\tROWS: amount of rows you count in the overview sheet
-
     \t\tCOLUMNS: amount of columns you count in the overview sheet
+
+    \t\tROWS: amount of rows you count in the overview sheet
 
     \t[-c] Optional flag that only creates a huge collage without chopping it up.
 
@@ -167,23 +168,22 @@ def main(layout, collage_only, input_path, output_path):
 
     The following example has 2 overview sheets at page 1 and 34 with differing layouts:
 
-    python3 nobubo.py -l 1 4 8 -l 34 3 7 -c "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
+    python3 nobubo.py -l 1 8 4 -l 34 7 3 -c "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
 
-    If no overview sheet is in the pattern pdf itself, write 0, e.g. -l 0 4 8.
 
     """
     try:
         with open(pathlib.Path(input_path), "rb") as inputfile:
             reader = PyPDF2.PdfFileReader(inputfile, strict=False)
             input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
-                                                   x_offset=float(reader.getPage(1).mediaBox[2]),  # e.g.  X_OFFSET: # 483.307
-                                                   y_offset=float(reader.getPage(1).mediaBox[3]),)  # e.g. Y_OFFSET: # 729.917
+                                                   x_offset=float(reader.getPage(1).mediaBox[2]),  # upper right x, e.g.  X_OFFSET: # 483.307
+                                                   y_offset=float(reader.getPage(1).mediaBox[3]),)  # upper right y, e.g. Y_OFFSET: # 729.917
             # values of the mediaBox are given according to "user space units", defined as 1/72 inch = 0.013888889
             # upper right: 483.307 user space units * 0.013888889 = 6.712597222 inches = 17.04999694388 cm
             # upper left: 729.917 user space units * 0.013888889 = 10.137736111 inches = 25.74984972194 cm
             # a0 = 841 x 1189 mm =  33.1 × 46.8 inches
 
-            layout_list = [utils.Layout(overview=data[0], rows=data[1], columns=data[2]) for data in layout]
+            layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in layout]
 
             output_path = pathlib.Path(output_path)
             overviewcounter = 1
@@ -215,4 +215,3 @@ def main(layout, collage_only, input_path, output_path):
 
 if __name__ == '__main__':
     main()
-
