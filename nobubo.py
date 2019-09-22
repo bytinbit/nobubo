@@ -33,6 +33,7 @@ def assemble(input_pdf: PyPDF2.PdfFileReader,
              input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
+    It is assembled from bottom left to the top right.
     """
     last_page = layout.overview + (layout.rows * layout.columns)
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
@@ -64,7 +65,7 @@ def chop_up_for_a0(assembled_collage: PyPDF2.pdf.PageObject,
     Takes a collage with all assembled pattern pages, divides them up so that they fit on a A0 sheet.
     """
     print(f"\nChopping up the collage...")
-    chopped_up_collage = [assembled_collage for _ in range(0, calculate_pages_needed(layout.rows, layout.columns))]
+    chopped_up_collage = [assembled_collage for _ in range(0, _calculate_pages_needed(layout.rows, layout.columns))]
     A4 = 4  # 4 A4 fit on 1 A0 page
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
@@ -98,7 +99,7 @@ def chop_up_for_a0(assembled_collage: PyPDF2.pdf.PageObject,
 
             lowerleft_factor.x += 1
             upperright_factor.x += 1
-        else:  # end of line rechad
+        else:  # end of line reached
             if colselft == 0:  # cols % 4 == 0
                 x_upperright = upperright_factor.x * A4 * input_properties.x_offset
             if colselft < 0:  # less than 4 pages left for cols
@@ -118,7 +119,7 @@ def chop_up_for_a0(assembled_collage: PyPDF2.pdf.PageObject,
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
-
+    print("Writing file...")
     try:
         with open(output_path, "wb") as output:
             pypdf2_writer.write(output)
@@ -127,7 +128,7 @@ def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
         sys.exit(1)
 
 
-def calculate_pages_needed(rows: int, cols: int) -> int:
+def _calculate_pages_needed(rows: int, cols: int) -> int:
     return math.ceil(rows/4) * math.ceil(cols/4)
 
 
@@ -175,8 +176,13 @@ def main(layout, collage_only, input_path, output_path):
         with open(pathlib.Path(input_path), "rb") as inputfile:
             reader = PyPDF2.PdfFileReader(inputfile, strict=False)
             input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
-                                             x_offset=float(reader.getPage(1).mediaBox[2]),  # X_OFFSET: # 483.307
-                                             y_offset=float(reader.getPage(1).mediaBox[3]),)  # Y_OFFSET: # 729.917
+                                                   x_offset=float(reader.getPage(1).mediaBox[2]),  # e.g.  X_OFFSET: # 483.307
+                                                   y_offset=float(reader.getPage(1).mediaBox[3]),)  # e.g. Y_OFFSET: # 729.917
+            # values of the mediaBox are given according to "user space units", defined as 1/72 inch = 0.013888889
+            # upper right: 483.307 user space units * 0.013888889 = 6.712597222 inches = 17.04999694388 cm
+            # upper left: 729.917 user space units * 0.013888889 = 10.137736111 inches = 25.74984972194 cm
+            # a0 = 841 x 1189 mm =  33.1 × 46.8 inches
+
             layout_list = [utils.Layout(overview=data[0], rows=data[1], columns=data[2]) for data in layout]
 
             output_path = pathlib.Path(output_path)
