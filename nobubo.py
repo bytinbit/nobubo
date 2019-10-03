@@ -65,7 +65,7 @@ def chop_up_for_a0(assembled_collage: PyPDF2.pdf.PageObject,
     Takes a collage with all assembled pattern pages, divides them up so that they fit on a A0 sheet.
     """
     print(f"\nChopping up the collage...")
-    chopped_up_collage = [assembled_collage for _ in range(0, _calculate_pages_needed(layout.columns,layout.rows))]
+    chopped_up_collage = [assembled_collage for _ in range(0, utils.calculate_pages_needed(layout.columns, layout.rows))]
     A4 = 4  # 4 A4 fit on 1 A0 page
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
@@ -128,19 +128,6 @@ def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
         sys.exit(1)
 
 
-def _calculate_pages_needed(cols: int, rows: int) -> int:
-    return math.ceil(rows/4) * math.ceil(cols/4)
-
-
-def _calculate_offset(page: PyPDF2.pdf.PageObject):
-    """
-    Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
-    :param page: A pattern page.
-    :return: list with x, y value.
-    """
-    return [float(page.mediaBox[2])-float(page.mediaBox[0]), float(page.mediaBox[3])-float(page.mediaBox[1])]
-
-
 @click.command()
 @click.option("-l", "--layout", nargs=3, type=click.INT, multiple=True, required=True, help="Layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.", metavar="OVERVIEW COLUMNS ROWS")
 @click.option("-c", "--collage-only", is_flag=True, help="Only returns a huge collage with all assembled A4 pages that belong to one overview sheet.")
@@ -185,13 +172,13 @@ def main(layout, collage_only, input_path, output_path):
         with open(pathlib.Path(input_path), "rb") as inputfile:
             reader = PyPDF2.PdfFileReader(inputfile, strict=False)
             input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
-                                                   x_offset=_calculate_offset(reader.getPage(1))[0],
-                                                   y_offset=_calculate_offset(reader.getPage(1))[1])
+                                                   x_offset=utils.calculate_offset(reader.getPage(1))[0],
+                                                   y_offset=utils.calculate_offset(reader.getPage(1))[1])
             # values of the mediaBox are given according to "user space units", defined as 1/72 inch = 0.013888889
             # upper right: 483.307 user space units * 0.013888889 = 6.712597222 inches = 17.04999694388 cm
             # upper left: 729.917 user space units * 0.013888889 = 10.137736111 inches = 25.74984972194 cm
             # a0 = 841 x 1189 mm =  33.1 × 46.8 inches
-            print(_calculate_offset(reader.getPage(1)))
+            print(utils.calculate_offset(reader.getPage(1)))
             layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in layout]
 
             output_path = pathlib.Path(output_path)

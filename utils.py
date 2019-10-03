@@ -14,9 +14,11 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
+import math
+
 
 import attr
-
+import PyPDF2
 
 @attr.s
 class PDFProperties:
@@ -32,8 +34,20 @@ class Layout:
     rows: int = attr.ib()
 
 
-
 @attr.s
 class Factor:
     x = attr.ib()
     y = attr.ib()
+
+
+def calculate_pages_needed(cols: int, rows: int) -> int:
+    return math.ceil(rows/4) * math.ceil(cols/4)
+
+
+def calculate_offset(page: PyPDF2.pdf.PageObject):
+    """
+    Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
+    :param page: A pattern page.
+    :return: list with x, y value.
+    """
+    return [float(page.mediaBox[2])-float(page.mediaBox[0]), float(page.mediaBox[3])-float(page.mediaBox[1])]
