@@ -40,6 +40,12 @@ class Factor:
     y = attr.ib()
 
 
+@attr.s
+class PaperSize:
+    width = attr.ib()
+    height = attr.ib()
+
+
 def calculate_pages_needed(cols: int, rows: int) -> int:
     return math.ceil(rows/4) * math.ceil(cols/4)
 
@@ -51,3 +57,19 @@ def calculate_offset(page: PyPDF2.pdf.PageObject):
     :return: list with x, y value.
     """
     return [float(page.mediaBox[2])-float(page.mediaBox[0]), float(page.mediaBox[3])-float(page.mediaBox[1])]
+
+
+def convert_to_userspaceunits(width, height) -> PaperSize:
+    """
+    Converts a page's physical width and height from millimeters to default user space unit,
+    which are defined in the pdf standard as 1/72 inch.
+
+    :param width: Width of the physical page in millimeters (mm).
+    :param: height: Height of the physical page in millimeters (mm).
+    :return: Width and height of the physical page in default user space units.
+    """
+    # 1 mm = 5/127 inches = 0.03937 inches;  1/72 inch = 0.013888889
+    # conversion factor = 5/127 / 1/72 = 360/127 = 2.834645669
+    conversion_factor = 2.834645669
+
+    return PaperSize(width=(width * conversion_factor), height=(height * conversion_factor))
