@@ -16,9 +16,9 @@
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 import math
 
-
 import attr
 import PyPDF2
+
 
 @attr.s
 class PDFProperties:
@@ -29,6 +29,9 @@ class PDFProperties:
 
 @attr.s
 class Layout:
+    """
+    Pattern layout of the input file.
+    """
     overview: int = attr.ib()
     columns: int = attr.ib()
     rows: int = attr.ib()
@@ -36,18 +39,24 @@ class Layout:
 
 @attr.s
 class Factor:
+    """
+    Factor class for multiplication.
+    """
     x = attr.ib()
     y = attr.ib()
 
 
 @attr.s
 class PaperSize:
+    """
+    Paper size on which the user wishes to print.
+    """
     width = attr.ib()
     height = attr.ib()
 
 
-def calculate_pages_needed(cols: int, rows: int) -> int:
-    return math.ceil(rows/4) * math.ceil(cols/4)
+def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
+    return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
 
 def calculate_offset(page: PyPDF2.pdf.PageObject):
@@ -59,17 +68,38 @@ def calculate_offset(page: PyPDF2.pdf.PageObject):
     return [float(page.mediaBox[2])-float(page.mediaBox[0]), float(page.mediaBox[3])-float(page.mediaBox[1])]
 
 
-def convert_to_userspaceunits(width, height) -> PaperSize:
+def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
     """
     Converts a page's physical width and height from millimeters to default user space unit,
     which are defined in the pdf standard as 1/72 inch.
 
-    :param width: Width of the physical page in millimeters (mm).
-    :param: height: Height of the physical page in millimeters (mm).
+    :param width_height: Width and height of the physical page in millimeters (mm), on which the pattern will be printed.
     :return: Width and height of the physical page in default user space units.
     """
     # 1 mm = 5/127 inches = 0.03937 inches;  1/72 inch = 0.013888889
     # conversion factor = 5/127 / 1/72 = 360/127 = 2.834645669
     conversion_factor = 2.834645669
 
-    return PaperSize(width=(width * conversion_factor), height=(height * conversion_factor))
+    return PaperSize(width=(width_height[0] * conversion_factor), height=(width_height[1] * conversion_factor))
+
+
+def calculate_nup_factors(output_layout: str, input_properties: PDFProperties) -> Factor:
+    output_papersize = convert_to_userspaceunits(convert_to_mm(output_layout))
+    x_factor = int(output_papersize.width // input_properties.x_offset)
+    y_factor = int(output_papersize.height // input_properties.y_offset)
+    return Factor(x=x_factor, y=y_factor)
+
+
+def validate_output_layout(output_layout: str) -> bool:
+    if output_layout is not None and (output_layout == "a0" or convert_to_mm(output_layout)):
+        return True
+    return False
+
+
+def convert_to_mm(output_layout: str) -> [int, int]:
+    ol_in_mm = output_layout.split("x")
+    try:
+        ol_in_mm = [int(x) for x in ol_in_mm]
+    except ValueError as e:
+        print(f"Error while parsing custom output layout, was it given as 'mmxmm', e.g. 222x444? Error:\n{e}.")
+    return ol_in_mm
