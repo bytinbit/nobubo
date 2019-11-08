@@ -40,7 +40,7 @@ class Layout:
 @attr.s
 class Factor:
     """
-
+    Factor class for multiplication.
     """
     x = attr.ib()
     y = attr.ib()

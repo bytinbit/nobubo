@@ -89,7 +89,6 @@ def main(input_layout, output_layout, input_path, output_path):
 
                 if utils.validate_output_layout(output_layout):
                     chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout)
-                    # written_chops = ols.chop_up_for_a0(collage, layout_elem, input_properties)
                     print(f"Successfully chopped up the collage.\n")
 
                     write_chops(chopped_up_files, new_outputpath)
