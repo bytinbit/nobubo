@@ -20,8 +20,39 @@ Contains all functions for various output layouts.
 
 from copy import copy
 import PyPDF2
+import progress.bar
 
 import utils
+
+
+def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
+                        layout: utils.Layout,
+                        input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
+    """
+    Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
+    It is assembled from bottom left to the top right.
+    """
+    last_page = layout.overview + (layout.columns * layout.rows)
+    collage = PyPDF2.pdf.PageObject.createBlankPage(None,
+                                                    layout.columns * input_properties.x_offset,
+                                                    layout.rows * input_properties.y_offset)
+    x_position = 0.0
+    y_position = 0.0
+    colscount = 0
+
+    print(f"Creating collage... Please be patient, this may take some time.")
+    bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
+    for pagenumber in bar.iter(range(layout.overview, last_page)):
+
+        if colscount == layout.columns:
+            x_position = 0.0
+            y_position += input_properties.y_offset
+            colscount = 0
+
+        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), x_position, y_position, expand=True)
+        x_position += input_properties.x_offset
+        colscount += 1
+    return collage
 
 
 def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
@@ -104,4 +135,3 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         writer.addPage(page)
 
     return writer
-

@@ -19,40 +19,9 @@ import pathlib
 import sys
 
 import click
-import progress.bar
 
 import utils
 import ols
-
-
-def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
-                        layout: utils.Layout,
-                        input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
-    """
-    Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
-    It is assembled from bottom left to the top right.
-    """
-    last_page = layout.overview + (layout.columns * layout.rows)
-    collage = PyPDF2.pdf.PageObject.createBlankPage(None,
-                                                    layout.columns * input_properties.x_offset,
-                                                    layout.rows * input_properties.y_offset)
-    x_position = 0.0
-    y_position = 0.0
-    colscount = 0
-
-    print(f"Creating collage... Please be patient, this may take some time.")
-    bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
-    for pagenumber in bar.iter(range(layout.overview, last_page)):
-
-        if colscount == layout.columns:
-            x_position = 0.0
-            y_position += input_properties.y_offset
-            colscount = 0
-
-        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), x_position, y_position, expand=True)
-        x_position += input_properties.x_offset
-        colscount += 1
-    return collage
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
@@ -76,37 +45,24 @@ def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
 @click.argument("output_path", type=click.STRING)
 def main(input_layout, output_layout, input_path, output_path):
     """
-    Creates a collage from digital pattern pages and then chops it up into a desired format.
+    Creates a collage from digital pattern pages and then chops it up into a desired output layout.
     The collage is assembled according to one or several overview sheets.
     These overviews are usually provided along with the pattern pages in the same pdf.
-    Nobubo assumes that overview sheets and the pattern pages are in the same pdf.
-    If no overview sheet is in the pattern pdf itself, write 0 in the arguments given, e.g. -l 0 8 4 (see below).
+    If no overview sheet is in the pattern pdf itself, write 0 in the arguments given, e.g. -il 0 8 4.
 
-    Currently, only A4 to A0 is supported, thus Nobubo creates A0 pages out of provided A4 pages.
     In order for Nobubo to run, you need the original pdf pattern.
-    Create a backup of the original if you're afraid to have it damaged in any way.
+
+    Create a backup of the original if you are afraid to have it damaged in any way.
+
     The author takes no responsibility if you face any fit issues or other problems now or later on.
 
-    Explanation of arguments:
+    Example usage:
 
-    \t-l, -layout:
+    2 overview sheets at page 1 and 34 with differing layouts, which are then assembled to be printed on a0 paper:
 
-    \t\tOVERVIEW: page number of overview
+    python3 nobubo.py --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
 
-    \t\tCOLUMNS: amount of columns you count in the overview sheet
-
-    \t\tROWS: amount of rows you count in the overview sheet
-
-    \t[-c] Optional flag that only creates a huge collage without chopping it up.
-
-    INPUT: Path to the input file, including filename.
-
-    OUTPUT: Path to the output file, including filename.
-
-    The following example has 2 overview sheets at page 1 and 34 with differing layouts:
-
-    python3 nobubo.py -l 1 8 4 -l 34 7 3 -c "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
-
+    Further information and the readme can be found on https://github.com/bytinbit/nobubo
 
     """
     try:
@@ -115,10 +71,7 @@ def main(input_layout, output_layout, input_path, output_path):
             input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
                                                    x_offset=utils.calculate_offset(reader.getPage(1))[0],
                                                    y_offset=utils.calculate_offset(reader.getPage(1))[1])
-            # values of the mediaBox are given according to "user space units", defined as 1/72 inch = 0.013888889
-            # upper right: 483.307 user space units * 0.013888889 = 6.712597222 inches = 17.04999694388 cm
-            # upper left: 729.917 user space units * 0.013888889 = 10.137736111 inches = 25.74984972194 cm
-            # a0 = 841 x 1189 mm =  33.1 × 46.8 inches
+
             print(utils.calculate_offset(reader.getPage(1)))
 
             layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
@@ -128,7 +81,7 @@ def main(input_layout, output_layout, input_path, output_path):
 
             for layout_elem in layout_list:
                 print(f"Assembling overview {overview_counter} of {len(layout_list)}\n")
-                collage = assemble_to_collage(reader, layout_elem, input_properties)
+                collage = ols.assemble_to_collage(reader, layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
                 new_filename = f"{output_path.stem}_{overview_counter}{output_path.suffix}"
