@@ -14,10 +14,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
-
-
-from copy import copy
-import math
 import PyPDF2
 import pathlib
 import sys
@@ -26,11 +22,12 @@ import click
 import progress.bar
 
 import utils
+import ols
 
 
-def assemble(input_pdf: PyPDF2.PdfFileReader,
-             layout: utils.Layout,
-             input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
+def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
+                        layout: utils.Layout,
+                        input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
     It is assembled from bottom left to the top right.
@@ -58,66 +55,6 @@ def assemble(input_pdf: PyPDF2.PdfFileReader,
     return collage
 
 
-def chop_up_for_a0(assembled_collage: PyPDF2.pdf.PageObject,
-                   layout: utils.Layout,
-                   input_properties: utils.PDFProperties) -> PyPDF2.PdfFileWriter:
-    """
-    Takes a collage with all assembled pattern pages, divides them up so that they fit on a A0 sheet.
-    """
-    print(f"\nChopping up the collage...")
-    chopped_up_collage = [assembled_collage for _ in range(0, utils.calculate_pages_needed(layout.columns, layout.rows))]
-    A4 = 4  # 4 A4 fit on 1 A0 page
-
-    # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = utils.Factor(x=0, y=0)  # k, l
-    upperright_factor = utils.Factor(x=1, y=1)  # m, n
-
-    writer = PyPDF2.PdfFileWriter()
-
-    for elem in chopped_up_collage:
-        page = copy(elem)  # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
-
-        # apply transformation to lower left x and y
-        x_lowerleft = lowerleft_factor.x * A4 * input_properties.x_offset
-        y_lowerleft = lowerleft_factor.y * A4 * input_properties.y_offset
-
-        page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
-
-        # apply transformation to upper right, y-value
-        rowsleft = layout.rows - (upperright_factor.y * A4)
-        if rowsleft < 0:
-            y_upperright = layout.rows * input_properties.y_offset
-        else:
-            y_upperright = upperright_factor.y * A4 * input_properties.y_offset
-
-        # apply transformation to upper right, x-value
-        colselft = layout.columns - (upperright_factor.x * A4)
-        if colselft > 0:  # still assembling the same horizontal line
-            x_upperright = upperright_factor.x * A4 * input_properties.x_offset
-
-            page.cropBox.upperRight = (x_upperright, y_upperright)
-
-            lowerleft_factor.x += 1
-            upperright_factor.x += 1
-        else:  # end of line reached
-            if colselft == 0:  # cols % 4 == 0
-                x_upperright = upperright_factor.x * A4 * input_properties.x_offset
-            if colselft < 0:  # less than 4 pages left for cols
-                x_upperright = layout.columns * input_properties.x_offset
-
-            page.cropBox.upperRight = (x_upperright, y_upperright)
-
-            lowerleft_factor.x = 0
-            lowerleft_factor.y += 1
-
-            upperright_factor.x = 1
-            upperright_factor.y += 1
-
-        writer.addPage(page)
-
-    return writer
-
-
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
     print("Writing file...")
     try:
@@ -129,11 +66,15 @@ def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
 
 
 @click.command()
-@click.option("-l", "--layout", nargs=3, type=click.INT, multiple=True, required=True, help="Layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.", metavar="OVERVIEW COLUMNS ROWS")
-@click.option("-c", "--collage-only", is_flag=True, help="Only returns a huge collage with all assembled A4 pages that belong to one overview sheet.")
+@click.option("--il", "input_layout", nargs=3, type=click.INT, multiple=True, required=True,
+              help="Input layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.",
+              metavar="OVERVIEW COLUMNS ROWS")
+@click.option("--ol", "output_layout", nargs=1, type=click.STRING,
+              help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
+              metavar="a0 | mmxmm | collage")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
-def main(layout, collage_only, input_path, output_path):
+def main(input_layout, output_layout, input_path, output_path):
     """
     Creates a collage from digital pattern pages and then chops it up into a desired format.
     The collage is assembled according to one or several overview sheets.
@@ -179,30 +120,34 @@ def main(layout, collage_only, input_path, output_path):
             # upper left: 729.917 user space units * 0.013888889 = 10.137736111 inches = 25.74984972194 cm
             # a0 = 841 x 1189 mm =  33.1 × 46.8 inches
             print(utils.calculate_offset(reader.getPage(1)))
-            layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in layout]
+
+            layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
             output_path = pathlib.Path(output_path)
-            overviewcounter = 1
+            overview_counter = 1
+
             for layout_elem in layout_list:
-                print(f"Assembling overview {overviewcounter} of {len(layout_list)}\n")
-                collage = assemble(reader, layout_elem, input_properties)
+                print(f"Assembling overview {overview_counter} of {len(layout_list)}\n")
+                collage = assemble_to_collage(reader, layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
-                new_filename = f"{output_path.stem}_{overviewcounter}{output_path.suffix}"
+                new_filename = f"{output_path.stem}_{overview_counter}{output_path.suffix}"
                 new_outputpath = output_path.parent / new_filename
 
-                if collage_only:
+                if utils.validate_output_layout(output_layout):
+                    chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout)
+                    # written_chops = ols.chop_up_for_a0(collage, layout_elem, input_properties)
+                    print(f"Successfully chopped up the collage.\n")
+
+                    write_chops(chopped_up_files, new_outputpath)
+                    print(f"Final pdf written to {new_outputpath}.\nEnjoy your sewing :)")
+
+                else:  # default: no output_layout specified, print collage pdf
                     writer = PyPDF2.PdfFileWriter()
                     writer.addPage(collage)
                     write_chops(writer, new_outputpath)
-                    print(f"-c flag set, only collage written to {new_outputpath}.\nEnjoy your beautiful collage :)")
-                else:
-                    written_chops = chop_up_for_a0(collage, layout_elem, input_properties)
-                    print(f"Successfully chopped up the collage.\n")
-
-                    write_chops(written_chops, new_outputpath)
-                    print(f"Final pdf written to {new_outputpath}.\nEnjoy your sewing :)")
-                overviewcounter += 1
+                    print(f"Collage file(s) written to {new_outputpath}.")
+                overview_counter += 1
 
     except OSError as e:
         print(f"While reading the file, this error occurred:\n{e}")
