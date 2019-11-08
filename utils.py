@@ -55,8 +55,8 @@ class PaperSize:
     height = attr.ib()
 
 
-def calculate_pages_needed(cols: int, rows: int) -> int:
-    return math.ceil(rows/4) * math.ceil(cols/4)
+def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
+    return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
 
 def calculate_offset(page: PyPDF2.pdf.PageObject):
@@ -85,8 +85,8 @@ def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
 
 def calculate_nup_factors(output_layout: str, input_properties: PDFProperties) -> Factor:
     output_papersize = convert_to_userspaceunits(convert_to_mm(output_layout))
-    x_factor = output_papersize.width // input_properties.x_offset
-    y_factor = output_papersize.height // input_properties.y_offset
+    x_factor = int(output_papersize.width // input_properties.x_offset)
+    y_factor = int(output_papersize.height // input_properties.y_offset)
     return Factor(x=x_factor, y=y_factor)
 
 
