@@ -62,6 +62,7 @@ def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
 def calculate_offset(page: PyPDF2.pdf.PageObject):
     """
     Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
+    Uses mediaBox value, not cropBox.
     :param page: A pattern page.
     :return: list with x, y value.
     """
@@ -90,16 +91,7 @@ def calculate_nup_factors(output_layout: str, input_properties: PDFProperties) -
     return Factor(x=x_factor, y=y_factor)
 
 
-def validate_output_layout(output_layout: str) -> bool:
-    if output_layout is not None and (output_layout == "a0" or convert_to_mm(output_layout)):
-        return True
-    return False
-
-
 def convert_to_mm(output_layout: str) -> [int, int]:
     ol_in_mm = output_layout.split("x")
-    try:
-        ol_in_mm = [int(x) for x in ol_in_mm]
-    except ValueError as e:
-        print(f"Error while parsing custom output layout, was it given as 'mmxmm', e.g. 222x444? Error:\n{e}.")
-    return ol_in_mm
+    return [int(x) for x in ol_in_mm]
+

@@ -34,13 +34,22 @@ def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
         sys.exit(1)
 
 
+def validate_output_layout(ctx, param, value):
+    try:
+        value is not None and (value == "a0" or utils.convert_to_mm(value))
+        return value
+    except ValueError:
+        raise click.BadParameter(f"If custom layout was chosen, have you written it as 'mmxmm', e.g. 222x444?.")
+
+
 @click.command()
 @click.option("--il", "input_layout", nargs=3, type=click.INT, multiple=True, required=True,
               help="Input layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.",
               metavar="OVERVIEW COLUMNS ROWS")
 @click.option("--ol", "output_layout", nargs=1, type=click.STRING,
+              callback=validate_output_layout,
               help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
-              metavar="a0 | mmxmm | collage")
+              metavar="a0 | mmxmm")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
 def main(input_layout, output_layout, input_path, output_path):
@@ -72,7 +81,7 @@ def main(input_layout, output_layout, input_path, output_path):
                                                    x_offset=utils.calculate_offset(reader.getPage(1))[0],
                                                    y_offset=utils.calculate_offset(reader.getPage(1))[1])
 
-            print(utils.calculate_offset(reader.getPage(1)))
+            # print(utils.calculate_offset(reader.getPage(1))) displays mediaBox property
 
             layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
@@ -87,7 +96,7 @@ def main(input_layout, output_layout, input_path, output_path):
                 new_filename = f"{output_path.stem}_{overview_counter}{output_path.suffix}"
                 new_outputpath = output_path.parent / new_filename
 
-                if utils.validate_output_layout(output_layout):
+                if len(output_layout) > 0:
                     chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout)
                     print(f"Successfully chopped up the collage.\n")
 
@@ -98,7 +107,7 @@ def main(input_layout, output_layout, input_path, output_path):
                     writer = PyPDF2.PdfFileWriter()
                     writer.addPage(collage)
                     write_chops(writer, new_outputpath)
-                    print(f"Collage file(s) written to {new_outputpath}.")
+                    print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")
                 overview_counter += 1
 
     except OSError as e:

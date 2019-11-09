@@ -85,7 +85,6 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
     """
     print(f"\nChopping up the collage...")
     chopped_up_collage = [assembled_collage for _ in range(0, utils.calculate_pages_needed(layout, n_up_factor))]
-    # 4 A4 fit on 1 A0 page
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = utils.Factor(x=0, y=0)  # k, l
