@@ -96,21 +96,21 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
         # apply transformation to lower left x and y
-        x_lowerleft = lowerleft_factor.x * n_up_factor.x * input_properties.x_offset
-        y_lowerleft = lowerleft_factor.y * n_up_factor.y * input_properties.y_offset
+        x_lowerleft = lowerleft_factor.x * n_up_factor.x * input_properties.x_offset  # starts with e.g. 0 * 4 * xoffset
+        y_lowerleft = lowerleft_factor.y * n_up_factor.y * input_properties.y_offset # starts with 0 * 4 * yoffset
 
         page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
 
         # apply transformation to upper right, y-value
-        rowsleft = layout.rows - (upperright_factor.y * n_up_factor.y)  # ROWS
-        if rowsleft < 0:
+        rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y) # ROWS
+        if rowsleft < 0:  # ROWS
             y_upperright = layout.rows * input_properties.y_offset
         else:
             y_upperright = upperright_factor.y * n_up_factor.y * input_properties.y_offset
 
         # apply transformation to upper right, x-value
-        colselft = layout.columns - (upperright_factor.x * n_up_factor.x)  # COLS
-        if colselft > 0:  # still assembling the same horizontal line
+        colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x) # COLS
+        if colsleft > 0:  # still assembling the same horizontal line
             x_upperright = upperright_factor.x * n_up_factor.x * input_properties.x_offset
 
             page.cropBox.upperRight = (x_upperright, y_upperright)
@@ -118,9 +118,9 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
             lowerleft_factor.x += 1
             upperright_factor.x += 1
         else:  # end of line reached
-            if colselft == 0:  # cols % 4 == 0 COLS
+            if colsleft == 0:  # cols % 4 == 0 COLS
                 x_upperright = upperright_factor.x * n_up_factor.x * input_properties.x_offset
-            if colselft < 0:  # less than 4 pages left for COLS
+            if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
                 x_upperright = layout.columns * input_properties.x_offset
 
             page.cropBox.upperRight = (x_upperright, y_upperright)
@@ -134,3 +134,8 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         writer.addPage(page)
 
     return writer
+
+
+def _calculate_colsrows_left(layout_element: int, multiplier: int, nup_factor: int) -> int:
+    return layout_element - (multiplier * nup_factor)
+

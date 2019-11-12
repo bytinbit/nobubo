@@ -42,17 +42,17 @@ class Factor:
     """
     Factor class for multiplication.
     """
-    x = attr.ib()
-    y = attr.ib()
+    x: int = attr.ib()
+    y: int = attr.ib()
 
 
 @attr.s
 class PaperSize:
     """
-    Paper size on which the user wishes to print.
+    Paper size on which the user wishes to print. Width and height are in user space units.
     """
-    width = attr.ib()
-    height = attr.ib()
+    width: float = attr.ib()
+    height: float = attr.ib()
 
 
 def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
