@@ -84,7 +84,6 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
     Takes a collage with all assembled pattern pages, divides them up so that they fit on a previously specified sheet.
     """
     print(f"\nChopping up the collage...")
-    chopped_up_collage = [assembled_collage for _ in range(0, utils.calculate_pages_needed(layout, n_up_factor))]
 
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = utils.Factor(x=0, y=0)  # k, l
@@ -92,8 +91,9 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
 
     writer = PyPDF2.PdfFileWriter()
 
-    for elem in chopped_up_collage:
-        page = copy(elem)  # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
+    for x in range(0, utils.calculate_pages_needed(layout, n_up_factor)):
+        page = copy(assembled_collage)
+        # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
         # apply transformation to lower left x and y
         x_lowerleft = lowerleft_factor.x * n_up_factor.x * input_properties.x_offset
