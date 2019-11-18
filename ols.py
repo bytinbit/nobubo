@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 """
-Contains all functions for various output layouts.
+Contains functions for various output layouts.
 """
 
 from copy import copy
@@ -31,6 +31,11 @@ def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
     The default assembles it from bottom left to the top right.
+    :param input_pdf The pattern pdf that has been bought by the user.
+    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
+    :param input_properties: Properties of the pdf.
+    :return The collage with all pattern pages assembled on one single page.
+
     """
     last_page = layout.overview + (layout.columns * layout.rows)
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
@@ -62,11 +67,12 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     """
 
     :param assembled_collage: One pdf page that contains all assembled pattern pages.
-    :param layout: The layout of the input pattern page.
-    :param input_properties: Amount of pdf pages, x- and y-offset.
-    :param output_layout: Desired output layout.
+    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
+    :param input_properties: Properties of the pdf.
+    :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
+    print(f"\nChopping up the collage...")
     if output_layout == "a0":
         return _chop_up(assembled_collage, layout, input_properties, utils.Factor(x=4, y=4))
 
@@ -82,11 +88,9 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
     """
     Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified sheet.
     """
-    print(f"\nChopping up the collage...")
-
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = utils.Factor(x=0, y=0)  # k, l
-    upperright_factor = utils.Factor(x=1, y=1)  # m, n
+    lowerleft_factor = utils.Factor(x=0, y=0)
+    upperright_factor = utils.Factor(x=1, y=1)
 
     writer = PyPDF2.PdfFileWriter()
 

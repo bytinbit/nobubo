@@ -81,8 +81,6 @@ def main(input_layout, output_layout, input_path, output_path):
                                                    x_offset=utils.calculate_offset(reader.getPage(1))[0],
                                                    y_offset=utils.calculate_offset(reader.getPage(1))[1])
 
-            # print(utils.calculate_offset(reader.getPage(1))) displays mediaBox property
-
             layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
             output_path = pathlib.Path(output_path)
