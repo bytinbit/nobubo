@@ -29,8 +29,8 @@ def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
                         layout: utils.Layout,
                         input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
     """
-    Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
-    It is assembled from bottom left to the top right.
+    Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
+    The default assembles it from bottom left to the top right.
     """
     last_page = layout.overview + (layout.columns * layout.rows)
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
@@ -81,7 +81,7 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
              input_properties: utils.PDFProperties,
              n_up_factor: utils.Factor) -> PyPDF2.PdfFileWriter:
     """
-    Takes a collage with all assembled pattern pages, divides them up so that they fit on a previously specified sheet.
+    Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified sheet.
     """
     print(f"\nChopping up the collage...")
 
@@ -95,10 +95,7 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         page = copy(assembled_collage)
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
-        # apply transformation to lower left x and y
         lowerleft: utils.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
-
-        # apply transformation to upper right x and y
         upperright: utils.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties, layout)
 
         # adjust multiplying factor
@@ -112,8 +109,8 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
     return writer
 
 
-def _calculate_colsrows_left(layout_element: int, multiplier: int, nup_factor: int) -> int:
-    return layout_element - (multiplier * nup_factor)
+def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) -> int:
+    return layout_element - (factor * nup_factor)
 
 
 def _calculate_lowerleft_point(lowerleft_factor: utils.Factor, n_up_factor: utils.Factor, input_properties: utils.PDFProperties) -> utils.Point:
@@ -122,43 +119,41 @@ def _calculate_lowerleft_point(lowerleft_factor: utils.Factor, n_up_factor: util
 
 
 def _calculate_upperright_point(upperright_factor: utils.Factor, n_up_factor: utils.Factor, input_properties: utils.PDFProperties, layout: utils.Layout) -> utils.Point:
-    # Manage ROWS: apply transformation to upper right, y-value
     upperright = utils.Point(x=0, y=0)
-    rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)  # ROWS
-    if rowsleft < 0:  # ROWS y-Factor
-        upperright.y = layout.rows * input_properties.y_offset  # end of pattern reached  (full amount of rows reached)
+    # Manage ROWS: apply transformation to upper right, y-value
+    rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)
+    if rowsleft < 0: # end of pattern reached  (full amount of rows reached)
+        upperright.y = layout.rows * input_properties.y_offset
     else:
         upperright.y = upperright_factor.y * n_up_factor.y * input_properties.y_offset
 
     # Manage COLS: apply transformation to upper right, x-value
     colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
-
-    # manage point
     if colsleft > 0:  # still assembling the same horizontal line
         upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
 
     else:  # end of line reached, need to go 1 row up
-        if colsleft == 0:  # cols % 4 == 0 COLS
+        if colsleft == 0:  # cols % n_up_factor == 0
             upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
         if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
             upperright.x = layout.columns * input_properties.x_offset
     return upperright
 
 
-def _adjust_factors(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor, colsleft: int) -> (utils.Point, utils.Point):
+def _adjust_factors(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor, colsleft: int) -> (utils.Factor, utils.Factor):
     if colsleft > 0:  # still assembling the same horizontal line
         return _advance_horizontally(lowerleft_factor, upperright_factor)
     else:  # end of line reached, need to go 1 row up
         return _advance_vertically(lowerleft_factor, upperright_factor)
 
 
-def _advance_horizontally(lowerleft_factor: utils.Point, upperright_factor: utils.Point) -> (utils.Point, utils.Point):
+def _advance_horizontally(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor) -> (utils.Factor, utils.Factor):
     lowerleft_factor.x += 1
     upperright_factor.x += 1
     return lowerleft_factor, upperright_factor
 
 
-def _advance_vertically(lowerleft_factor: utils.Point, upperright_factor: utils.Point) -> (utils.Point, utils.Point):
+def _advance_vertically(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor) -> (utils.Factor, utils.Factor):
     lowerleft_factor.x = 0
     lowerleft_factor.y += 1
 
