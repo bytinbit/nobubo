@@ -89,6 +89,10 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
     lowerleft_factor = utils.Factor(x=0, y=0)  # k, l
     upperright_factor = utils.Factor(x=1, y=1)  # m, n
 
+    # init points
+    lowerleft = utils.Point(x=0, y=0)
+    upperright = utils.Point(x=0, y=0)
+
     writer = PyPDF2.PdfFileWriter()
 
     for x in range(0, utils.calculate_pages_needed(layout, n_up_factor)):
@@ -96,34 +100,36 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
         # apply transformation to lower left x and y
-        x_lowerleft = lowerleft_factor.x * n_up_factor.x * input_properties.x_offset  # starts with e.g. 0 * 4 * xoffset
-        y_lowerleft = lowerleft_factor.y * n_up_factor.y * input_properties.y_offset # starts with 0 * 4 * yoffset
+        lowerleft.x = lowerleft_factor.x * n_up_factor.x * input_properties.x_offset  # starts with e.g. 0 * 4 * xoffset
+        lowerleft.y = lowerleft_factor.y * n_up_factor.y * input_properties.y_offset  # starts with 0 * 4 * yoffset
 
-        page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
+        page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
 
-        # apply transformation to upper right, y-value
-        rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y) # ROWS
-        if rowsleft < 0:  # ROWS
-            y_upperright = layout.rows * input_properties.y_offset
+        # Manage ROWS: apply transformation to upper right, y-value
+        rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)  # ROWS
+        if rowsleft < 0:  # ROWS y-Factor
+            upperright.y = layout.rows * input_properties.y_offset # end of pattern reached  (full amount of rows reached)
         else:
-            y_upperright = upperright_factor.y * n_up_factor.y * input_properties.y_offset
+            upperright.y = upperright_factor.y * n_up_factor.y * input_properties.y_offset
 
-        # apply transformation to upper right, x-value
-        colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x) # COLS
+
+        # Manage COLS: apply transformation to upper right, x-value
+        colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
         if colsleft > 0:  # still assembling the same horizontal line
-            x_upperright = upperright_factor.x * n_up_factor.x * input_properties.x_offset
+            upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
 
-            page.cropBox.upperRight = (x_upperright, y_upperright)
+            page.cropBox.upperRight = (upperright.x, upperright.y)
 
             lowerleft_factor.x += 1
             upperright_factor.x += 1
-        else:  # end of line reached
-            if colsleft == 0:  # cols % 4 == 0 COLS
-                x_upperright = upperright_factor.x * n_up_factor.x * input_properties.x_offset
-            if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
-                x_upperright = layout.columns * input_properties.x_offset
 
-            page.cropBox.upperRight = (x_upperright, y_upperright)
+        else:  # end of line reached, need to go 1 row up
+            if colsleft == 0:  # cols % 4 == 0 COLS
+                upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
+            if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
+                upperright.x = layout.columns * input_properties.x_offset
+
+            page.cropBox.upperRight = (upperright.x, upperright.y)
 
             lowerleft_factor.x = 0
             lowerleft_factor.y += 1

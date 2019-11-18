@@ -54,6 +54,14 @@ class PaperSize:
     width: float = attr.ib()
     height: float = attr.ib()
 
+@attr.s
+class Point:
+    """
+    Point on a pdf page.
+    """
+    x: int = attr.ib()
+    y: int = attr.ib()
+
 
 def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
     return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
