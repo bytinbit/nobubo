@@ -89,9 +89,6 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
     lowerleft_factor = utils.Factor(x=0, y=0)  # k, l
     upperright_factor = utils.Factor(x=1, y=1)  # m, n
 
-    # init points
-    upperright = utils.Point(x=0, y=0)
-
     writer = PyPDF2.PdfFileWriter()
 
     for x in range(0, utils.calculate_pages_needed(layout, n_up_factor)):
@@ -104,13 +101,9 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         # apply transformation to upper right x and y
         upperright: utils.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties, layout)
 
-        # manage factors
-        colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
-        if colsleft > 0:  # still assembling the same horizontal line
-            lowerleft_factor, upperright_factor = _advance_horizontally(lowerleft_factor, upperright_factor)
-        else:  # end of line reached, need to go 1 row up
-            lowerleft_factor, upperright_factor = _advance_vertically(lowerleft_factor, upperright_factor)
-
+        # adjust multiplying factor
+        colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)
+        lowerleft_factor, upperright_factor = _adjust_factors(lowerleft_factor, upperright_factor, colsleft)
 
         page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
         page.cropBox.upperRight = (upperright.x, upperright.y)
@@ -150,6 +143,13 @@ def _calculate_upperright_point(upperright_factor: utils.Factor, n_up_factor: ut
         if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
             upperright.x = layout.columns * input_properties.x_offset
     return upperright
+
+
+def _adjust_factors(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor, colsleft: int) -> (utils.Point, utils.Point):
+    if colsleft > 0:  # still assembling the same horizontal line
+        return _advance_horizontally(lowerleft_factor, upperright_factor)
+    else:  # end of line reached, need to go 1 row up
+        return _advance_vertically(lowerleft_factor, upperright_factor)
 
 
 def _advance_horizontally(lowerleft_factor: utils.Point, upperright_factor: utils.Point) -> (utils.Point, utils.Point):
