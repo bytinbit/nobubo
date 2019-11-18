@@ -59,8 +59,8 @@ class Point:
     """
     Point on a pdf page.
     """
-    x: int = attr.ib()
-    y: int = attr.ib()
+    x: float = attr.ib()
+    y: float = attr.ib()
 
 
 def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:

@@ -90,7 +90,6 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
     upperright_factor = utils.Factor(x=1, y=1)  # m, n
 
     # init points
-    lowerleft = utils.Point(x=0, y=0)
     upperright = utils.Point(x=0, y=0)
 
     writer = PyPDF2.PdfFileWriter()
@@ -100,10 +99,7 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
         # apply transformation to lower left x and y
-        lowerleft.x = lowerleft_factor.x * n_up_factor.x * input_properties.x_offset  # starts with e.g. 0 * 4 * xoffset
-        lowerleft.y = lowerleft_factor.y * n_up_factor.y * input_properties.y_offset  # starts with 0 * 4 * yoffset
-
-        page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
+        lowerleft: utils.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
 
         # Manage ROWS: apply transformation to upper right, y-value
         rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)  # ROWS
@@ -129,14 +125,14 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
             if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
                 upperright.x = layout.columns * input_properties.x_offset
 
-            page.cropBox.upperRight = (upperright.x, upperright.y)
-
             lowerleft_factor.x = 0
             lowerleft_factor.y += 1
 
             upperright_factor.x = 1
             upperright_factor.y += 1
 
+        page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
+        page.cropBox.upperRight = (upperright.x, upperright.y)
         writer.addPage(page)
 
     return writer
@@ -145,3 +141,7 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
 def _calculate_colsrows_left(layout_element: int, multiplier: int, nup_factor: int) -> int:
     return layout_element - (multiplier * nup_factor)
 
+
+def _calculate_lowerleft_point(lowerleft_factor: utils.Factor, n_up_factor: utils.Factor, input_properties: utils.PDFProperties):
+    return utils.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.x_offset,  # starts with e.g. 0 * 4 * xoffset
+                       y=lowerleft_factor.y * n_up_factor.y * input_properties.y_offset)  # starts with 0 * 4 * yoffset
