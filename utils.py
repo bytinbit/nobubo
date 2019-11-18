@@ -54,10 +54,11 @@ class PaperSize:
     width: float = attr.ib()
     height: float = attr.ib()
 
+
 @attr.s
 class Point:
     """
-    Point on a pdf page.
+    Point on a pdf page in user space units.
     """
     x: float = attr.ib()
     y: float = attr.ib()

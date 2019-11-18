@@ -36,8 +36,8 @@ def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
                                                     layout.columns * input_properties.x_offset,
                                                     layout.rows * input_properties.y_offset)
-    x_position = 0.0
-    y_position = 0.0
+
+    position: utils.Point = utils.Point(x=0.0, y=0.0)
     colscount = 0
 
     print(f"Creating collage... Please be patient, this may take some time.")
@@ -45,12 +45,12 @@ def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
     for pagenumber in bar.iter(range(layout.overview, last_page)):
 
         if colscount == layout.columns:
-            x_position = 0.0
-            y_position += input_properties.y_offset
+            position.x = 0.0
+            position.y += input_properties.y_offset
             colscount = 0
 
-        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), x_position, y_position, expand=True)
-        x_position += input_properties.x_offset
+        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), position.x, position.y, expand=True)
+        position.x += input_properties.x_offset
         colscount += 1
     return collage
 
@@ -71,7 +71,6 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
         return _chop_up(assembled_collage, layout, input_properties, utils.Factor(x=4, y=4))
 
     if output_layout.find("x"):
-        # convert output layout to Factors
         n_up_factor = utils.calculate_nup_factors(output_layout, input_properties)
         return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
 
@@ -113,16 +112,21 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
     return layout_element - (factor * nup_factor)
 
 
-def _calculate_lowerleft_point(lowerleft_factor: utils.Factor, n_up_factor: utils.Factor, input_properties: utils.PDFProperties) -> utils.Point:
-    return utils.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.x_offset,  # starts with e.g. 0 * 4 * xoffset
-                       y=lowerleft_factor.y * n_up_factor.y * input_properties.y_offset)  # starts with 0 * 4 * yoffset
+def _calculate_lowerleft_point(lowerleft_factor: utils.Factor,
+                               n_up_factor: utils.Factor,
+                               input_properties: utils.PDFProperties) -> utils.Point:
+    return utils.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.x_offset,
+                       y=lowerleft_factor.y * n_up_factor.y * input_properties.y_offset)
 
 
-def _calculate_upperright_point(upperright_factor: utils.Factor, n_up_factor: utils.Factor, input_properties: utils.PDFProperties, layout: utils.Layout) -> utils.Point:
+def _calculate_upperright_point(upperright_factor: utils.Factor,
+                                n_up_factor: utils.Factor,
+                                input_properties: utils.PDFProperties,
+                                layout: utils.Layout) -> utils.Point:
     upperright = utils.Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
     rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)
-    if rowsleft < 0: # end of pattern reached  (full amount of rows reached)
+    if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
         upperright.y = layout.rows * input_properties.y_offset
     else:
         upperright.y = upperright_factor.y * n_up_factor.y * input_properties.y_offset
@@ -135,7 +139,7 @@ def _calculate_upperright_point(upperright_factor: utils.Factor, n_up_factor: ut
     else:  # end of line reached, need to go 1 row up
         if colsleft == 0:  # cols % n_up_factor == 0
             upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
-        if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
+        if colsleft < 0:  # remainder pages left for COLS
             upperright.x = layout.columns * input_properties.x_offset
     return upperright
 
