@@ -14,6 +14,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
+"""
+Various helper classes and methods.
+"""
 import math
 
 import attr
@@ -42,17 +45,26 @@ class Factor:
     """
     Factor class for multiplication.
     """
-    x = attr.ib()
-    y = attr.ib()
+    x: int = attr.ib()
+    y: int = attr.ib()
 
 
 @attr.s
 class PaperSize:
     """
-    Paper size on which the user wishes to print.
+    Paper size on which the user wishes to print. Width and height are in user space units.
     """
-    width = attr.ib()
-    height = attr.ib()
+    width: float = attr.ib()
+    height: float = attr.ib()
+
+
+@attr.s
+class Point:
+    """
+    Point on a pdf page in user space units.
+    """
+    x: float = attr.ib()
+    y: float = attr.ib()
 
 
 def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 """
-Contains all functions for various output layouts.
+Contains functions for various output layouts.
 """
 
 from copy import copy
@@ -29,15 +29,20 @@ def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
                         layout: utils.Layout,
                         input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
     """
-    Takes a pattern pdf where one page equals a part of the pattern and assembles it to on huge collage.
-    It is assembled from bottom left to the top right.
+    Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
+    The default assembles it from bottom left to the top right.
+    :param input_pdf The pattern pdf that has been bought by the user.
+    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
+    :param input_properties: Properties of the pdf.
+    :return The collage with all pattern pages assembled on one single page.
+
     """
     last_page = layout.overview + (layout.columns * layout.rows)
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
                                                     layout.columns * input_properties.x_offset,
                                                     layout.rows * input_properties.y_offset)
-    x_position = 0.0
-    y_position = 0.0
+
+    position: utils.Point = utils.Point(x=0.0, y=0.0)
     colscount = 0
 
     print(f"Creating collage... Please be patient, this may take some time.")
@@ -45,12 +50,12 @@ def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
     for pagenumber in bar.iter(range(layout.overview, last_page)):
 
         if colscount == layout.columns:
-            x_position = 0.0
-            y_position += input_properties.y_offset
+            position.x = 0.0
+            position.y += input_properties.y_offset
             colscount = 0
 
-        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), x_position, y_position, expand=True)
-        x_position += input_properties.x_offset
+        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), position.x, position.y, expand=True)
+        position.x += input_properties.x_offset
         colscount += 1
     return collage
 
@@ -62,16 +67,16 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     """
 
     :param assembled_collage: One pdf page that contains all assembled pattern pages.
-    :param layout: The layout of the input pattern page.
-    :param input_properties: Amount of pdf pages, x- and y-offset.
-    :param output_layout: Desired output layout.
+    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
+    :param input_properties: Properties of the pdf.
+    :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
+    print(f"\nChopping up the collage...")
     if output_layout == "a0":
         return _chop_up(assembled_collage, layout, input_properties, utils.Factor(x=4, y=4))
 
     if output_layout.find("x"):
-        # convert output layout to Factors
         n_up_factor = utils.calculate_nup_factors(output_layout, input_properties)
         return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
 
@@ -81,56 +86,86 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
              input_properties: utils.PDFProperties,
              n_up_factor: utils.Factor) -> PyPDF2.PdfFileWriter:
     """
-    Takes a collage with all assembled pattern pages, divides them up so that they fit on a previously specified sheet.
+    Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified sheet.
     """
-    print(f"\nChopping up the collage...")
-    chopped_up_collage = [assembled_collage for _ in range(0, utils.calculate_pages_needed(layout, n_up_factor))]
-
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = utils.Factor(x=0, y=0)  # k, l
-    upperright_factor = utils.Factor(x=1, y=1)  # m, n
+    lowerleft_factor = utils.Factor(x=0, y=0)
+    upperright_factor = utils.Factor(x=1, y=1)
 
     writer = PyPDF2.PdfFileWriter()
 
-    for elem in chopped_up_collage:
-        page = copy(elem)  # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
+    for x in range(0, utils.calculate_pages_needed(layout, n_up_factor)):
+        page = copy(assembled_collage)
+        # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
-        # apply transformation to lower left x and y
-        x_lowerleft = lowerleft_factor.x * n_up_factor.x * input_properties.x_offset
-        y_lowerleft = lowerleft_factor.y * n_up_factor.y * input_properties.y_offset
+        lowerleft: utils.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
+        upperright: utils.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties, layout)
 
-        page.cropBox.lowerLeft = (x_lowerleft, y_lowerleft)
+        # adjust multiplying factor
+        colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)
+        lowerleft_factor, upperright_factor = _adjust_factors(lowerleft_factor, upperright_factor, colsleft)
 
-        # apply transformation to upper right, y-value
-        rowsleft = layout.rows - (upperright_factor.y * n_up_factor.y)  # ROWS
-        if rowsleft < 0:
-            y_upperright = layout.rows * input_properties.y_offset
-        else:
-            y_upperright = upperright_factor.y * n_up_factor.y * input_properties.y_offset
-
-        # apply transformation to upper right, x-value
-        colselft = layout.columns - (upperright_factor.x * n_up_factor.x)  # COLS
-        if colselft > 0:  # still assembling the same horizontal line
-            x_upperright = upperright_factor.x * n_up_factor.x * input_properties.x_offset
-
-            page.cropBox.upperRight = (x_upperright, y_upperright)
-
-            lowerleft_factor.x += 1
-            upperright_factor.x += 1
-        else:  # end of line reached
-            if colselft == 0:  # cols % 4 == 0 COLS
-                x_upperright = upperright_factor.x * n_up_factor.x * input_properties.x_offset
-            if colselft < 0:  # less than 4 pages left for COLS
-                x_upperright = layout.columns * input_properties.x_offset
-
-            page.cropBox.upperRight = (x_upperright, y_upperright)
-
-            lowerleft_factor.x = 0
-            lowerleft_factor.y += 1
-
-            upperright_factor.x = 1
-            upperright_factor.y += 1
-
+        page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
+        page.cropBox.upperRight = (upperright.x, upperright.y)
         writer.addPage(page)
 
     return writer
+
+
+def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) -> int:
+    return layout_element - (factor * nup_factor)
+
+
+def _calculate_lowerleft_point(lowerleft_factor: utils.Factor,
+                               n_up_factor: utils.Factor,
+                               input_properties: utils.PDFProperties) -> utils.Point:
+    return utils.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.x_offset,
+                       y=lowerleft_factor.y * n_up_factor.y * input_properties.y_offset)
+
+
+def _calculate_upperright_point(upperright_factor: utils.Factor,
+                                n_up_factor: utils.Factor,
+                                input_properties: utils.PDFProperties,
+                                layout: utils.Layout) -> utils.Point:
+    upperright = utils.Point(x=0, y=0)
+    # Manage ROWS: apply transformation to upper right, y-value
+    rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)
+    if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
+        upperright.y = layout.rows * input_properties.y_offset
+    else:
+        upperright.y = upperright_factor.y * n_up_factor.y * input_properties.y_offset
+
+    # Manage COLS: apply transformation to upper right, x-value
+    colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
+    if colsleft > 0:  # still assembling the same horizontal line
+        upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
+
+    else:  # end of line reached, need to go 1 row up
+        if colsleft == 0:  # cols % n_up_factor == 0
+            upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
+        if colsleft < 0:  # remainder pages left for COLS
+            upperright.x = layout.columns * input_properties.x_offset
+    return upperright
+
+
+def _adjust_factors(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor, colsleft: int) -> (utils.Factor, utils.Factor):
+    if colsleft > 0:  # still assembling the same horizontal line
+        return _advance_horizontally(lowerleft_factor, upperright_factor)
+    else:  # end of line reached, need to go 1 row up
+        return _advance_vertically(lowerleft_factor, upperright_factor)
+
+
+def _advance_horizontally(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor) -> (utils.Factor, utils.Factor):
+    lowerleft_factor.x += 1
+    upperright_factor.x += 1
+    return lowerleft_factor, upperright_factor
+
+
+def _advance_vertically(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor) -> (utils.Factor, utils.Factor):
+    lowerleft_factor.x = 0
+    lowerleft_factor.y += 1
+
+    upperright_factor.x = 1
+    upperright_factor.y += 1
+    return lowerleft_factor, upperright_factor
+
