@@ -37,7 +37,7 @@ $ python nobubo.py --il 1 6 5 --ol a0 "home/alice/patterns/jacket.pdf" "home/ali
 * `"home/alice/patterns/jacket.pdf"`: the path to the original pattern including filename.
 * `"home/alice/patterns/jacket_a0.pdf"`: the path where the collage should be saved, including filename.
 
-### Example with A0 Output Layout
+### Example with A0 output layout
 
 The pdf has 6 columns and 5 rows, which means the final pdf collage will comprise four A0 pages to print, since 16 A4 pages fit on one A0 page. This is how the sample overview sheet might look like and how it will be split up:
 
