@@ -101,30 +101,16 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         # apply transformation to lower left x and y
         lowerleft: utils.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
 
-        # upperright: utils.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties, layout)
+        # apply transformation to upper right x and y
+        upperright: utils.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties, layout)
 
-        # Manage ROWS: apply transformation to upper right, y-value
-        rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)  # ROWS
-        if rowsleft < 0:  # ROWS y-Factor
-            upperright.y = layout.rows * input_properties.y_offset # end of pattern reached  (full amount of rows reached)
-        else:
-            upperright.y = upperright_factor.y * n_up_factor.y * input_properties.y_offset
-
-
-        # Manage COLS: apply transformation to upper right, x-value
+        # manage factors
         colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
         if colsleft > 0:  # still assembling the same horizontal line
-            upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
-
             lowerleft_factor, upperright_factor = _advance_horizontally(lowerleft_factor, upperright_factor)
-
         else:  # end of line reached, need to go 1 row up
-            if colsleft == 0:  # cols % 4 == 0 COLS
-                upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
-            if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
-                upperright.x = layout.columns * input_properties.x_offset
-
             lowerleft_factor, upperright_factor = _advance_vertically(lowerleft_factor, upperright_factor)
+
 
         page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
         page.cropBox.upperRight = (upperright.x, upperright.y)
@@ -142,17 +128,37 @@ def _calculate_lowerleft_point(lowerleft_factor: utils.Factor, n_up_factor: util
                        y=lowerleft_factor.y * n_up_factor.y * input_properties.y_offset)  # starts with 0 * 4 * yoffset
 
 
-def _calculate_upperright_point(upperright_factor: utils.Factor, n_up_factor: utils.Factor, input_properties: utils.PDFProperties, input_layout: utils.Layout) -> utils.Point:
-    pass
+def _calculate_upperright_point(upperright_factor: utils.Factor, n_up_factor: utils.Factor, input_properties: utils.PDFProperties, layout: utils.Layout) -> utils.Point:
+    # Manage ROWS: apply transformation to upper right, y-value
+    upperright = utils.Point(x=0, y=0)
+    rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)  # ROWS
+    if rowsleft < 0:  # ROWS y-Factor
+        upperright.y = layout.rows * input_properties.y_offset  # end of pattern reached  (full amount of rows reached)
+    else:
+        upperright.y = upperright_factor.y * n_up_factor.y * input_properties.y_offset
+
+    # Manage COLS: apply transformation to upper right, x-value
+    colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
+
+    # manage point
+    if colsleft > 0:  # still assembling the same horizontal line
+        upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
+
+    else:  # end of line reached, need to go 1 row up
+        if colsleft == 0:  # cols % 4 == 0 COLS
+            upperright.x = upperright_factor.x * n_up_factor.x * input_properties.x_offset
+        if colsleft < 0:  # less than (% n_up_factor) pages left for COLS
+            upperright.x = layout.columns * input_properties.x_offset
+    return upperright
 
 
-def _advance_horizontally(lowerleft_factor: utils.Point, upperright_factor: utils.Point) -> utils.Point:
+def _advance_horizontally(lowerleft_factor: utils.Point, upperright_factor: utils.Point) -> (utils.Point, utils.Point):
     lowerleft_factor.x += 1
     upperright_factor.x += 1
     return lowerleft_factor, upperright_factor
 
 
-def _advance_vertically(lowerleft_factor: utils.Point, upperright_factor: utils.Point) -> utils.Point:
+def _advance_vertically(lowerleft_factor: utils.Point, upperright_factor: utils.Point) -> (utils.Point, utils.Point):
     lowerleft_factor.x = 0
     lowerleft_factor.y += 1
 
