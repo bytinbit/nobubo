@@ -20,8 +20,7 @@ import sys
 
 import click
 
-import utils
-import ols
+from nobubo import ols, utils
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
