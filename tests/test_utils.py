@@ -24,12 +24,15 @@ def two_overviews() -> [utils.Layout, utils.Layout]:
 
 
 @pytest.fixture()
-def one_pdf_page() -> PyPDF2.pdf.PageObject:
-    # >>> reader.getPage(0).mediaBox
-    # RectangleObject([0, 0, 595, 842])
-    # >>> reader.getPage(0).cropBox
-    # RectangleObject([52.41, 106.81, 542.28, 736.05])
-    pass
+def one_pdf_page_differing_boxes() -> PyPDF2.pdf.PageObject:
+    page = PyPDF2.pdf.PageObject.createBlankPage(None, 595, 842)
+    page.cropBox = PyPDF2.generic.RectangleObject([52.41, 106.81, 542.28, 736.05])
+    return page
+
+
+@pytest.fixture()
+def one_pdf_page_same_boxes() -> PyPDF2.pdf.PageObject:
+    return PyPDF2.pdf.PageObject.createBlankPage(None, 595, 842)
 
 
 class TestCalculations:
