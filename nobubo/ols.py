@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 Contains functions for various output layouts.
 """
@@ -77,7 +78,7 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
         return _chop_up(assembled_collage, layout, input_properties, utils.Factor(x=4, y=4))
 
     if output_layout.find("x"):
-        n_up_factor = utils.calculate_nup_factors(output_layout, input_properties)
+        n_up_factor = utils.calculate_nup_factors_custom_output(output_layout, input_properties)
         return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
 
 

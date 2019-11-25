@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 Various helper classes and methods.
 """
@@ -71,7 +72,7 @@ def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
     return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
 
-def calculate_offset(page: PyPDF2.pdf.PageObject):
+def calculate_offset(page: PyPDF2.pdf.PageObject) -> [float, float]:
     """
     Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
     Uses mediaBox value, not cropBox.
@@ -93,10 +94,11 @@ def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
     # conversion factor = 5/127 / 1/72 = 360/127 = 2.834645669
     conversion_factor = 2.834645669
 
-    return PaperSize(width=(width_height[0] * conversion_factor), height=(width_height[1] * conversion_factor))
+    return PaperSize(width=(round(width_height[0] * conversion_factor, 3)),
+                     height=(round(width_height[1] * conversion_factor, 3)))
 
 
-def calculate_nup_factors(output_layout: str, input_properties: PDFProperties) -> Factor:
+def calculate_nup_factors_custom_output(output_layout: str, input_properties: PDFProperties) -> Factor:
     output_papersize = convert_to_userspaceunits(convert_to_mm(output_layout))
     x_factor = int(output_papersize.width // input_properties.x_offset)
     y_factor = int(output_papersize.height // input_properties.y_offset)
@@ -106,4 +108,3 @@ def calculate_nup_factors(output_layout: str, input_properties: PDFProperties) -
 def convert_to_mm(output_layout: str) -> [int, int]:
     ol_in_mm = output_layout.split("x")
     return [int(x) for x in ol_in_mm]
-
