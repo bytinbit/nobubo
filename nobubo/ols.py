@@ -23,7 +23,7 @@ from copy import copy
 import PyPDF2
 import progress.bar
 
-from nobubo import utils
+import utils
 
 
 def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
@@ -149,14 +149,16 @@ def _calculate_upperright_point(upperright_factor: utils.Factor,
     return upperright
 
 
-def _adjust_factors(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor, colsleft: int) -> (utils.Factor, utils.Factor):
+def _adjust_factors(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor, colsleft: int) -> (
+        utils.Factor, utils.Factor):
     if colsleft > 0:  # still assembling the same horizontal line
         return _advance_horizontally(lowerleft_factor, upperright_factor)
     else:  # end of line reached, need to go 1 row up
         return _advance_vertically(lowerleft_factor, upperright_factor)
 
 
-def _advance_horizontally(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor) -> (utils.Factor, utils.Factor):
+def _advance_horizontally(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor) -> (
+        utils.Factor, utils.Factor):
     lowerleft_factor.x += 1
     upperright_factor.x += 1
     return lowerleft_factor, upperright_factor

@@ -20,7 +20,8 @@ import sys
 
 import click
 
-from nobubo import ols, utils
+import ols
+import utils
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
@@ -78,20 +79,19 @@ def main(input_layout, output_layout, input_path, output_path):
             reader = PyPDF2.PdfFileReader(inputfile, strict=False)
             mediaBox_values = utils.calculate_offset(reader.getPage(1))
             input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
-                                                   x_offset=utils.calculate_offset(mediaBox_values[0]),
-                                                   y_offset=utils.calculate_offset(mediaBox_values[1]))
+                                                   x_offset=mediaBox_values[0],
+                                                   y_offset=mediaBox_values[1])
 
             layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
             output_path = pathlib.Path(output_path)
-            overview_counter = 1
 
-            for layout_elem in layout_list:
-                print(f"Assembling overview {overview_counter} of {len(layout_list)}\n")
+            for counter, layout_elem in enumerate(layout_list):
+                print(f"Assembling overview {counter+1} of {len(layout_list)}\n")
                 collage = ols.assemble_to_collage(reader, layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
-                new_filename = f"{output_path.stem}_{overview_counter}{output_path.suffix}"
+                new_filename = f"{output_path.stem}_{counter+1}{output_path.suffix}"
                 new_outputpath = output_path.parent / new_filename
 
                 if len(output_layout) > 0:
@@ -106,7 +106,6 @@ def main(input_layout, output_layout, input_path, output_path):
                     writer.addPage(collage)
                     write_chops(writer, new_outputpath)
                     print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")
-                overview_counter += 1
 
     except OSError as e:
         print(f"While reading the file, this error occurred:\n{e}")
