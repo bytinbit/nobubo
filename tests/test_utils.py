@@ -1,9 +1,7 @@
 import pytest
 import PyPDF2
 
-from nobubo import utils
-# setup: a4 output, custom output  input_properties (PDF Properties)
-# 483.307, 729.917
+import utils
 
 
 @pytest.fixture

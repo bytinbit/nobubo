@@ -1,15 +1,13 @@
 import pytest
 import PyPDF2
 
-from nobubo import utils
-
 
 class TestMainMethods:
 
-    def test_assemble_to_collage():
+    def test_assemble_to_collage(self):
         pass
 
-    def test_create_output_files():
+    def test_create_output_files(self):
         pass
 
 
