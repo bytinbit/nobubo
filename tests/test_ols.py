@@ -1,8 +1,7 @@
-import pytest
-import PyPDF2
+import nobubo.utils as utils
 
 
-class TestMainMethods:
+class TestCoreMethods:
 
     def test_assemble_to_collage(self):
         pass
@@ -11,7 +10,7 @@ class TestMainMethods:
         pass
 
 
-class TestHelperMethods:
+class TestHelperMethodsOfCore:
 
     def test_calculate_colsrows_left(self):
         pass
