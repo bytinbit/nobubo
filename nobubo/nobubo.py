@@ -94,7 +94,7 @@ def main(input_layout, output_layout, input_path, output_path):
                 new_filename = f"{output_path.stem}_{counter+1}{output_path.suffix}"
                 new_outputpath = output_path.parent / new_filename
 
-                if len(output_layout) > 0:
+                if output_layout:
                     chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout)
                     print(f"Successfully chopped up the collage.\n")
 
