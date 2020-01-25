@@ -9,13 +9,13 @@ Nobubo has been developed and tested with several download patterns from Burda s
 
 ## Prerequisites
 * A digital pattern where each page is made to be printed on A4. **If you haven't purchased a digital pattern, Nobubo is useless**.
-* Each page is cropped already, so that only the pattern is visible (no white borders around the pattern). If you crop the pattern yourself, for example in a pdf editor, Nobubo currently cannot handle it properly yet.
-* At least one overview sheet that shows what the assembled pattern should look like in the end. Nobubo assumes the overview sheet to come together with the pattern in the same pdf, but it can also be separate.
+* Each page comes already cropped, so that only the bare pattern is visible (no white borders around the pattern). If you crop the pattern yourself, for example in a pdf editor, Nobubo currently cannot handle it properly yet.
+* At least one overview sheet shows what the assembled pattern should look like in the end. Nobubo assumes the overview sheet to come together with the pattern in the same pdf, but it can also be separate.
 * Python 3.6, `attr, click, PyPDF2, progress`
 
 ## Usage
 ```bash
-$ python nobubo.py  --il OVERVIEW COLUMNS ROWS --ol {a0|mmxmm} INPUTPATH OUTPUTPATH
+$ python nobubo.py  --il OVERVIEW COLUMNS ROWS --ol {a0|mmxmm} {--reverse} INPUTPATH OUTPUTPATH
 ```
 
 Have a look at `mock_pattern.pdf` in the repo to test it with Nobubo and see how it works.
@@ -34,6 +34,7 @@ $ python nobubo.py --il 1 6 5 --ol a0 "home/alice/patterns/jacket.pdf" "home/ali
   * `a0`: Output size is A0
   * `mmxmm`: use a custom output size in millimeters, e.g. `920x1187`
 * if `--ol` is omitted, Nobubo just prints a huge collage of all assembled pages without chopping them up into an output layout.
+* `--reverse`: as default, the pattern is assembled from top left to bottom right. Use the `--reverse` flag to assemble it from bottom left to top right, e.g. for Burda patterns.
 * `"home/alice/patterns/jacket.pdf"`: the path to the original pattern including filename.
 * `"home/alice/patterns/jacket_a0.pdf"`: the path where the collage should be saved, including filename.
 
@@ -45,7 +46,7 @@ The pdf has 6 columns and 5 rows, which means the final pdf collage will compris
 
 Of course, you can still choose to print pages 2-4 on A4 from your original pattern and just page 1 on A0.
 
-**Please note: The pattern is built up from the bottom left to the upper right.**
+**The order of assembly differs between pattern companies. Burda assembles the pages from bottom left to top right, whereas others (Knipmode) assemble them from top left to bottom right. Please check the order of the pdf pages to see which way the pages are assembled.**
 
 ### Example with two overview sheets
 
@@ -74,9 +75,8 @@ $ python nobubo.py --il 0 6 5 --ol a0 "home/alice/patterns/jacket.pdf" "home/ali
 ```
 
 ## WARNINGS
-* Please double-check and compare the overview sheet with the amount of pdf pages given (rows * columns = amount of pages needed). 
-
-* If the result is wrong, check if you counted the rows and columns correctly or if a second overview sheet hides in the later pages.
+* Please double-check and compare the overview sheet with the amount of pdf pages given (rows * columns = amount of pages needed).  If the result is wrong, check if you counted the rows and columns correctly or if a second overview sheet hides in later pages.
+* Check if the pattern must be assembled from top left to bottom right (default) or bottom left to top right (use `--reverse` flag)
 * When you print the final pattern pages,  double-check and measure the control square. Don't forget to print 100% "as is", with any scaling or page fitting off.
 
 **I do not take any responsibility if Nobubo leads to ill-matching garments or any other problems whatsoever. You use this tool at your own risk. If in doubt, make a backup of your original pattern pdf. Please have a look at the license if you want to improve the tool yourself.**

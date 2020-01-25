@@ -50,9 +50,11 @@ def validate_output_layout(ctx, param, value):
               callback=validate_output_layout,
               help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
               metavar="a0 | mmxmm")
+@click.option("--reverse", "reverse_assembly", is_flag="True",
+              help="Use this flag to assemble collage from bottom left to top right. Without this flag: collage is assembled from top left to bottom right. ")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
-def main(input_layout, output_layout, input_path, output_path):
+def main(input_layout, output_layout, reverse_assembly, input_path, output_path):
     """
     Creates a collage from digital pattern pages and then chops it up into a desired output layout.
     The collage is assembled according to one or several overview sheets.
@@ -88,7 +90,11 @@ def main(input_layout, output_layout, input_path, output_path):
 
             for counter, layout_elem in enumerate(layout_list):
                 print(f"Assembling overview {counter+1} of {len(layout_list)}\n")
-                collage = ols.assemble_to_collage(reader, layout_elem, input_properties)
+
+                if reverse_assembly:
+                    collage = ols.assemble_collage(reader, layout_elem, input_properties, reverse=True)
+                else:
+                    collage = ols.assemble_collage(reader, layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
                 new_filename = f"{output_path.stem}_{counter+1}{output_path.suffix}"
