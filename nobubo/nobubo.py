@@ -92,9 +92,9 @@ def main(input_layout, output_layout, reverse_assembly, input_path, output_path)
                 print(f"Assembling overview {counter+1} of {len(layout_list)}\n")
 
                 if reverse_assembly:
-                    collage = ols.assemble_to_collage(reader, layout_elem, input_properties, reverse=True)
+                    collage = ols.assemble_collage(reader, layout_elem, input_properties, reverse=True)
                 else:
-                    collage = ols.assemble_to_collage(reader, layout_elem, input_properties)
+                    collage = ols.assemble_collage(reader, layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
                 new_filename = f"{output_path.stem}_{counter+1}{output_path.suffix}"

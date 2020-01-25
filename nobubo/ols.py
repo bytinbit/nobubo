@@ -26,7 +26,7 @@ import progress.bar
 import utils
 
 
-def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
+def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
                                               layout: utils.Layout,
                                               input_properties: utils.PDFProperties,
                                               reverse=False) -> PyPDF2.pdf.PageObject:
@@ -45,7 +45,6 @@ def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
                                                     layout.columns * input_properties.x_offset,
                                                     layout.rows * input_properties.y_offset)
-    # reverse CHECK
     if reverse:  # bottom to top
         position: utils.Point = utils.Point(x=0.0, y=0.0)
     else:  # top to bottom
