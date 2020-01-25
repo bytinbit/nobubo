@@ -27,68 +27,42 @@ import utils
 
 
 def assemble_to_collage(input_pdf: PyPDF2.PdfFileReader,
-                        layout: utils.Layout,
-                        input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
+                                              layout: utils.Layout,
+                                              input_properties: utils.PDFProperties,
+                                              reverse=False) -> PyPDF2.pdf.PageObject:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
     The default assembles it from bottom left to the top right.
     :param input_pdf The pattern pdf that has been bought by the user.
-    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
+    :param layout The layout of the pattern pages, which includes overview pages, columns and rows.
     :param input_properties: Properties of the pdf.
+    :param reverse Indicates order in which collage should be assembled.
     :return The collage with all pattern pages assembled on one single page.
 
     """
     last_page = layout.overview + (layout.columns * layout.rows)
+
     collage = PyPDF2.pdf.PageObject.createBlankPage(None,
                                                     layout.columns * input_properties.x_offset,
                                                     layout.rows * input_properties.y_offset)
+    # reverse CHECK
+    if reverse:  # bottom to top
+        position: utils.Point = utils.Point(x=0.0, y=0.0)
+    else:  # top to bottom
+        position: utils.Point = utils.Point(x=0.0, y=((layout.rows-1) * input_properties.y_offset))
 
-    position: utils.Point = utils.Point(x=0.0, y=0.0)
     colscount = 0
 
     print(f"Creating collage... Please be patient, this may take some time.")
     bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
     for pagenumber in bar.iter(range(layout.overview, last_page)):
 
-        if colscount == layout.columns:  # end of line reached
+        if colscount == layout.columns:
             position.x = 0.0
-            position.y += input_properties.y_offset
-            colscount = 0
-
-        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), position.x, position.y, expand=True)
-        position.x += input_properties.x_offset
-        colscount += 1
-    return collage
-
-
-def assemble_to_collage_reverse(input_pdf: PyPDF2.PdfFileReader,
-                        layout: utils.Layout,
-                        input_properties: utils.PDFProperties) -> PyPDF2.pdf.PageObject:
-    """
-    Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
-    The default assembles it from bottom left to the top right.
-    :param input_pdf The pattern pdf that has been bought by the user.
-    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
-    :param input_properties: Properties of the pdf.
-    :return The collage with all pattern pages assembled on one single page.
-
-    """
-    last_page = layout.overview + (layout.columns * layout.rows)
-    collage = PyPDF2.pdf.PageObject.createBlankPage(None,
-                                                    layout.columns * input_properties.x_offset,
-                                                    layout.rows * input_properties.y_offset)
-
-    # reverse assembly: pdf is not built up from bottom left corner, but upper left corner
-    position: utils.Point = utils.Point(x=0.0, y=(layout.rows-1) * input_properties.y_offset)
-    colscount = 0
-
-    print(f"Creating collage... Please be patient, this may take some time.")
-    bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
-    for pagenumber in bar.iter(range(layout.overview, last_page)):
-
-        if colscount == layout.columns:  # end of line reached
-            position.x = 0.0
-            position.y -= input_properties.y_offset  # minus, because when reversed, we must go down
+            if reverse:
+                position.y += input_properties.y_offset
+            else:
+                position.y -= input_properties.y_offset
             colscount = 0
 
         collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), position.x, position.y, expand=True)
