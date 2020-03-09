@@ -46,7 +46,7 @@ def validate_output_layout(ctx, param, value):
 @click.option("--il", "input_layout", nargs=3, type=click.INT, multiple=True, required=True,
               help="Input layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.",
               metavar="OVERVIEW COLUMNS ROWS")
-@click.option("--ol", "output_layout", nargs=1, type=click.STRING,
+@click.option("--ol", "output_layout_cli", nargs=1, type=click.STRING,
               callback=validate_output_layout,
               help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
               metavar="a0 | mmxmm")
@@ -54,7 +54,7 @@ def validate_output_layout(ctx, param, value):
               help="Use this flag to assemble collage from bottom left to top right. Without this flag: collage is assembled from top left to bottom right. ")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
-def main(input_layout, output_layout, reverse_assembly, input_path, output_path):
+def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_path):
     """
     Creates a collage from digital pattern pages and then chops it up into a desired output layout.
     The collage is assembled according to one or several overview sheets.
@@ -100,12 +100,12 @@ def main(input_layout, output_layout, reverse_assembly, input_path, output_path)
                 new_filename = f"{output_path.stem}_{counter+1}{output_path.suffix}"
                 new_outputpath = output_path.parent / new_filename
 
-                if output_layout:
-                    if "a0" in output_layout:
-                        output_layout_parsed = utils.convert_to_mm("841x1189")
-                    if "x" in output_layout:
-                        output_layout_parsed = utils.convert_to_mm(output_layout)
-                    chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout_parsed)
+                if output_layout_cli:
+                    if "a0" in output_layout_cli:
+                        output_layout = utils.convert_to_mm("841x1189")
+                    if "x" in output_layout_cli:
+                        output_layout = utils.convert_to_mm(output_layout_cli)
+                    chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout)
                     print(f"Successfully chopped up the collage.\n")
 
                     write_chops(chopped_up_files, new_outputpath)
