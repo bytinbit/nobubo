@@ -73,7 +73,7 @@ def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
 def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
                         layout: utils.Layout,
                         input_properties: utils.PDFProperties,
-                        output_layout: str) -> PyPDF2.PdfFileWriter:
+                        output_layout: [int]) -> PyPDF2.PdfFileWriter:
     """
 
     :param assembled_collage: One pdf page that contains all assembled pattern pages.
@@ -83,12 +83,8 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     :return: The pdf with several pages, ready to write to disk.
     """
     print(f"\nChopping up the collage...")
-    if output_layout == "a0":
-        return _chop_up(assembled_collage, layout, input_properties, utils.Factor(x=4, y=4))
-
-    if output_layout.find("x"):
-        n_up_factor = utils.calculate_nup_factors_custom_output(output_layout, input_properties)
-        return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
+    n_up_factor = utils.calculate_nup_factors(output_layout, input_properties)
+    return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
 
 
 def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,

@@ -101,7 +101,11 @@ def main(input_layout, output_layout, reverse_assembly, input_path, output_path)
                 new_outputpath = output_path.parent / new_filename
 
                 if output_layout:
-                    chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout)
+                    if "a0" in output_layout:
+                        output_layout_parsed = utils.convert_to_mm("841x1189")
+                    if "x" in output_layout:
+                        output_layout_parsed = utils.convert_to_mm(output_layout)
+                    chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout_parsed)
                     print(f"Successfully chopped up the collage.\n")
 
                     write_chops(chopped_up_files, new_outputpath)
