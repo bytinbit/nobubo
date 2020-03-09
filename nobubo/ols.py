@@ -52,7 +52,6 @@ def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
 
     colscount = 0
 
-    print(f"Creating collage... Please be patient, this may take some time.")
     bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
     for pagenumber in bar.iter(range(layout.overview, last_page)):
 
@@ -82,7 +81,6 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
-    print(f"\nChopping up the collage...")
     n_up_factor = utils.calculate_nup_factors(output_layout, input_properties)
     return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
 

@@ -90,7 +90,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
 
             for counter, layout_elem in enumerate(layout_list):
                 print(f"Assembling overview {counter+1} of {len(layout_list)}\n")
-
+                print(f"Creating collage... Please be patient, this may take some time.")
                 if reverse_assembly:
                     collage = ols.assemble_collage(reader, layout_elem, input_properties, reverse=True)
                 else:
@@ -101,6 +101,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                 new_outputpath = output_path.parent / new_filename
 
                 if output_layout_cli:
+                    print(f"\nChopping up the collage...")
                     if "a0" in output_layout_cli:
                         output_layout = utils.convert_to_mm("841x1189")
                     if "x" in output_layout_cli:
