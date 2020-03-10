@@ -27,16 +27,16 @@ import utils
 
 
 def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
-                                              layout: utils.Layout,
-                                              input_properties: utils.PDFProperties,
-                                              reverse=False) -> PyPDF2.pdf.PageObject:
+                     layout: utils.Layout,
+                     input_properties: utils.PDFProperties,
+                     reverse=False) -> PyPDF2.pdf.PageObject:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
-    The default assembles it from bottom left to the top right.
-    :param input_pdf The pattern pdf that has been bought by the user.
-    :param layout The layout of the pattern pages, which includes overview pages, columns and rows.
+    The default assembles it from top left to the bottom right.
+    :param input_pdf: The pattern pdf that has been bought by the user.
+    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
     :param input_properties: Properties of the pdf.
-    :param reverse Indicates order in which collage should be assembled.
+    :param reverse: Indicates order in which collage should be assembled.
     :return The collage with all pattern pages assembled on one single page.
 
     """

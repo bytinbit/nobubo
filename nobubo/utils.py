@@ -34,7 +34,7 @@ class PDFProperties:
 @attr.s
 class Layout:
     """
-    Pattern layout of the input file.
+    A Pattern layout.
     """
     overview: int = attr.ib()
     columns: int = attr.ib()
@@ -87,7 +87,8 @@ def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
     Converts a page's physical width and height from millimeters to default user space unit,
     which are defined in the pdf standard as 1/72 inch.
 
-    :param width_height: Width and height of the physical page in millimeters (mm), on which the pattern will be printed.
+    :param width_height: Width and height of the physical page in millimeters (mm),
+    on which the pattern will be printed.
     :return: Width and height of the physical page in default user space units.
     """
     # 1 mm = 5/127 inches = 0.03937 inches;  1/72 inch = 0.013888889

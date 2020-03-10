@@ -59,7 +59,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
     Creates a collage from digital pattern pages and then chops it up into a desired output layout.
     The collage is assembled according to one or several overview sheets.
     These overviews are usually provided along with the pattern pages in the same pdf.
-    If no overview sheet is in the pattern pdf itself, write 0 in the arguments given, e.g. -il 0 8 4.
+    If no overview sheet is in the pattern pdf itself, write 0 in the arguments given, e.g. --il 0 8 4.
 
     In order for Nobubo to run, you need the original pdf pattern.
 
