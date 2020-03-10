@@ -102,7 +102,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
 
                 if output_layout_cli:
                     print(f"\nChopping up the collage...")
-                    if "a0" in output_layout_cli:
+                    if output_layout_cli == "a0":
                         output_layout = utils.convert_to_mm("841x1189")
                     if "x" in output_layout_cli:
                         output_layout = utils.convert_to_mm(output_layout_cli)
