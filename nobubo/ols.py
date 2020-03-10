@@ -27,16 +27,16 @@ import utils
 
 
 def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
-                                              layout: utils.Layout,
-                                              input_properties: utils.PDFProperties,
-                                              reverse=False) -> PyPDF2.pdf.PageObject:
+                     layout: utils.Layout,
+                     input_properties: utils.PDFProperties,
+                     reverse=False) -> PyPDF2.pdf.PageObject:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
-    The default assembles it from bottom left to the top right.
-    :param input_pdf The pattern pdf that has been bought by the user.
-    :param layout The layout of the pattern pages, which includes overview pages, columns and rows.
+    The default assembles it from top left to the bottom right.
+    :param input_pdf: The pattern pdf that has been bought by the user.
+    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
     :param input_properties: Properties of the pdf.
-    :param reverse Indicates order in which collage should be assembled.
+    :param reverse: Indicates order in which collage should be assembled.
     :return The collage with all pattern pages assembled on one single page.
 
     """
@@ -52,7 +52,6 @@ def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
 
     colscount = 0
 
-    print(f"Creating collage... Please be patient, this may take some time.")
     bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
     for pagenumber in bar.iter(range(layout.overview, last_page)):
 
@@ -73,7 +72,7 @@ def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
 def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
                         layout: utils.Layout,
                         input_properties: utils.PDFProperties,
-                        output_layout: str) -> PyPDF2.PdfFileWriter:
+                        output_layout: [int]) -> PyPDF2.PdfFileWriter:
     """
 
     :param assembled_collage: One pdf page that contains all assembled pattern pages.
@@ -82,13 +81,8 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
-    print(f"\nChopping up the collage...")
-    if output_layout == "a0":
-        return _chop_up(assembled_collage, layout, input_properties, utils.Factor(x=4, y=4))
-
-    if output_layout.find("x"):
-        n_up_factor = utils.calculate_nup_factors_custom_output(output_layout, input_properties)
-        return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
+    n_up_factor = utils.calculate_nup_factors(output_layout, input_properties)
+    return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
 
 
 def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
