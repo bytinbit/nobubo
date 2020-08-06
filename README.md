@@ -11,7 +11,7 @@ Nobubo has been developed and tested with several download patterns from Burda s
 * A digital pattern where each page is made to be printed on A4. **If you haven't purchased a digital pattern, Nobubo is useless**.
 * Each page comes already cropped, so that only the bare pattern is visible (no white borders around the pattern). If you crop the pattern yourself, for example in a pdf editor, Nobubo currently cannot handle it properly yet.
 * At least one overview sheet shows what the assembled pattern should look like in the end. Nobubo assumes the overview sheet to come together with the pattern in the same pdf, but it can also be separate.
-* Python 3.6, `attr, click, PyPDF2, progress`
+* Python >3.6, `attrs, click, PyPDF2, progress`
 
 ## Usage
 ```bash
