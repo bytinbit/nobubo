@@ -20,7 +20,7 @@ import sys
 
 import click
 
-import ols
+import assembly
 import utils
 
 
@@ -92,9 +92,9 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                 print(f"Assembling overview {counter+1} of {len(layout_list)}\n")
                 print(f"Creating collage... Please be patient, this may take some time.")
                 if reverse_assembly:
-                    collage = ols.assemble_collage(reader, layout_elem, input_properties, reverse=True)
+                    collage = assembly.assemble_collage(reader, layout_elem, input_properties, reverse=True)
                 else:
-                    collage = ols.assemble_collage(reader, layout_elem, input_properties)
+                    collage = assembly.assemble_collage(reader, layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
                 new_filename = f"{output_path.stem}_{counter+1}{output_path.suffix}"
@@ -106,7 +106,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                         output_layout = utils.convert_to_mm("841x1189")
                     if "x" in output_layout_cli:
                         output_layout = utils.convert_to_mm(output_layout_cli)
-                    chopped_up_files = ols.create_output_files(collage, layout_elem, input_properties, output_layout)
+                    chopped_up_files = assembly.create_output_files(collage, layout_elem, input_properties, output_layout)
                     print(f"Successfully chopped up the collage.\n")
 
                     write_chops(chopped_up_files, new_outputpath)
