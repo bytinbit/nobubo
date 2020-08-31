@@ -36,7 +36,7 @@ def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
     :param input_pdf: The pattern pdf that has been bought by the user.
     :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
     :param input_properties: Properties of the pdf.
-    :param reverse: Indicates order in which collage should be assembled.
+    :param reverse: If true, assembles the collage from bottom left to top right.
     :return The collage with all pattern pages assembled on one single page.
 
     """
@@ -74,7 +74,7 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
                         input_properties: utils.PDFProperties,
                         output_layout: [int]) -> PyPDF2.PdfFileWriter:
     """
-
+    Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
     :param assembled_collage: One pdf page that contains all assembled pattern pages.
     :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
     :param input_properties: Properties of the pdf.
@@ -90,7 +90,7 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
              input_properties: utils.PDFProperties,
              n_up_factor: utils.Factor) -> PyPDF2.PdfFileWriter:
     """
-    Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified sheet.
+    Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified page size.
     """
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = utils.Factor(x=0, y=0)

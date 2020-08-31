@@ -51,7 +51,8 @@ def validate_output_layout(ctx, param, value):
               help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
               metavar="a0 | mmxmm")
 @click.option("--reverse", "reverse_assembly", is_flag="True",
-              help="Use this flag to assemble collage from bottom left to top right. Without this flag: collage is assembled from top left to bottom right. ")
+              help="No reverse flag: collage is assembled from top left to bottom right. With reverse flag: collage "
+                   "is assembled from bottom left to top right.")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
 def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_path):
@@ -59,9 +60,9 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
     Creates a collage from digital pattern pages and then chops it up into a desired output layout.
     The collage is assembled according to one or several overview sheets.
     These overviews are usually provided along with the pattern pages in the same pdf.
-    If no overview sheet is in the pattern pdf itself, write 0 in the arguments given, e.g. --il 0 8 4.
+    If no overview sheet is in the pattern pdf itself, write 0 in the arguments given: --il 0 8 4.
 
-    In order for Nobubo to run, you need the original pdf pattern.
+    In order for Nobubo to function, you need the original pdf pattern.
 
     Create a backup of the original if you are afraid to have it damaged in any way.
 
@@ -71,7 +72,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
 
     2 overview sheets at page 1 and 34 with differing layouts, which are then assembled to be printed on a0 paper:
 
-    python3 nobubo.py --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
+    python nobubo.py --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
 
     Further information and the readme can be found on https://github.com/bytinbit/nobubo
 
