@@ -93,9 +93,9 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                 print(f"Assembling overview {counter+1} of {len(layout_list)}\n")
                 print(f"Creating collage... Please be patient, this may take some time.")
                 if reverse_assembly:
-                    collage = assembly.assemble_collage(reader, layout_elem, input_properties, reverse=True)
+                    collage = assembly.assemble_collage(pathlib.Path(input_path), layout_elem, input_properties, reverse=True)
                 else:
-                    collage = assembly.assemble_collage(reader, layout_elem, input_properties)
+                    collage = assembly.assemble_collage(pathlib.Path(input_path), layout_elem, input_properties)
                 print(f"Successfully assembled collage from {input_path}.")
 
                 new_filename = f"{output_path.stem}_{counter+1}{output_path.suffix}"

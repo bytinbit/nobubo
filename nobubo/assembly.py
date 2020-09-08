@@ -20,6 +20,7 @@ Contains functions for various output layouts.
 """
 
 from copy import copy
+import os
 import pathlib
 import subprocess
 import tempfile
@@ -29,7 +30,8 @@ import progress.bar
 
 import utils
 
-def _assemble_collage(input_pdf: pathlib.Path,  # adapted
+
+def assemble_collage(input_pdf: pathlib.Path,  # adapted
                      layout: utils.Layout,
                      input_properties: utils.PDFProperties,
                      reverse=False) -> PyPDF2.pdf.PageObject:
@@ -57,20 +59,36 @@ def _assemble_collage(input_pdf: pathlib.Path,  # adapted
         "\\usepackage[utf8]{inputenc}\n",
         "\\usepackage{pdfpages}\n",
         "\\begin{document}\n",
-        f"\\includepdfmerge[nup={layout.columns}x{layout.rows}, noautoscale=true, scale=1.0]{{{input_pdf},{page_range} }}\n",
+        f"\\includepdfmerge[nup={layout.columns}x{layout.rows}, noautoscale=true, scale=1.0]{{{str(input_pdf)},{page_range} }}\n",
         "\\end{document}\n",
     ]
-    with tempfile.TemporaryDirectory as tempdir:
+
+    with tempfile.TemporaryDirectory() as tempdir:
+
+        with open(os.path.join(tempdir, "texfile.tex"), "w") as f:
+            f.writelines(file_content)
+
+        input_file = os.path.join(tempdir, 'texfile.tex')
+        output_file = os.path.join(tempdir, 'output')
+
+        command = ["pdflatex",
+                   "-interaction=nonstopmode",
+                   "--shell-escape",
+                   f"-jobname={output_file}",
+                   f"-output-directory={tempdir}",
+                   input_file]
+        print(f"\tCOMMANDS: {command}")
         try:
-            _ = subprocess.check_output(["pdflatex","-interaction=nonstopmode","--shell-escape","-jobname=output","input.tex"],
-                                    stderr=subprocess.STDOUT)
+            _ = subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             print(f"Error while calling pdflatex:\n{e.output}")
-        with open("output.pdf", "r") as collage:
+
+        with open(os.path.join(tempdir, (output_file+".pdf")), "rb") as collage:
             reader = PyPDF2.PdfFileReader(collage, strict=False)
             return reader.getPage(0)
 
-def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
+
+def _assemble_collage(input_pdf: PyPDF2.PdfFileReader,
                      layout: utils.Layout,
                      input_properties: utils.PDFProperties,
                      reverse=False) -> PyPDF2.pdf.PageObject:
