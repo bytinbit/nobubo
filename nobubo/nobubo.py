@@ -80,7 +80,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
     try:
         with open(pathlib.Path(input_path), "rb") as inputfile:
             reader = PyPDF2.PdfFileReader(inputfile, strict=False)
-            cropBox_values = utils.calculate_offset(reader.getPage(1))
+            cropBox_values = utils.calculate_offset(reader.getPage(1))  # first page (getPage(0)) may contain overview
             input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
                                                    x_offset=cropBox_values[0],
                                                    y_offset=cropBox_values[1])

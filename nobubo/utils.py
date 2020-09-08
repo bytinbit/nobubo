@@ -53,7 +53,7 @@ class Factor:
 @attr.s
 class PaperSize:
     """
-    Paper size on which the user wishes to print. Width and height are in user space units.
+    Paper size where width and height are in user space units.
     """
     width: float = attr.ib()
     height: float = attr.ib()
