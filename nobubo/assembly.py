@@ -20,11 +20,55 @@ Contains functions for various output layouts.
 """
 
 from copy import copy
+import pathlib
+import subprocess
+import tempfile
+
 import PyPDF2
 import progress.bar
 
 import utils
 
+def _assemble_collage(input_pdf: pathlib.Path,  # adapted
+                     layout: utils.Layout,
+                     input_properties: utils.PDFProperties,
+                     reverse=False) -> PyPDF2.pdf.PageObject:
+    page_width = input_properties.x_offset
+    page_height = input_properties.y_offset
+    collage_width = page_width * layout.columns
+    collage_height = page_height * layout.rows
+
+    if reverse:
+        l = list(reversed([(x+1, x+layout.columns) for x in range(layout.overview, input_properties.number_of_pages, layout.columns)]))
+        tuples = ["-".join(map(str, i)) for i in l]
+        page_range = ",".join(tuples)
+    else:
+        if layout.overview == 0:  # file has no overview page
+            page_range = f"1-{layout.columns*layout.rows}"
+        else:
+            begin = layout.overview + (layout.columns * layout.rows)
+            end = (layout.columns * layout.rows)
+            page_range = f"{begin}-{end}"
+
+    file_content = [
+        "\\batchmode\n",
+        "\\documentclass[a4paper,]{article}\n",
+        f"\\usepackage[papersize={{{collage_width}pt,{collage_height}pt}}]{{geometry}}\n",  # include vars
+        "\\usepackage[utf8]{inputenc}\n",
+        "\\usepackage{pdfpages}\n",
+        "\\begin{document}\n",
+        f"\\includepdfmerge[nup={layout.columns}x{layout.rows}, noautoscale=true, scale=1.0]{{{input_pdf},{page_range} }}\n",
+        "\\end{document}\n",
+    ]
+    with tempfile.TemporaryDirectory as tempdir:
+        try:
+            _ = subprocess.check_output(["pdflatex","-interaction=nonstopmode","--shell-escape","-jobname=output","input.tex"],
+                                    stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            print(f"Error while calling pdflatex:\n{e.output}")
+        with open("output.pdf", "r") as collage:
+            reader = PyPDF2.PdfFileReader(collage, strict=False)
+            return reader.getPage(0)
 
 def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
                      layout: utils.Layout,
