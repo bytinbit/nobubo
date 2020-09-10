@@ -79,7 +79,7 @@ def calculate_offset(page: PyPDF2.pdf.PageObject) -> [float, float]:
     :param page: A pattern page.
     :return: list with x, y value.
     """
-    return [float(page.mediaBox[2])-float(page.mediaBox[0]), float(page.mediaBox[3])-float(page.mediaBox[1])]
+    return [round(float(page.cropBox[2])-float(page.cropBox[0]), 2), round(float(page.cropBox[3])-float(page.cropBox[1]), 2)]
 
 
 def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
