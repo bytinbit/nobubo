@@ -22,6 +22,7 @@ Contains functions for various output layouts.
 from copy import copy
 import os
 import pathlib
+import shutil
 import subprocess
 import tempfile
 
@@ -68,20 +69,34 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
         with open(os.path.join(tempdir, "texfile.tex"), "w") as f:
             f.writelines(file_content)
 
+        print("\tls 1")
+        subprocess.run(["ls", tempdir, "-l"])
+        subprocess.run(["cat", os.path.join(tempdir, 'texfile.tex')])
+
         input_file = os.path.join(tempdir, 'texfile.tex')
         output_file = os.path.join(tempdir, 'output')
 
+        print("\tls 2")
+        subprocess.run(["ls", tempdir, "-l"])
+
         command = ["pdflatex",
                    "-interaction=nonstopmode",
-                   "--shell-escape",
-                   f"-jobname={output_file}",
+                   # "--shell-escape",
+                   f"-jobname=output",
                    f"-output-directory={tempdir}",
                    input_file]
+
         print(f"\tCOMMANDS: {command}")
+
         try:
             _ = subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             print(f"Error while calling pdflatex:\n{e.output}")
+
+        print("\tls 3")
+        subprocess.run(["ls", tempdir, "-l"])
+
+        # shutil.copy(os.path.join(tempdir, (output_file+".pdf")), "/home/melsie/Desktop/")
 
         with open(os.path.join(tempdir, (output_file+".pdf")), "rb") as collage:
             reader = PyPDF2.PdfFileReader(collage, strict=False)
