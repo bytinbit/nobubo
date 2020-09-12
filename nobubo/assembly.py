@@ -33,9 +33,11 @@ import utils
 
 
 def assemble_collage(input_pdf: pathlib.Path,  # adapted
+                     temp_output_dir: pathlib.Path,
                      layout: utils.Layout,
                      input_properties: utils.PDFProperties,
-                     reverse=False) -> PyPDF2.pdf.PageObject:
+                     reverse=False) -> pathlib.Path:
+
     page_width = input_properties.x_offset
     page_height = input_properties.y_offset
     collage_width = page_width * layout.columns
@@ -64,43 +66,24 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
         "\\end{document}\n",
     ]
 
-    with tempfile.TemporaryDirectory() as tempdir:
+    input_filepath = temp_output_dir / "texfile.tex"
+    output_filepath = temp_output_dir / "output.pdf"
 
-        with open(os.path.join(tempdir, "texfile.tex"), "w") as f:
-            f.writelines(file_content)
+    with input_filepath.open("w") as f:  # pathlib has its own open method
+        f.writelines(file_content)
 
-        print("\tls 1")
-        subprocess.run(["ls", tempdir, "-l"])
-        subprocess.run(["cat", os.path.join(tempdir, 'texfile.tex')])
+    command = ["pdflatex",
+               "-interaction=nonstopmode",
+               f"-jobname=output",
+               f"-output-directory={temp_output_dir}",
+               input_filepath]
 
-        input_file = os.path.join(tempdir, 'texfile.tex')
-        output_file = os.path.join(tempdir, 'output')
+    try:
+        _ = subprocess.check_output(command, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print(f"Error while calling pdflatex:\n{e.output}")
 
-        print("\tls 2")
-        subprocess.run(["ls", tempdir, "-l"])
-
-        command = ["pdflatex",
-                   "-interaction=nonstopmode",
-                   # "--shell-escape",
-                   f"-jobname=output",
-                   f"-output-directory={tempdir}",
-                   input_file]
-
-        print(f"\tCOMMANDS: {command}")
-
-        try:
-            _ = subprocess.check_output(command, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
-            print(f"Error while calling pdflatex:\n{e.output}")
-
-        print("\tls 3")
-        subprocess.run(["ls", tempdir, "-l"])
-
-        # shutil.copy(os.path.join(tempdir, (output_file+".pdf")), "/home/melsie/Desktop/")
-
-        with open(os.path.join(tempdir, (output_file+".pdf")), "rb") as collage:
-            reader = PyPDF2.PdfFileReader(collage, strict=False)
-            return reader.getPage(0)
+    return output_filepath
 
 
 def _assemble_collage(input_pdf: PyPDF2.PdfFileReader,
