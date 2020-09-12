@@ -20,14 +20,10 @@ Contains functions for various output layouts.
 """
 
 from copy import copy
-import os
 import pathlib
-import shutil
 import subprocess
-import tempfile
 
 import PyPDF2
-import progress.bar
 
 import utils
 
@@ -37,6 +33,17 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
                      layout: utils.Layout,
                      input_properties: utils.PDFProperties,
                      reverse=False) -> pathlib.Path:
+    """
+    Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
+    The default assembles it from top left to the bottom right.
+    :param input_pdf: The pattern pdf that has been bought by the user.
+    :param temp_output_dir: The temporary path where all calculations should happen.
+    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
+    :param input_properties: Properties of the pdf.
+    :param reverse: If true, assembles the collage from bottom left to top right.
+    :return The path to the collage with all pattern pages assembled on one single page.
+
+    """
 
     page_width = input_properties.x_offset
     page_height = input_properties.y_offset
@@ -84,49 +91,6 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
         print(f"Error while calling pdflatex:\n{e.output}")
 
     return output_filepath
-
-
-def _assemble_collage(input_pdf: PyPDF2.PdfFileReader,
-                     layout: utils.Layout,
-                     input_properties: utils.PDFProperties,
-                     reverse=False) -> PyPDF2.pdf.PageObject:
-    """
-    Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
-    The default assembles it from top left to the bottom right.
-    :param input_pdf: The pattern pdf that has been bought by the user.
-    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
-    :param input_properties: Properties of the pdf.
-    :param reverse: If true, assembles the collage from bottom left to top right.
-    :return The collage with all pattern pages assembled on one single page.
-
-    """
-    last_page = layout.overview + (layout.columns * layout.rows)
-
-    collage = PyPDF2.pdf.PageObject.createBlankPage(None,
-                                                    layout.columns * input_properties.x_offset,
-                                                    layout.rows * input_properties.y_offset)
-    if reverse:  # bottom to top
-        position: utils.Point = utils.Point(x=0.0, y=0.0)
-    else:  # top to bottom
-        position: utils.Point = utils.Point(x=0.0, y=((layout.rows-1) * input_properties.y_offset))
-
-    colscount = 0
-
-    bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
-    for pagenumber in bar.iter(range(layout.overview, last_page)):
-
-        if colscount == layout.columns:
-            position.x = 0.0
-            if reverse:
-                position.y += input_properties.y_offset
-            else:
-                position.y -= input_properties.y_offset
-            colscount = 0
-
-        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), position.x, position.y, expand=True)
-        position.x += input_properties.x_offset
-        colscount += 1
-    return collage
 
 
 def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
