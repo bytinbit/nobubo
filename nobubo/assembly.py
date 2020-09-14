@@ -49,9 +49,9 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
     page_height = input_properties.y_offset
     collage_width = page_width * layout.columns
     collage_height = page_height * layout.rows
-
+    
     if reverse:
-        l = list(reversed([(x+1, x+layout.columns) for x in range(layout.overview, input_properties.number_of_pages, layout.columns)]))
+        l = list(reversed([(x+1, x+layout.columns) for x in range(layout.overview, (layout.overview + (layout.columns * layout.rows)), layout.columns)]))
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
     else:
