@@ -1,8 +1,13 @@
+import pathlib
 import PyPDF2
 import pytest
 
 import nobubo.utils as utils
 
+
+@pytest.fixture
+def testdata() -> pathlib.Path:
+    return pathlib.Path(__file__).parent / "testdata"
 
 @pytest.fixture
 def pdfproperty() -> utils.PDFProperties:

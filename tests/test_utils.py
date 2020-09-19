@@ -1,4 +1,3 @@
-
 import nobubo.utils as utils
 
 
@@ -39,4 +38,3 @@ class TestCalculations:
         assert mm[0] == 920
         assert mm[1] == 1187
 
-    # test auf landscape und portrait

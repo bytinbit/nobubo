@@ -21,8 +21,8 @@ import tempfile
 
 import click
 
-import assembly
-import utils
+from nobubo import assembly
+from nobubo import utils
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
