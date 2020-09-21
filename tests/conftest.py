@@ -5,9 +5,47 @@ import pytest
 import nobubo.utils as utils
 
 
+class PdfTester:
+    def __init__(self, outputdir: pathlib.Path) -> None:
+        self.outputdir = outputdir
+        self.readers = {}  # reader for every generated pdf
+        self._files = []  # saves file objects
+
+    def read(self):
+        for filepath in self.outputdir.glob("*.pdf"):
+            file = open(filepath, "rb")
+            self._files.append(file)
+            self.readers[filepath.name] = PyPDF2.PdfFileReader(file)
+        return sorted(self.readers.keys())
+
+    def pagesize(self, filename: str):
+        reader = self.readers[filename]
+        # return list of size of every chopped up page
+        raise Exception
+
+    def pagecount(self, filename: str):
+        reader = self.readers[filename]
+        return reader.getNumPages()
+
+    def order(self, filename: str):
+        raise Exception
+
+    def cleanup(self):
+        for file in self._files:
+            file.close()
+
+
+@pytest.fixture
+def pdftester(tmp_path):
+    tester = PdfTester(tmp_path)
+    yield tester
+    tester.cleanup()  # executed after every test
+
+
 @pytest.fixture
 def testdata() -> pathlib.Path:
     return pathlib.Path(__file__).parent / "testdata"
+
 
 @pytest.fixture
 def pdfproperty() -> utils.PDFProperties:
