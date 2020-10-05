@@ -21,10 +21,8 @@ import tempfile
 
 import click
 
-# from <package_name> import <modules_name>
-from nobubo import assembly  # TODO correctly it should be from nobubo import assembly
-from nobubo import utils  # TODO correctly it should be from nobubo import utils
-# what works: import assembly, utils
+from nobubo import assembly
+from nobubo import utils
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
     print("Writing file...")

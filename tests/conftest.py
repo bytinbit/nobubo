@@ -20,7 +20,8 @@ class PdfTester:
 
     def pagesize(self, filename: str):
         reader = self.readers[filename]
-        # return list of size of every chopped up page
+        # return list of size of every chopped up
+        # check width, height
         raise Exception
 
     def pagecount(self, filename: str):
@@ -28,6 +29,7 @@ class PdfTester:
         return reader.getNumPages()
 
     def order(self, filename: str):
+        # parse text, check if it matches with order expected
         raise Exception
 
     def cleanup(self):
