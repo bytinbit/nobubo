@@ -21,9 +21,10 @@ import tempfile
 
 import click
 
-from nobubo import assembly
-from nobubo import utils
-
+# from <package_name> import <modules_name>
+from nobubo import assembly  # TODO correctly it should be from nobubo import assembly
+from nobubo import utils  # TODO correctly it should be from nobubo import utils
+# what works: import assembly, utils
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
     print("Writing file...")
@@ -127,7 +128,3 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
     except OSError as e:
         print(f"While reading the file, this error occurred:\n{e}")
         sys.exit(1)
-
-
-if __name__ == '__main__':
-    main()
