@@ -6,6 +6,7 @@ import textract
 
 from nobubo import utils
 
+
 class PdfTester:
     def __init__(self, outputdir: pathlib.Path) -> None:
         self.outputdir = outputdir
@@ -17,7 +18,6 @@ class PdfTester:
             file = open(filepath, "rb")
             self._files.append(file)
             self.readers[filepath.name] = PyPDF2.PdfFileReader(file)
-            print(f"!!!!!!!!!!!!!!!!!!!!! {sorted(self.readers.keys())}")
         return sorted(self.readers.keys())
 
     def pagesize(self, filename: str) -> [float, float]:
@@ -29,8 +29,8 @@ class PdfTester:
         reader = self.readers[filename]
         return reader.getNumPages()
 
-    def pattern_pages_order(self, filename: str) -> [str, str]:
-        text = str(textract.process(filename, encoding="utf-8"), "utf-8").split("\n\n")
+    def pages_order(self, filepath: str) -> [str, str]:
+        text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
         return [text[0], text[-2]]
 
     def cleanup(self):
