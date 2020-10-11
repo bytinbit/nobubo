@@ -2,15 +2,15 @@ from click.testing import CliRunner
 from nobubo import nobubo
 
 # Input: 1 overview, normal, collage only
+
 # Input: 1 overview, reversed, collage only
 
-# Input: 1 overview, normal
 # Input: 1 overview, reverse
 
 # Input: 2 overviews, normal, collage only => should result in 2 files
 
 # Input: 2 overviews, reverse, collage only => should result in 2 files
-def test_two_overviews_normal(testdata, tmp_path, pdftester):
+def test_two_overviews_reverse_collage(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_twooverviews_reverse.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
