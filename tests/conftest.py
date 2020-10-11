@@ -2,8 +2,9 @@ import pathlib
 import PyPDF2
 import pytest
 
-import nobubo.utils as utils
+import textract
 
+from nobubo import utils
 
 class PdfTester:
     def __init__(self, outputdir: pathlib.Path) -> None:
@@ -16,21 +17,21 @@ class PdfTester:
             file = open(filepath, "rb")
             self._files.append(file)
             self.readers[filepath.name] = PyPDF2.PdfFileReader(file)
+            print(f"!!!!!!!!!!!!!!!!!!!!! {sorted(self.readers.keys())}")
         return sorted(self.readers.keys())
 
-    def pagesize(self, filename: str):
+    def pagesize(self, filename: str) -> [float, float]:
         reader = self.readers[filename]
-        # return list of size of every chopped up page
-        # check width, height
-        raise Exception
+        page = reader.getPage(0)
+        return [float(page.cropBox[2])-float(page.cropBox[0]), float(page.cropBox[3])-float(page.cropBox[1])]
 
-    def pagecount(self, filename: str):
+    def pagecount(self, filename: str) -> int:
         reader = self.readers[filename]
         return reader.getNumPages()
 
-    def order(self, filename: str):
-        # parse text, check if it matches with order expected
-        raise Exception
+    def pattern_pages_order(self, filename: str) -> [str, str]:
+        text = str(textract.process(filename, encoding="utf-8"), "utf-8").split("\n\n")
+        return [text[0], text[-2]]
 
     def cleanup(self):
         for file in self._files:
@@ -53,7 +54,6 @@ def testdata() -> pathlib.Path:
 def pdfproperty() -> utils.PDFProperties:
     return utils.PDFProperties(number_of_pages=57, x_offset=483.307, y_offset=729.917)
     # 8 cols, 7 rows + 1 overview page = 57
-
 
 @pytest.fixture
 def one_overview_even() -> utils.Layout:
