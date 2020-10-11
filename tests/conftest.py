@@ -9,7 +9,7 @@ class PdfTester:
     def __init__(self, outputdir: pathlib.Path) -> None:
         self.outputdir = outputdir
         self.readers = {}  # reader for every generated pdf
-        self._files = []  # saves file objects
+        self._files = []  # save file objects
 
     def read(self):
         for filepath in self.outputdir.glob("*.pdf"):
@@ -20,7 +20,7 @@ class PdfTester:
 
     def pagesize(self, filename: str):
         reader = self.readers[filename]
-        # return list of size of every chopped up
+        # return list of size of every chopped up page
         # check width, height
         raise Exception
 
@@ -83,18 +83,5 @@ def n_up_factor_a0() -> utils.Factor:
 
 
 @pytest.fixture()
-def n_up_factor_custom() -> utils.Factor:
+def nup_factor_custom() -> utils.Factor:
     return utils.Factor(x=5, y=4)
-
-# factors with 8 cols, 7 rows, edge cases (kleid 2013)
-
-# a4
-
-# custom
-
-# factors with 9 cols, 4 rows, edge cases (kastenjacke)
-
-# a4
-
-
-# custom
