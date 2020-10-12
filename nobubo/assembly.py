@@ -58,8 +58,8 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
         if layout.overview == 0:  # file has no overview page
             page_range = f"1-{layout.columns*layout.rows}"
         else:
-            begin = layout.overview + (layout.columns * layout.rows)
-            end = (layout.columns * layout.rows)
+            begin = layout.overview + 1
+            end = layout.overview + (layout.columns * layout.rows)
             page_range = f"{begin}-{end}"
 
     file_content = [
