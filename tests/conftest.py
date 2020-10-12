@@ -20,18 +20,22 @@ class PdfTester:
             self.readers[filepath.name] = PyPDF2.PdfFileReader(file)
         return sorted(self.readers.keys())
 
-    def pagesize(self, filename: str) -> [float, float]:
+    def pagesize(self, filename: str, pagenumber: int=0) -> [float, float]:
         reader = self.readers[filename]
-        page = reader.getPage(0)
+        page = reader.getPage(pagenumber)
         return [float(page.cropBox[2])-float(page.cropBox[0]), float(page.cropBox[3])-float(page.cropBox[1])]
 
     def pagecount(self, filename: str) -> int:
         reader = self.readers[filename]
         return reader.getNumPages()
 
-    def pages_order(self, filepath: str) -> [str, str]:
+    def pages_order(self, filepath: str, pageamount: int=1) -> [str, str]:
         text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
-        return [text[0], text[-2]]
+        # texteract finds ascii value '\f' (form feed) that must be removed
+        res = list(filter(lambda a: a != '\x0c' and a != '\x0c1', text))
+        # tests for the first element in the top left corner and the last element in the bottom right corner
+        return [res[0], res[-1]]
+    # [arr[i::count] for i in range(count)]
 
     def cleanup(self):
         for file in self._files:
