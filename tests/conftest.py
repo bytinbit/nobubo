@@ -23,19 +23,19 @@ class PdfTester:
     def pagesize(self, filename: str, pagenumber: int=0) -> [float, float]:
         reader = self.readers[filename]
         page = reader.getPage(pagenumber)
-        return [float(page.cropBox[2])-float(page.cropBox[0]), float(page.cropBox[3])-float(page.cropBox[1])]
+        return [round(float(page.cropBox[2])-float(page.cropBox[0]), 2), round(float(page.cropBox[3])-float(page.cropBox[1]), 2)]
 
     def pagecount(self, filename: str) -> int:
         reader = self.readers[filename]
         return reader.getNumPages()
 
+    # TODO is there a better way to check the order of the pages?
     def pages_order(self, filepath: str, pageamount: int=1) -> [str, str]:
         text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
-        # texteract finds ascii value '\f' (form feed) that must be removed
+        # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
         res = list(filter(lambda a: a != '\x0c' and a != '\x0c1', text))
         # tests for the first element in the top left corner and the last element in the bottom right corner
         return [res[0], res[-1]]
-    # [arr[i::count] for i in range(count)]
 
     def cleanup(self):
         for file in self._files:
