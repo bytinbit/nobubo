@@ -20,53 +20,77 @@ Contains functions for various output layouts.
 """
 
 from copy import copy
+import pathlib
+import subprocess
+
 import PyPDF2
-import progress.bar
 
-import utils
+from nobubo import utils
 
 
-def assemble_collage(input_pdf: PyPDF2.PdfFileReader,
+def assemble_collage(input_pdf: pathlib.Path,  # adapted
+                     temp_output_dir: pathlib.Path,
                      layout: utils.Layout,
                      input_properties: utils.PDFProperties,
-                     reverse=False) -> PyPDF2.pdf.PageObject:
+                     reverse=False) -> pathlib.Path:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
     The default assembles it from top left to the bottom right.
     :param input_pdf: The pattern pdf that has been bought by the user.
+    :param temp_output_dir: The temporary path where all calculations should happen.
     :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
     :param input_properties: Properties of the pdf.
     :param reverse: If true, assembles the collage from bottom left to top right.
-    :return The collage with all pattern pages assembled on one single page.
+    :return The path to the collage with all pattern pages assembled on one single page.
 
     """
-    last_page = layout.overview + (layout.columns * layout.rows)
 
-    collage = PyPDF2.pdf.PageObject.createBlankPage(None,
-                                                    layout.columns * input_properties.x_offset,
-                                                    layout.rows * input_properties.y_offset)
-    if reverse:  # bottom to top
-        position: utils.Point = utils.Point(x=0.0, y=0.0)
-    else:  # top to bottom
-        position: utils.Point = utils.Point(x=0.0, y=((layout.rows-1) * input_properties.y_offset))
+    page_width = input_properties.x_offset
+    page_height = input_properties.y_offset
+    collage_width = page_width * layout.columns
+    collage_height = page_height * layout.rows
 
-    colscount = 0
+    if reverse:
+        l = list(reversed([(x+1, x+layout.columns) for x in range(layout.overview, (layout.overview + (layout.columns * layout.rows)), layout.columns)]))
+        tuples = ["-".join(map(str, i)) for i in l]
+        page_range = ",".join(tuples)
+    else:
+        if layout.overview == 0:  # file has no overview page
+            page_range = f"1-{layout.columns*layout.rows}"
+        else:
+            begin = layout.overview + 1
+            end = layout.overview + (layout.columns * layout.rows)
+            page_range = f"{begin}-{end}"
 
-    bar = progress.bar.FillingSquaresBar(suffix="assembling page %(index)d of %(max)d, %(elapsed_td)s")
-    for pagenumber in bar.iter(range(layout.overview, last_page)):
+    file_content = [
+        "\\batchmode\n",
+        "\\documentclass[a4paper,]{article}\n",
+        f"\\usepackage[papersize={{{collage_width}pt,{collage_height}pt}}]{{geometry}}\n",  # include vars
+        "\\usepackage[utf8]{inputenc}\n",
+        "\\usepackage{pdfpages}\n",
+        "\\begin{document}\n",
+        f"\\includepdfmerge[nup={layout.columns}x{layout.rows}, noautoscale=true, scale=1.0]{{{str(input_pdf)},{page_range} }}\n",
+        "\\end{document}\n",
+    ]
 
-        if colscount == layout.columns:
-            position.x = 0.0
-            if reverse:
-                position.y += input_properties.y_offset
-            else:
-                position.y -= input_properties.y_offset
-            colscount = 0
+    input_filepath = temp_output_dir / "texfile.tex"
+    output_filepath = temp_output_dir / "output.pdf"
 
-        collage.mergeTranslatedPage(input_pdf.getPage(pagenumber), position.x, position.y, expand=True)
-        position.x += input_properties.x_offset
-        colscount += 1
-    return collage
+    with input_filepath.open("w") as f:  # pathlib has its own open method
+        f.writelines(file_content)
+
+    command = ["pdflatex",
+               "-interaction=nonstopmode",
+               f"-jobname=output",
+               f"-output-directory={temp_output_dir}",
+               input_filepath]
+
+    try:
+        _ = subprocess.check_output(command, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print(f"Error while calling pdflatex:\n{e.output}")
+
+    return output_filepath
 
 
 def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,

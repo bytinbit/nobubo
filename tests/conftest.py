@@ -1,14 +1,63 @@
+import pathlib
 import PyPDF2
 import pytest
 
-import nobubo.utils as utils
+import textract
+
+from nobubo import utils
+
+
+class PdfTester:
+    def __init__(self, outputdir: pathlib.Path) -> None:
+        self.outputdir = outputdir
+        self.readers = {}  # reader for every generated pdf
+        self._files = []  # save file objects
+
+    def read(self):
+        for filepath in self.outputdir.glob("*.pdf"):
+            file = open(filepath, "rb")
+            self._files.append(file)
+            self.readers[filepath.name] = PyPDF2.PdfFileReader(file)
+        return sorted(self.readers.keys())
+
+    def pagesize(self, filename: str, pagenumber: int=0) -> [float, float]:
+        reader = self.readers[filename]
+        page = reader.getPage(pagenumber)
+        return [round(float(page.cropBox[2])-float(page.cropBox[0]), 2), round(float(page.cropBox[3])-float(page.cropBox[1]), 2)]
+
+    def pagecount(self, filename: str) -> int:
+        reader = self.readers[filename]
+        return reader.getNumPages()
+
+    # TODO is there a better way to check the order of the pages?
+    def pages_order(self, filepath: str, pageamount: int=1) -> [str, str]:
+        text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
+        # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
+        res = list(filter(lambda a: a != '\x0c' and a != '\x0c1', text))
+        # tests for the first element in the top left corner and the last element in the bottom right corner
+        return [res[0], res[-1]]
+
+    def cleanup(self):
+        for file in self._files:
+            file.close()
+
+
+@pytest.fixture
+def pdftester(tmp_path):
+    tester = PdfTester(tmp_path)
+    yield tester
+    tester.cleanup()  # executed after every test
+
+
+@pytest.fixture
+def testdata() -> pathlib.Path:
+    return pathlib.Path(__file__).parent / "testdata"
 
 
 @pytest.fixture
 def pdfproperty() -> utils.PDFProperties:
     return utils.PDFProperties(number_of_pages=57, x_offset=483.307, y_offset=729.917)
     # 8 cols, 7 rows + 1 overview page = 57
-
 
 @pytest.fixture
 def one_overview_even() -> utils.Layout:
@@ -38,18 +87,5 @@ def n_up_factor_a0() -> utils.Factor:
 
 
 @pytest.fixture()
-def n_up_factor_custom() -> utils.Factor:
+def nup_factor_custom() -> utils.Factor:
     return utils.Factor(x=5, y=4)
-
-# factors with 8 cols, 7 rows, edge cases (kleid 2013)
-
-# a4
-
-# custom
-
-# factors with 9 cols, 4 rows, edge cases (kastenjacke)
-
-# a4
-
-
-# custom
