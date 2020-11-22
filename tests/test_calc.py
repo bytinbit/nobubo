@@ -16,8 +16,8 @@ class TestCalculations:
     def test_calculate_pages_needed_oneoverview_custom_unevenlayout(self, one_overview_uneven, nup_factor_custom):
         assert calc.calculate_pages_needed(one_overview_uneven, nup_factor_custom) == 2
 
-    def test_calculate_offset(self, one_pdf_page_same_boxes):  # fails
-        assert calc.calculate_page_dimensions(one_pdf_page_same_boxes) == [483.31, 729.92]
+    def test_calculate_offset(self, one_pdf_page_same_boxes):
+        assert calc.calculate_page_dimensions(one_pdf_page_same_boxes) == (483.31, 729.92)
 
     def test_userspaceunits_conversion_a0(self):
         paper = calc.convert_to_userspaceunits([841, 1189])
