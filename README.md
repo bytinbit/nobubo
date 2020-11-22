@@ -11,7 +11,7 @@ Nobubo has been developed and tested with several download patterns from Burda, 
 * A digital pattern where each page is made to be printed on A4 or US letter size. **If you haven't purchased a digital pattern, Nobubo is useless**.
 * Each page is already cropped, so that only the bare pattern is visible (no white borders around the pattern). Nobubo is able to handle cropped pdfs, but you still have to do it yourself.
 * At least one overview sheet that shows what the assembled pattern should look like in the end. Usually, the assembled pattern pages form a huge rectangle. Some vendors disregard this and the assembled pattern is of a weird "rectangle + 2 pages" shape. Nobubo can only handle rectangle shapes, so you still have to print and assemble those leftover pages by hand.
-* Python >3.6, `attrs, click, PyPDF2`
+* Python >=3.7, `click, PyPDF2`
 * `pdflatex` [must be installed](https://tex.stackexchange.com/questions/49569/where-to-download-pdflatex-exe)
 
 ## Usage
