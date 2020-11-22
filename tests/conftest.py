@@ -33,7 +33,7 @@ class PdfTester:
     def pages_order(self, filepath: str, pageamount: int=1) -> [str, str]:
         text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
         # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
-        res = list(filter(lambda a: a != '\x0c' and a != '\x0c1', text))
+        res = list(filter(lambda a: a not in '\x0c', text))
         # tests for the first element in the top left corner and the last element in the bottom right corner
         return [res[0], res[-1]]
 
