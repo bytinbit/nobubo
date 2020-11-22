@@ -99,8 +99,8 @@ def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
 
 def calculate_nup_factors(output_layout: [int], input_properties: PDFProperties) -> Factor:
     output_papersize = convert_to_userspaceunits(output_layout)
-    x_factor = int(output_papersize.width // input_properties.input_papersize.width)
-    y_factor = int(output_papersize.height // input_properties.input_papersize.height)
+    x_factor = int(output_papersize.width // input_properties.papersize.width)
+    y_factor = int(output_papersize.height // input_properties.papersize.height)
     return Factor(x=x_factor, y=y_factor)
 
 
