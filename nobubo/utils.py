@@ -46,8 +46,9 @@ class Layout:
 @dataclass
 class PDFProperties:
     number_of_pages: int
-    input_papersize: PaperSize
-    layout: Layout
+    papersize: PaperSize
+    layout: [Layout]
+
 
 @dataclass
 class Factor:
@@ -56,6 +57,7 @@ class Factor:
     """
     x: int
     y: int
+
 
 @dataclass
 class Point:
