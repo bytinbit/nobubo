@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 import PyPDF2
 
-from pdf import Layout, PageSize, PDFProperties
+from nobubo import pdf
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Factor:
     y: int
 
 
-def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
+def calculate_pages_needed(layout: pdf.Layout, n_up_factor: Factor) -> int:
     return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
 
@@ -48,7 +48,7 @@ def calculate_page_dimensions(page: PyPDF2.pdf.PageObject) -> (float, float):
     return round(float(page.cropBox[2])-float(page.cropBox[0]), 2), round(float(page.cropBox[3])-float(page.cropBox[1]), 2)
 
 
-def convert_to_userspaceunits(width_height: [int, int]) -> PageSize:
+def convert_to_userspaceunits(width_height: [int, int]) -> pdf.PageSize:
     """
     Converts a page's physical width and height from millimeters to default user space unit,
     which are defined in the pdf standard as 1/72 inch.
@@ -61,11 +61,11 @@ def convert_to_userspaceunits(width_height: [int, int]) -> PageSize:
     # conversion factor = 5/127 / 1/72 = 360/127 = 2.834645669
     conversion_factor = 2.834645669
 
-    return PageSize(width=(round(width_height[0] * conversion_factor, 3)),
+    return pdf.PageSize(width=(round(width_height[0] * conversion_factor, 3)),
                     height=(round(width_height[1] * conversion_factor, 3)))
 
 
-def calculate_nup_factors(output_layout: [int], input_properties: PDFProperties) -> Factor:
+def calculate_nup_factors(output_layout: [int], input_properties: pdf.PDFProperties) -> Factor:
     output_papersize = convert_to_userspaceunits(output_layout)
     x_factor = int(output_papersize.width // input_properties.pagesize.width)
     y_factor = int(output_papersize.height // input_properties.pagesize.height)
@@ -75,3 +75,6 @@ def calculate_nup_factors(output_layout: [int], input_properties: PDFProperties)
 def convert_to_mm(output_layout: str) -> [int, int]:
     ol_in_mm = output_layout.split("x")
     return [int(x) for x in ol_in_mm]
+
+def calculate_pagerange_reverse(input_properties: pdf.PDFProperties) -> (int, int, int):
+    return input_properties.layout.overview, (input_properties.layout.overview + (input_properties.layout.columns * input_properties.layout.rows)), input_properties.layout.columns
