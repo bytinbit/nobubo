@@ -113,13 +113,13 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
 def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
              layout: utils.Layout,
              input_properties: utils.PDFProperties,
-             n_up_factor: utils.Factor) -> PyPDF2.PdfFileWriter:
+             n_up_factor: calc.Factor) -> PyPDF2.PdfFileWriter:
     """
     Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified page size.
     """
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = utils.Factor(x=0, y=0)
-    upperright_factor = utils.Factor(x=1, y=1)
+    lowerleft_factor = calc.Factor(x=0, y=0)
+    upperright_factor = calc.Factor(x=1, y=1)
 
     writer = PyPDF2.PdfFileWriter()
 
@@ -145,15 +145,15 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
     return layout_element - (factor * nup_factor)
 
 
-def _calculate_lowerleft_point(lowerleft_factor: utils.Factor,
-                               n_up_factor: utils.Factor,
+def _calculate_lowerleft_point(lowerleft_factor: calc.Factor,
+                               n_up_factor: calc.Factor,
                                input_properties: utils.PDFProperties) -> utils.Point:
     return utils.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.pagesize.width,
                        y=lowerleft_factor.y * n_up_factor.y * input_properties.pagesize.height)
 
 
-def _calculate_upperright_point(upperright_factor: utils.Factor,
-                                n_up_factor: utils.Factor,
+def _calculate_upperright_point(upperright_factor: calc.Factor,
+                                n_up_factor: calc.Factor,
                                 input_properties: utils.PDFProperties,
                                 layout: utils.Layout) -> utils.Point:
     upperright = utils.Point(x=0, y=0)
@@ -177,22 +177,22 @@ def _calculate_upperright_point(upperright_factor: utils.Factor,
     return upperright
 
 
-def _adjust_factors(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor, colsleft: int) -> (
-        utils.Factor, utils.Factor):
+def _adjust_factors(lowerleft_factor: calc.Factor, upperright_factor: calc.Factor, colsleft: int) -> (
+        calc.Factor, calc.Factor):
     if colsleft > 0:  # still assembling the same horizontal line
         return _advance_horizontally(lowerleft_factor, upperright_factor)
     else:  # end of line reached, need to go 1 row up
         return _advance_vertically(lowerleft_factor, upperright_factor)
 
 
-def _advance_horizontally(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor) -> (
-        utils.Factor, utils.Factor):
+def _advance_horizontally(lowerleft_factor: calc.Factor, upperright_factor: calc.Factor) -> (
+        calc.Factor, calc.Factor):
     lowerleft_factor.x += 1
     upperright_factor.x += 1
     return lowerleft_factor, upperright_factor
 
 
-def _advance_vertically(lowerleft_factor: utils.Factor, upperright_factor: utils.Factor) -> (utils.Factor, utils.Factor):
+def _advance_vertically(lowerleft_factor: calc.Factor, upperright_factor: calc.Factor) -> (calc.Factor, calc.Factor):
     lowerleft_factor.x = 0
     lowerleft_factor.y += 1
 

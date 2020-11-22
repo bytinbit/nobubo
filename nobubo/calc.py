@@ -18,10 +18,20 @@
 Helpers for conversions and calculations.
 """
 import math
+from dataclasses import dataclass
 
 import PyPDF2
 
-from utils import Layout, Factor, PageSize, PDFProperties
+from utils import Layout, PageSize, PDFProperties
+
+
+@dataclass
+class Factor:
+    """
+    Factor class for multiplication.
+    """
+    x: int
+    y: int
 
 
 def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:

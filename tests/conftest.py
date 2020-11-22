@@ -4,6 +4,7 @@ import pytest
 
 import textract
 
+import calc
 from nobubo import utils
 from utils import PageSize, Layout
 
@@ -85,10 +86,10 @@ def one_pdf_page_same_boxes() -> PyPDF2.pdf.PageObject:
 
 
 @pytest.fixture()
-def n_up_factor_a0() -> utils.Factor:
-    return utils.Factor(x=4, y=4)
+def n_up_factor_a0() -> calc.Factor:
+    return calc.Factor(x=4, y=4)
 
 
 @pytest.fixture()
-def nup_factor_custom() -> utils.Factor:
-    return utils.Factor(x=5, y=4)
+def nup_factor_custom() -> calc.Factor:
+    return calc.Factor(x=5, y=4)

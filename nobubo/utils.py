@@ -16,7 +16,7 @@
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-Various helper classes and methods.
+
 """
 from dataclasses import dataclass
 
@@ -45,15 +45,6 @@ class PDFProperties:
     number_of_pages: int
     pagesize: PageSize
     layout: [Layout]
-
-
-@dataclass
-class Factor:
-    """
-    Factor class for multiplication.
-    """
-    x: int
-    y: int
 
 
 @dataclass
