@@ -25,6 +25,7 @@ import subprocess
 
 import PyPDF2
 
+import calc
 from nobubo import utils
 
 
@@ -105,7 +106,7 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
-    n_up_factor = utils.calculate_nup_factors(output_layout, input_properties)
+    n_up_factor = calc.calculate_nup_factors(output_layout, input_properties)
     return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
 
 
@@ -122,7 +123,7 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
 
     writer = PyPDF2.PdfFileWriter()
 
-    for x in range(0, utils.calculate_pages_needed(layout, n_up_factor)):
+    for x in range(0, calc.calculate_pages_needed(layout, n_up_factor)):
         page = copy(assembled_collage)
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 

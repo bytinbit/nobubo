@@ -21,8 +21,7 @@ import tempfile
 
 import click
 
-from nobubo import assembly
-from nobubo import utils
+from nobubo import assembly, utils, calc
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
@@ -37,7 +36,7 @@ def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
 
 def validate_output_layout(ctx, param, value):
     try:
-        value is not None and (value == "a0" or utils.convert_to_mm(value))
+        value is not None and (value == "a0" or calc.convert_to_mm(value))
         return value
     except ValueError:
         raise click.BadParameter(f"If custom layout was chosen, have you written it as 'mmxmm', e.g. 222x444?.")
@@ -85,7 +84,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
             with open(pathlib.Path(input_path), "rb") as inputfile:
                 reader = PyPDF2.PdfFileReader(inputfile, strict=False)
 
-                width, height = utils.calculate_page_dimensions(reader.getPage(1))  # first page (getPage(0)) may contain overview
+                width, height = calc.calculate_page_dimensions(reader.getPage(1))  # first page (getPage(0)) may contain overview
                 input_pagesize = utils.PageSize(width=width, height=height)
 
                 input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
@@ -111,9 +110,9 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                         if output_layout_cli:
                             print(f"\nChopping up the collage...")
                             if output_layout_cli == "a0":  # TODO move calculation to top, here it's done for every page, not needed
-                                output_layout = utils.convert_to_mm("841x1189")
+                                output_layout = calc.convert_to_mm("841x1189")
                             if "x" in output_layout_cli:
-                                output_layout = utils.convert_to_mm(output_layout_cli)
+                                output_layout = calc.convert_to_mm(output_layout_cli)
                             chopped_up_files = assembly.create_output_files(collage, layout_elem, input_properties, output_layout)
                             print(f"Successfully chopped up the collage.\n")
 

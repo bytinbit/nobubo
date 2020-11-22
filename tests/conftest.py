@@ -5,6 +5,7 @@ import pytest
 import textract
 
 from nobubo import utils
+from utils import PageSize, Layout
 
 
 class PdfTester:
@@ -56,7 +57,9 @@ def testdata() -> pathlib.Path:
 
 @pytest.fixture
 def pdfproperty() -> utils.PDFProperties:
-    return utils.PDFProperties(number_of_pages=57, x_offset=483.307, y_offset=729.917)
+    return utils.PDFProperties(number_of_pages=57,
+                               pagesize=PageSize(width=483.307, height=729.917),
+                               layout=Layout(overview=1, columns=8, rows=7))
     # 8 cols, 7 rows + 1 overview page = 57
 
 @pytest.fixture
