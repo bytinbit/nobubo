@@ -19,53 +19,51 @@
 Various helper classes and methods.
 """
 import math
+from dataclasses import dataclass
 
-import attr
 import PyPDF2
 
 
-@attr.s
-class PDFProperties:
-    number_of_pages: int = attr.ib()
-    x_offset: float = attr.ib()
-    y_offset: float = attr.ib()
-
-
-@attr.s
-class Layout:
-    """
-    A Pattern layout.
-    """
-    overview: int = attr.ib()
-    columns: int = attr.ib()
-    rows: int = attr.ib()
-
-
-@attr.s
-class Factor:
-    """
-    Factor class for multiplication.
-    """
-    x: int = attr.ib()
-    y: int = attr.ib()
-
-
-@attr.s
+@dataclass
 class PaperSize:
     """
     Paper size where width and height are in user space units.
     """
-    width: float = attr.ib()
-    height: float = attr.ib()
+    width: float = 0
+    height: float = 0
 
 
-@attr.s
+@dataclass
+class Layout:
+    """
+    A Pattern layout.
+    """
+    overview: int
+    columns: int
+    rows: int
+
+
+@dataclass
+class PDFProperties:
+    number_of_pages: int
+    input_papersize: PaperSize
+    layout: Layout
+
+@dataclass
+class Factor:
+    """
+    Factor class for multiplication.
+    """
+    x: int
+    y: int
+
+@dataclass
 class Point:
     """
     Point on a pdf page in user space units.
     """
-    x: float = attr.ib()
-    y: float = attr.ib()
+    x: float
+    y: float
 
 
 def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
@@ -101,8 +99,8 @@ def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
 
 def calculate_nup_factors(output_layout: [int], input_properties: PDFProperties) -> Factor:
     output_papersize = convert_to_userspaceunits(output_layout)
-    x_factor = int(output_papersize.width // input_properties.x_offset)
-    y_factor = int(output_papersize.height // input_properties.y_offset)
+    x_factor = int(output_papersize.width // input_properties.input_papersize.width)
+    y_factor = int(output_papersize.height // input_properties.input_papersize.height)
     return Factor(x=x_factor, y=y_factor)
 
 

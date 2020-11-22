@@ -24,6 +24,7 @@ import click
 from nobubo import assembly
 from nobubo import utils
 
+
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
     print("Writing file...")
     try:
@@ -84,10 +85,9 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
             with open(pathlib.Path(input_path), "rb") as inputfile:
                 reader = PyPDF2.PdfFileReader(inputfile, strict=False)
                 cropBox_values = utils.calculate_offset(reader.getPage(1))  # first page (getPage(0)) may contain overview
+                input_papersize = utils.PaperSize(width=cropBox_values[0], height=cropBox_values[1])
                 input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
-                                                       x_offset=cropBox_values[0],
-                                                       y_offset=cropBox_values[1])
-
+                                                       input_papersize=input_papersize)
                 layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
                 output_path = pathlib.Path(output_path)
