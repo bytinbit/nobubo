@@ -25,13 +25,13 @@ import subprocess
 
 import PyPDF2
 
-import calc
-from nobubo import pdf
+from nobubo import pdf, calc
 
 
 def assemble_collage(input_pdf: pathlib.Path,  # adapted
                      temp_output_dir: pathlib.Path,
-                     layout: pdf.Layout,
+                     layout_elem: pdf.Layout,  # TODO: input here is 1 layout_elem, but input_property contains already list of all layout elems
+                     # enumeration of those layout elems must happen here in method
                      input_properties: pdf.PDFProperties,
                      reverse=False) -> pathlib.Path:
     """
@@ -39,7 +39,6 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
     The default assembles it from top left to the bottom right.
     :param input_pdf: The pattern pdf that has been bought by the user.
     :param temp_output_dir: The temporary path where all calculations should happen.
-    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
     :param input_properties: Properties of the pdf.
     :param reverse: If true, assembles the collage from bottom left to top right.
     :return The path to the collage with all pattern pages assembled on one single page.
@@ -48,19 +47,20 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
 
     page_width = input_properties.pagesize.width
     page_height = input_properties.pagesize.height
-    collage_width = page_width * layout.columns
-    collage_height = page_height * layout.rows
+    collage_width = page_width * input_properties.layout.columns
+    collage_height = page_height * input_properties.layout.rows
 
     if reverse:
-        l = list(reversed([(x+1, x+layout.columns) for x in range(layout.overview, (layout.overview + (layout.columns * layout.rows)), layout.columns)]))
+        start, end, step = calc.calculate_pagerange_reverse(input_properties)
+        l = list(reversed([(x+1, x+input_properties.layout.columns) for x in range(start, end, step)]))
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
     else:
-        if layout.overview == 0:  # file has no overview page
-            page_range = f"1-{layout.columns*layout.rows}"
+        if input_properties.layout.overview == 0:  # file has no overview page
+            page_range = f"1-{input_properties.layout.columns*input_properties.layout.rows}"
         else:
-            begin = layout.overview + 1
-            end = layout.overview + (layout.columns * layout.rows)
+            begin = input_properties.layout.overview + 1
+            end = input_properties.layout.overview + (input_properties.layout.columns * input_properties.layout.rows)
             page_range = f"{begin}-{end}"
 
     file_content = [
@@ -70,7 +70,7 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
         "\\usepackage[utf8]{inputenc}\n",
         "\\usepackage{pdfpages}\n",
         "\\begin{document}\n",
-        f"\\includepdfmerge[nup={layout.columns}x{layout.rows}, noautoscale=true, scale=1.0]{{{str(input_pdf)},{page_range} }}\n",
+        f"\\includepdfmerge[nup={input_properties.layout.columns}x{input_properties.layout.rows}, noautoscale=true, scale=1.0]{{{str(input_pdf)},{page_range} }}\n",
         "\\end{document}\n",
     ]
 
@@ -95,23 +95,20 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
 
 
 def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
-                        layout: pdf.Layout,
                         input_properties: pdf.PDFProperties,
                         output_layout: [int]) -> PyPDF2.PdfFileWriter:
     """
     Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
     :param assembled_collage: One pdf page that contains all assembled pattern pages.
-    :param layout: The layout of the pattern pages, which includes overview pages, columns and rows.
     :param input_properties: Properties of the pdf.
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
     n_up_factor = calc.calculate_nup_factors(output_layout, input_properties)
-    return _chop_up(assembled_collage, layout, input_properties, n_up_factor)
+    return _chop_up(assembled_collage, input_properties, n_up_factor)
 
 
 def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
-             layout: pdf.Layout,
              input_properties: pdf.PDFProperties,
              n_up_factor: calc.Factor) -> PyPDF2.PdfFileWriter:
     """
@@ -123,15 +120,15 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
 
     writer = PyPDF2.PdfFileWriter()
 
-    for x in range(0, calc.calculate_pages_needed(layout, n_up_factor)):
+    for x in range(0, calc.calculate_pages_needed(input_properties.layout, n_up_factor)):
         page = copy(assembled_collage)
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
         lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
-        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties, layout)
+        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties)
 
         # adjust multiplying factor
-        colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)
+        colsleft = _calculate_colsrows_left(input_properties.layout.columns, upperright_factor.x, n_up_factor.x)
         lowerleft_factor, upperright_factor = _adjust_factors(lowerleft_factor, upperright_factor, colsleft)
 
         page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
@@ -154,18 +151,17 @@ def _calculate_lowerleft_point(lowerleft_factor: calc.Factor,
 
 def _calculate_upperright_point(upperright_factor: calc.Factor,
                                 n_up_factor: calc.Factor,
-                                input_properties: pdf.PDFProperties,
-                                layout: pdf.Layout) -> pdf.Point:
+                                input_properties: pdf.PDFProperties) -> pdf.Point:
     upperright = pdf.Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
-    rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)
+    rowsleft = _calculate_colsrows_left(input_properties.layout.rows, upperright_factor.y, n_up_factor.y)
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
-        upperright.y = layout.rows * input_properties.pagesize.height
+        upperright.y = input_properties.layout.rows * input_properties.pagesize.height
     else:
         upperright.y = upperright_factor.y * n_up_factor.y * input_properties.pagesize.height
 
     # Manage COLS: apply transformation to upper right, x-value
-    colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
+    colsleft = _calculate_colsrows_left(input_properties.layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
     if colsleft > 0:  # still assembling the same horizontal line
         upperright.x = upperright_factor.x * n_up_factor.x * input_properties.pagesize.width
 
@@ -173,7 +169,7 @@ def _calculate_upperright_point(upperright_factor: calc.Factor,
         if colsleft == 0:  # cols % n_up_factor == 0
             upperright.x = upperright_factor.x * n_up_factor.x * input_properties.pagesize.width
         if colsleft < 0:  # remainder pages left for COLS
-            upperright.x = layout.columns * input_properties.pagesize.width
+            upperright.x = input_properties.layout.columns * input_properties.pagesize.width
     return upperright
 
 
@@ -199,4 +195,3 @@ def _advance_vertically(lowerleft_factor: calc.Factor, upperright_factor: calc.F
     upperright_factor.x = 1
     upperright_factor.y += 1
     return lowerleft_factor, upperright_factor
-

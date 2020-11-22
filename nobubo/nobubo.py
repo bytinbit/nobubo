@@ -89,7 +89,8 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
 
                 input_properties = pdf.PDFProperties(number_of_pages=reader.getNumPages(),
                                                      pagesize=input_pagesize, layout=input_layout)
-
+                # TODO re-arrange how this is calculcated
+                # layout has become property of input_pdf => enumeration must happen in assemble_collage
                 layout_list = [pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_properties.layout]
 
                 output_path = pathlib.Path(output_path)
