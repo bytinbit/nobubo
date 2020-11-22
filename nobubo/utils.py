@@ -75,7 +75,7 @@ def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
 def calculate_offset(page: PyPDF2.pdf.PageObject) -> [float, float]:
     """
     Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
-    Uses mediaBox value, not cropBox.
+    Uses the cropBox value, since this is the area visible to the printer.
     :param page: A pattern page.
     :return: list with x, y value.
     """
