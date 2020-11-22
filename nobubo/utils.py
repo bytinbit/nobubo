@@ -72,7 +72,7 @@ def calculate_pages_needed(layout: Layout, n_up_factor: Factor) -> int:
     return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
 
-def calculate_offset(page: PyPDF2.pdf.PageObject) -> (float, float):
+def calculate_page_dimensions(page: PyPDF2.pdf.PageObject) -> (float, float):
     """
     Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
     Uses the cropBox value, since this is the area visible to the printer.
