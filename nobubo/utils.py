@@ -25,9 +25,9 @@ import PyPDF2
 
 
 @dataclass
-class PaperSize:
+class PageSize:
     """
-    Paper size where width and height are in user space units.
+    Page size where width and height are in user space units.
     """
     width: float = 0
     height: float = 0
@@ -46,7 +46,7 @@ class Layout:
 @dataclass
 class PDFProperties:
     number_of_pages: int
-    papersize: PaperSize
+    pagesize: PageSize
     layout: [Layout]
 
 
@@ -82,7 +82,7 @@ def calculate_page_dimensions(page: PyPDF2.pdf.PageObject) -> (float, float):
     return round(float(page.cropBox[2])-float(page.cropBox[0]), 2), round(float(page.cropBox[3])-float(page.cropBox[1]), 2)
 
 
-def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
+def convert_to_userspaceunits(width_height: [int, int]) -> PageSize:
     """
     Converts a page's physical width and height from millimeters to default user space unit,
     which are defined in the pdf standard as 1/72 inch.
@@ -95,14 +95,14 @@ def convert_to_userspaceunits(width_height: [int, int]) -> PaperSize:
     # conversion factor = 5/127 / 1/72 = 360/127 = 2.834645669
     conversion_factor = 2.834645669
 
-    return PaperSize(width=(round(width_height[0] * conversion_factor, 3)),
-                     height=(round(width_height[1] * conversion_factor, 3)))
+    return PageSize(width=(round(width_height[0] * conversion_factor, 3)),
+                    height=(round(width_height[1] * conversion_factor, 3)))
 
 
 def calculate_nup_factors(output_layout: [int], input_properties: PDFProperties) -> Factor:
     output_papersize = convert_to_userspaceunits(output_layout)
-    x_factor = int(output_papersize.width // input_properties.papersize.width)
-    y_factor = int(output_papersize.height // input_properties.papersize.height)
+    x_factor = int(output_papersize.width // input_properties.pagesize.width)
+    y_factor = int(output_papersize.height // input_properties.pagesize.height)
     return Factor(x=x_factor, y=y_factor)
 
 

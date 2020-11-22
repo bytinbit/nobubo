@@ -45,8 +45,8 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
 
     """
 
-    page_width = input_properties.papersize.width
-    page_height = input_properties.papersize.height
+    page_width = input_properties.pagesize.width
+    page_height = input_properties.pagesize.height
     collage_width = page_width * layout.columns
     collage_height = page_height * layout.rows
 
@@ -147,8 +147,8 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
 def _calculate_lowerleft_point(lowerleft_factor: utils.Factor,
                                n_up_factor: utils.Factor,
                                input_properties: utils.PDFProperties) -> utils.Point:
-    return utils.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.papersize.width,
-                       y=lowerleft_factor.y * n_up_factor.y * input_properties.papersize.height)
+    return utils.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.pagesize.width,
+                       y=lowerleft_factor.y * n_up_factor.y * input_properties.pagesize.height)
 
 
 def _calculate_upperright_point(upperright_factor: utils.Factor,
@@ -159,20 +159,20 @@ def _calculate_upperright_point(upperright_factor: utils.Factor,
     # Manage ROWS: apply transformation to upper right, y-value
     rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
-        upperright.y = layout.rows * input_properties.papersize.height
+        upperright.y = layout.rows * input_properties.pagesize.height
     else:
-        upperright.y = upperright_factor.y * n_up_factor.y * input_properties.papersize.height
+        upperright.y = upperright_factor.y * n_up_factor.y * input_properties.pagesize.height
 
     # Manage COLS: apply transformation to upper right, x-value
     colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
     if colsleft > 0:  # still assembling the same horizontal line
-        upperright.x = upperright_factor.x * n_up_factor.x * input_properties.papersize.width
+        upperright.x = upperright_factor.x * n_up_factor.x * input_properties.pagesize.width
 
     else:  # end of line reached, need to go 1 row up
         if colsleft == 0:  # cols % n_up_factor == 0
-            upperright.x = upperright_factor.x * n_up_factor.x * input_properties.papersize.width
+            upperright.x = upperright_factor.x * n_up_factor.x * input_properties.pagesize.width
         if colsleft < 0:  # remainder pages left for COLS
-            upperright.x = layout.columns * input_properties.papersize.width
+            upperright.x = layout.columns * input_properties.pagesize.width
     return upperright
 
 
