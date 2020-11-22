@@ -16,7 +16,7 @@
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-
+Module with data classes about PDF properties, points and pattern layouts.
 """
 from dataclasses import dataclass
 

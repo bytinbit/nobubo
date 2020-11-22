@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 import PyPDF2
 
-from utils import Layout, PageSize, PDFProperties
+from pdf import Layout, PageSize, PDFProperties
 
 
 @dataclass

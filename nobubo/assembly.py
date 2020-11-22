@@ -26,13 +26,13 @@ import subprocess
 import PyPDF2
 
 import calc
-from nobubo import utils
+from nobubo import pdf
 
 
 def assemble_collage(input_pdf: pathlib.Path,  # adapted
                      temp_output_dir: pathlib.Path,
-                     layout: utils.Layout,
-                     input_properties: utils.PDFProperties,
+                     layout: pdf.Layout,
+                     input_properties: pdf.PDFProperties,
                      reverse=False) -> pathlib.Path:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
@@ -95,8 +95,8 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
 
 
 def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
-                        layout: utils.Layout,
-                        input_properties: utils.PDFProperties,
+                        layout: pdf.Layout,
+                        input_properties: pdf.PDFProperties,
                         output_layout: [int]) -> PyPDF2.PdfFileWriter:
     """
     Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
@@ -111,8 +111,8 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
 
 
 def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
-             layout: utils.Layout,
-             input_properties: utils.PDFProperties,
+             layout: pdf.Layout,
+             input_properties: pdf.PDFProperties,
              n_up_factor: calc.Factor) -> PyPDF2.PdfFileWriter:
     """
     Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified page size.
@@ -127,8 +127,8 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
         page = copy(assembled_collage)
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
-        lowerleft: utils.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
-        upperright: utils.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties, layout)
+        lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
+        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties, layout)
 
         # adjust multiplying factor
         colsleft = _calculate_colsrows_left(layout.columns, upperright_factor.x, n_up_factor.x)
@@ -147,16 +147,16 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
 
 def _calculate_lowerleft_point(lowerleft_factor: calc.Factor,
                                n_up_factor: calc.Factor,
-                               input_properties: utils.PDFProperties) -> utils.Point:
-    return utils.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.pagesize.width,
-                       y=lowerleft_factor.y * n_up_factor.y * input_properties.pagesize.height)
+                               input_properties: pdf.PDFProperties) -> pdf.Point:
+    return pdf.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.pagesize.width,
+                     y=lowerleft_factor.y * n_up_factor.y * input_properties.pagesize.height)
 
 
 def _calculate_upperright_point(upperright_factor: calc.Factor,
                                 n_up_factor: calc.Factor,
-                                input_properties: utils.PDFProperties,
-                                layout: utils.Layout) -> utils.Point:
-    upperright = utils.Point(x=0, y=0)
+                                input_properties: pdf.PDFProperties,
+                                layout: pdf.Layout) -> pdf.Point:
+    upperright = pdf.Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
     rowsleft = _calculate_colsrows_left(layout.rows, upperright_factor.y, n_up_factor.y)
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)

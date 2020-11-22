@@ -21,7 +21,7 @@ import tempfile
 
 import click
 
-from nobubo import assembly, utils, calc
+from nobubo import assembly, pdf, calc
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
@@ -85,12 +85,12 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                 reader = PyPDF2.PdfFileReader(inputfile, strict=False)
 
                 width, height = calc.calculate_page_dimensions(reader.getPage(1))  # first page (getPage(0)) may contain overview
-                input_pagesize = utils.PageSize(width=width, height=height)
+                input_pagesize = pdf.PageSize(width=width, height=height)
 
-                input_properties = utils.PDFProperties(number_of_pages=reader.getNumPages(),
-                                                       pagesize=input_pagesize, layout=input_layout)
+                input_properties = pdf.PDFProperties(number_of_pages=reader.getNumPages(),
+                                                     pagesize=input_pagesize, layout=input_layout)
 
-                layout_list = [utils.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_properties.layout]
+                layout_list = [pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_properties.layout]
 
                 output_path = pathlib.Path(output_path)
 
