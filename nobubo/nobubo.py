@@ -82,8 +82,9 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                                                        output_path=pathlib.Path(output_path),
                                                        number_of_pages=reader.getNumPages(),
                                                        pagesize=pdf.PageSize(width=width, height=height),
-                                                       layout=input_layout,
+                                                       layout=[pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout],
                                                        reverse_assembly=reverse_assembly)
+
                 output_properties = pdf.OutputProperties(output_path=pathlib.Path(output_path),
                                                          output_layout=calc.parse_output_layout(output_layout_cli))
 
