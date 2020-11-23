@@ -21,17 +21,10 @@ import tempfile
 
 import click
 
-from nobubo import assembly, pdf, calc
+from nobubo import assembly, disassembly, pdf, calc, writer
 
 
-def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
-    print("Writing file...")
-    try:
-        with open(output_path, "wb") as output:
-            pypdf2_writer.write(output)
-    except OSError as e:
-        print(f"While writing the file, this error occurred:\n{e}")
-        sys.exit(1)
+
 
 
 def validate_output_layout(ctx, param, value):
@@ -85,47 +78,27 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                 reader = PyPDF2.PdfFileReader(inputfile, strict=False)
 
                 width, height = calc.calculate_page_dimensions(reader.getPage(1))  # first page (getPage(0)) may contain overview
-                input_properties = pdf.PDFProperties(input_filepath=pathlib.Path(input_path),
-                                                     output_path=pathlib.Path(output_path),
-                                                     number_of_pages=reader.getNumPages(),
-                                                     pagesize=pdf.PageSize(width=width, height=height),
-                                                     layout=input_layout,
-                                                     reverse_assembly=reverse_assembly)
-                # TODO re-arrange how this is calculcated
-                # layout has become property of input_pdf => enumeration must happen in assemble_collage
-                layout_list = [pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_properties.layout]
+                input_properties = pdf.InputProperties(input_filepath=pathlib.Path(input_path),
+                                                       output_path=pathlib.Path(output_path),
+                                                       number_of_pages=reader.getNumPages(),
+                                                       pagesize=pdf.PageSize(width=width, height=height),
+                                                       layout=input_layout,
+                                                       reverse_assembly=reverse_assembly)
+                output_properties = pdf.OutputProperties(output_path=pathlib.Path(output_path),
+                                                         output_layout=calc.parse_output_layout(output_layout_cli))
 
                 temp_collage_paths: [pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
+                print(f"Successfully assembled collage from {input_path}.")
 
                 for counter, collage_path in enumerate(temp_collage_paths):
 
                     with collage_path.open("rb") as collagefile:
                         reader = PyPDF2.PdfFileReader(collagefile, strict=False)
                         collage = reader.getPage(0)
-
-                        print(f"Successfully assembled collage from {input_path}.")
-
-                        new_filename = f"{input_properties.output_path.stem}_{counter+1}{input_properties.output_path.suffix}"
-                        new_outputpath = input_properties.output_path.parent / new_filename
-
-                        if output_layout_cli:
-                            print(f"\nChopping up the collage...")
-                            if output_layout_cli == "a0":  # TODO move calculation to top, here it's done for every page, not needed
-                                output_layout = calc.convert_to_mm("841x1189")
-                            if "x" in output_layout_cli:
-                                output_layout = calc.convert_to_mm(output_layout_cli)
-                            chopped_up_files = assembly.create_output_files(collage, layout_elem, input_properties, output_layout)
-                            # TODO refactor so that create_output files iterates through collages as well
-                            print(f"Successfully chopped up the collage.\n")
-
-                            write_chops(chopped_up_files, new_outputpath)
-                            print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
-
+                        if output_properties.output_layout:
+                            disassembly.create_output_files_toplevel(temp_collage_paths, output_properties)
                         else:  # default: no output_layout specified, print collage pdf
-                            writer = PyPDF2.PdfFileWriter()
-                            writer.addPage(collage)
-                            write_chops(writer, new_outputpath)
-                            print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")
+                            writer.write_collage(temp_collage_paths, output_properties)
 
     except OSError as e:
         print(f"While reading the file, this error occurred:\n{e}")
