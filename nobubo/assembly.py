@@ -52,7 +52,7 @@ def _assemble(input_properties: pdf.InputProperties,
 
     page_width = input_properties.pagesize.width
     page_height = input_properties.pagesize.height
-    collage_width = page_width * input_properties.layout.columns
+    collage_width = page_width * current_layout.columns
     collage_height = page_height * current_layout.rows
 
     if input_properties.reverse_assembly:
