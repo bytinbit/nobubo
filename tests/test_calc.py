@@ -1,5 +1,5 @@
 
-import nobubo.calc as calc
+from nobubo import calc
 
 
 class TestCalculations:

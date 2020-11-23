@@ -4,9 +4,8 @@ import pytest
 
 import textract
 
-import calc
-from nobubo import pdf
-from pdf import PageSize, Layout
+
+from nobubo import pdf, calc
 
 
 class PdfTester:
@@ -59,8 +58,8 @@ def testdata() -> pathlib.Path:
 @pytest.fixture
 def pdfproperty() -> pdf.InputProperties:
     return pdf.InputProperties(number_of_pages=57,
-                               pagesize=PageSize(width=483.307, height=729.917),
-                               layout=Layout(overview=1, columns=8, rows=7))
+                               pagesize=pdf.PageSize(width=483.307, height=729.917),
+                               layout=pdf.Layout(overview=1, columns=8, rows=7))
     # 8 cols, 7 rows + 1 overview page = 57
 
 @pytest.fixture
