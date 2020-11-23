@@ -35,12 +35,13 @@ class Factor:
 
 
 def parse_output_layout(output_layout_cli: str) -> [int]:
+    if output_layout_cli is None:
+        return None
     if output_layout_cli == "a0":
         return convert_to_mm("841x1189")
     elif "x" in output_layout_cli:
         return convert_to_mm(output_layout_cli)
-    else:
-        return None
+
 
 
 def calculate_pages_needed(layout: pdf.Layout, n_up_factor: Factor) -> int:
