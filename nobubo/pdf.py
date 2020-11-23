@@ -42,7 +42,7 @@ class Layout:
 
 
 @dataclass
-class PDFProperties:
+class InputProperties:
     input_filepath: pathlib.Path
     output_path: pathlib.Path
     number_of_pages: int
@@ -50,6 +50,10 @@ class PDFProperties:
     layout: [Layout]
     reverse_assembly: bool = False
 
+@dataclass
+class OutputProperties:
+    output_path: pathlib.Path
+    output_layout: [int]
 
 
 @dataclass
