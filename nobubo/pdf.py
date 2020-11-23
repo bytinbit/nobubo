@@ -18,6 +18,7 @@
 """
 Module with data classes about PDF properties, points and pattern layouts.
 """
+import pathlib
 from dataclasses import dataclass
 
 
@@ -42,9 +43,13 @@ class Layout:
 
 @dataclass
 class PDFProperties:
+    input_filepath: pathlib.Path
+    output_path: pathlib.Path
     number_of_pages: int
     pagesize: PageSize
     layout: [Layout]
+    reverse_assembly: bool = False
+
 
 
 @dataclass

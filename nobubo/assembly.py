@@ -28,39 +28,44 @@ import PyPDF2
 from nobubo import pdf, calc
 
 
-def assemble_collage(input_pdf: pathlib.Path,  # adapted
-                     temp_output_dir: pathlib.Path,
-                     layout_elem: pdf.Layout,  # TODO: input here is 1 layout_elem, but input_property contains already list of all layout elems
-                     # enumeration of those layout elems must happen here in method
-                     input_properties: pdf.PDFProperties,
-                     reverse=False) -> pathlib.Path:
+def assemble_collage(input_properties: pdf.PDFProperties,
+                     temp_output_dir: pathlib.Path) -> [pathlib.Path]:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
     The default assembles it from top left to the bottom right.
-    :param input_pdf: The pattern pdf that has been bought by the user.
+    :param input_properties: Properties of the input pdf.
     :param temp_output_dir: The temporary path where all calculations should happen.
-    :param input_properties: Properties of the pdf.
-    :param reverse: If true, assembles the collage from bottom left to top right.
-    :return The path to the collage with all pattern pages assembled on one single page.
+    :return A list of all the path to the collages, each with all pattern pages assembled on one single page.
 
     """
+    all_collages_paths: [pathlib.Path] = []
+    for counter, layout in enumerate(input_properties.layout):
+        print(f"Assembling overview {counter + 1} of {len(input_properties.layout)}\n")
+        print(f"Creating collage... Please be patient, this may take some time.")
+        all_collages_paths.append(_assemble(input_properties, temp_output_dir, layout))
+    return all_collages_paths
+
+def _assemble(input_properties: pdf.PDFProperties,
+              temp_output_dir: pathlib.Path,
+              current_layout: pdf.Layout,  # TODO: input here is 1 layout_elem, but input_property contains already list of all layout elems
+              ) -> pathlib.Path:
 
     page_width = input_properties.pagesize.width
     page_height = input_properties.pagesize.height
     collage_width = page_width * input_properties.layout.columns
-    collage_height = page_height * input_properties.layout.rows
+    collage_height = page_height * current_layout.rows
 
-    if reverse:
+    if input_properties.reverse_assembly:
         start, end, step = calc.calculate_pagerange_reverse(input_properties)
-        l = list(reversed([(x+1, x+input_properties.layout.columns) for x in range(start, end, step)]))
+        l = list(reversed([(x+1, x+current_layout.columns) for x in range(start, end, step)]))
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
     else:
-        if input_properties.layout.overview == 0:  # file has no overview page
-            page_range = f"1-{input_properties.layout.columns*input_properties.layout.rows}"
+        if current_layout.overview == 0:  # file has no overview page
+            page_range = f"1-{current_layout.columns*current_layout.rows}"
         else:
-            begin = input_properties.layout.overview + 1
-            end = input_properties.layout.overview + (input_properties.layout.columns * input_properties.layout.rows)
+            begin = current_layout.overview + 1
+            end = current_layout.overview + (current_layout.columns * current_layout.rows)
             page_range = f"{begin}-{end}"
 
     file_content = [
@@ -70,7 +75,7 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
         "\\usepackage[utf8]{inputenc}\n",
         "\\usepackage{pdfpages}\n",
         "\\begin{document}\n",
-        f"\\includepdfmerge[nup={input_properties.layout.columns}x{input_properties.layout.rows}, noautoscale=true, scale=1.0]{{{str(input_pdf)},{page_range} }}\n",
+        f"\\includepdfmerge[nup={current_layout.columns}x{current_layout.rows}, noautoscale=true, scale=1.0]{{{str(input_properties.input_filepath)},{page_range} }}\n",
         "\\end{document}\n",
     ]
 
@@ -92,6 +97,9 @@ def assemble_collage(input_pdf: pathlib.Path,  # adapted
         print(f"Error while calling pdflatex:\n{e.output}")
 
     return output_filepath
+
+
+
 
 
 def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
@@ -120,7 +128,7 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
 
     writer = PyPDF2.PdfFileWriter()
 
-    for x in range(0, calc.calculate_pages_needed(input_properties.layout, n_up_factor)):
+    for x in range(0, calc.calculate_pages_needed(input_properties.layout, n_up_factor)):  # TODO FIX
         page = copy(assembled_collage)
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
@@ -154,7 +162,7 @@ def _calculate_upperright_point(upperright_factor: calc.Factor,
                                 input_properties: pdf.PDFProperties) -> pdf.Point:
     upperright = pdf.Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
-    rowsleft = _calculate_colsrows_left(input_properties.layout.rows, upperright_factor.y, n_up_factor.y)
+    rowsleft = _calculate_colsrows_left(input_properties.layout.rows, upperright_factor.y, n_up_factor.y)  # FIX
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
         upperright.y = input_properties.layout.rows * input_properties.pagesize.height
     else:

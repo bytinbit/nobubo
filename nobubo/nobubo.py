@@ -85,28 +85,28 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                 reader = PyPDF2.PdfFileReader(inputfile, strict=False)
 
                 width, height = calc.calculate_page_dimensions(reader.getPage(1))  # first page (getPage(0)) may contain overview
-                input_pagesize = pdf.PageSize(width=width, height=height)
-
-                input_properties = pdf.PDFProperties(number_of_pages=reader.getNumPages(),
-                                                     pagesize=input_pagesize, layout=input_layout)
+                input_properties = pdf.PDFProperties(input_filepath=pathlib.Path(input_path),
+                                                     output_path=pathlib.Path(output_path),
+                                                     number_of_pages=reader.getNumPages(),
+                                                     pagesize=pdf.PageSize(width=width, height=height),
+                                                     layout=input_layout,
+                                                     reverse_assembly=reverse_assembly)
                 # TODO re-arrange how this is calculcated
                 # layout has become property of input_pdf => enumeration must happen in assemble_collage
                 layout_list = [pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_properties.layout]
 
-                output_path = pathlib.Path(output_path)
+                temp_collage_paths: [pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
 
-                for counter, layout_elem in enumerate(layout_list):
-                    print(f"Assembling overview {counter+1} of {len(layout_list)}\n")
-                    print(f"Creating collage... Please be patient, this may take some time.")
-                    tempcollagepath = assembly.assemble_collage(pathlib.Path(input_path), temp_output_dir, layout_elem, input_properties, reverse=reverse_assembly)
-                    with tempcollagepath.open("rb") as collagefile:
+                for counter, collage_path in enumerate(temp_collage_paths):
+
+                    with collage_path.open("rb") as collagefile:
                         reader = PyPDF2.PdfFileReader(collagefile, strict=False)
                         collage = reader.getPage(0)
 
                         print(f"Successfully assembled collage from {input_path}.")
 
-                        new_filename = f"{output_path.stem}_{counter+1}{output_path.suffix}"
-                        new_outputpath = output_path.parent / new_filename
+                        new_filename = f"{input_properties.output_path.stem}_{counter+1}{input_properties.output_path.suffix}"
+                        new_outputpath = input_properties.output_path.parent / new_filename
 
                         if output_layout_cli:
                             print(f"\nChopping up the collage...")
@@ -115,6 +115,7 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                             if "x" in output_layout_cli:
                                 output_layout = calc.convert_to_mm(output_layout_cli)
                             chopped_up_files = assembly.create_output_files(collage, layout_elem, input_properties, output_layout)
+                            # TODO refactor so that create_output files iterates through collages as well
                             print(f"Successfully chopped up the collage.\n")
 
                             write_chops(chopped_up_files, new_outputpath)
