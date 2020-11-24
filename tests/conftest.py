@@ -57,9 +57,11 @@ def testdata() -> pathlib.Path:
 
 @pytest.fixture
 def pdfproperty() -> pdf.InputProperties:
-    return pdf.InputProperties(number_of_pages=57,
+    return pdf.InputProperties(input_filepath=pathlib.Path("test.pdf"),
+                               output_path=pathlib.Path("output_test.pdf"),
+                               number_of_pages=57,
                                pagesize=pdf.PageSize(width=483.307, height=729.917),
-                               layout=pdf.Layout(overview=1, columns=8, rows=7))
+                               layout=[pdf.Layout(overview=1, columns=8, rows=7)])
     # 8 cols, 7 rows + 1 overview page = 57
 
 @pytest.fixture
