@@ -37,14 +37,14 @@ def create_output_files(temp_collage_paths: [pathlib.Path],
             collage = reader.getPage(0)
             new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
             print(f"\nChopping up the collage...")
-            chopped_up_files = _create_output_files(collage, input_properties, input_properties.layout[counter], output_properties.output_layout)
+            chopped_up_files = _create_output_files(collage, input_properties.pagesize, input_properties.layout[counter], output_properties.output_layout)
             print(f"Successfully chopped up the collage.\n")
             output.write_chops(chopped_up_files, new_outputpath)
             print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
 
 
 def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
-                         input_properties: pdf.InputProperties,
+                         pagesize: pdf.PageSize,
                          current_layout: pdf.Layout,
                          output_layout: [int]) -> PyPDF2.PdfFileWriter:
     """
@@ -54,7 +54,7 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
-    n_up_factor = calc.calculate_nup_factors(input_properties.pagesize, output_layout)
+    n_up_factor = calc.calculate_nup_factors(pagesize, output_layout)
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = calc.Factor(x=0, y=0)
     upperright_factor = calc.Factor(x=1, y=1)
@@ -65,8 +65,8 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
         # TODO refactor: not needed to pass full input_properties to functions, only pagesize needed
-        lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties.pagesize)
-        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, input_properties.pagesize)
+        lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, pagesize)
+        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, pagesize)
 
         # adjust multiplying factor
         colsleft = _calculate_colsrows_left(current_layout.columns, upperright_factor.x, n_up_factor.x)
