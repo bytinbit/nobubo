@@ -18,7 +18,7 @@ import PyPDF2
 import pathlib
 import sys
 
-from nobubo import assembly, disassembly, pdf, calc
+from nobubo import pdf, calc
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):

@@ -18,12 +18,8 @@
 """
 Contains functions for various output layouts.
 """
-
-from copy import copy
 import pathlib
 import subprocess
-
-import PyPDF2
 
 from nobubo import pdf, calc
 

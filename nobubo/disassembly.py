@@ -21,7 +21,6 @@ Contains functions for various output layouts.
 
 from copy import copy
 import pathlib
-import subprocess
 
 import PyPDF2
 
@@ -37,7 +36,8 @@ def create_output_files(temp_collage_paths: [pathlib.Path],
             collage = reader.getPage(0)
             new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
             print(f"\nChopping up the collage...")
-            chopped_up_files = _create_output_files(collage, input_properties.pagesize, input_properties.layout[counter], output_properties.output_layout)
+            chopped_up_files = _create_output_files(collage, input_properties.pagesize,
+                                                    input_properties.layout[counter], output_properties.output_layout)
             print(f"Successfully chopped up the collage.\n")
             output.write_chops(chopped_up_files, new_outputpath)
             print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
@@ -64,7 +64,6 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
         page = copy(assembled_collage)
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
-        # TODO refactor: not needed to pass full input_properties to functions, only pagesize needed
         lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, pagesize)
         upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, pagesize)
 
@@ -96,7 +95,7 @@ def _calculate_upperright_point(upperright_factor: calc.Factor,
                                 pagesize: pdf.PageSize) -> pdf.Point:
     upperright = pdf.Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
-    rowsleft = _calculate_colsrows_left(current_layout.rows, upperright_factor.y, n_up_factor.y)  # FIX
+    rowsleft = _calculate_colsrows_left(current_layout.rows, upperright_factor.y, n_up_factor.y)
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
         upperright.y = current_layout.rows * pagesize.height
     else:
