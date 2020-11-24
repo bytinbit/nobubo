@@ -54,7 +54,7 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
-    n_up_factor = calc.calculate_nup_factors(input_properties, output_layout)
+    n_up_factor = calc.calculate_nup_factors(input_properties.pagesize, output_layout)
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = calc.Factor(x=0, y=0)
     upperright_factor = calc.Factor(x=1, y=1)
@@ -65,8 +65,8 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
         # TODO refactor: not needed to pass full input_properties to functions, only pagesize needed
-        lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
-        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, input_properties)
+        lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties.pagesize)
+        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, input_properties.pagesize)
 
         # adjust multiplying factor
         colsleft = _calculate_colsrows_left(current_layout.columns, upperright_factor.x, n_up_factor.x)
@@ -85,33 +85,33 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
 
 def _calculate_lowerleft_point(lowerleft_factor: calc.Factor,
                                n_up_factor: calc.Factor,
-                               input_properties: pdf.InputProperties) -> pdf.Point:
-    return pdf.Point(x=lowerleft_factor.x * n_up_factor.x * input_properties.pagesize.width,
-                     y=lowerleft_factor.y * n_up_factor.y * input_properties.pagesize.height)
+                               pagesize: pdf.PageSize) -> pdf.Point:
+    return pdf.Point(x=lowerleft_factor.x * n_up_factor.x * pagesize.width,
+                     y=lowerleft_factor.y * n_up_factor.y * pagesize.height)
 
 
 def _calculate_upperright_point(upperright_factor: calc.Factor,
                                 n_up_factor: calc.Factor,
                                 current_layout: pdf.Layout,
-                                input_properties: pdf.InputProperties) -> pdf.Point:
+                                pagesize: pdf.PageSize) -> pdf.Point:
     upperright = pdf.Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
     rowsleft = _calculate_colsrows_left(current_layout.rows, upperright_factor.y, n_up_factor.y)  # FIX
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
-        upperright.y = current_layout.rows * input_properties.pagesize.height
+        upperright.y = current_layout.rows * pagesize.height
     else:
-        upperright.y = upperright_factor.y * n_up_factor.y * input_properties.pagesize.height
+        upperright.y = upperright_factor.y * n_up_factor.y * pagesize.height
 
     # Manage COLS: apply transformation to upper right, x-value
     colsleft = _calculate_colsrows_left(current_layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
     if colsleft > 0:  # still assembling the same horizontal line
-        upperright.x = upperright_factor.x * n_up_factor.x * input_properties.pagesize.width
+        upperright.x = upperright_factor.x * n_up_factor.x * pagesize.width
 
     else:  # end of line reached, need to go 1 row up
         if colsleft == 0:  # cols % n_up_factor == 0
-            upperright.x = upperright_factor.x * n_up_factor.x * input_properties.pagesize.width
+            upperright.x = upperright_factor.x * n_up_factor.x * pagesize.width
         if colsleft < 0:  # remainder pages left for COLS
-            upperright.x = current_layout.columns * input_properties.pagesize.width
+            upperright.x = current_layout.columns * pagesize.width
     return upperright
 
 

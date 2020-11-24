@@ -77,10 +77,10 @@ def convert_to_userspaceunits(width_height: [int, int]) -> pdf.PageSize:
                        height=(round(width_height[1] * conversion_factor, 3)))
 
 
-def calculate_nup_factors(input_properties: pdf.InputProperties, output_layout: [int]) -> Factor:
+def calculate_nup_factors(pagesize: pdf.PageSize, output_layout: [int]) -> Factor:
     output_papersize = convert_to_userspaceunits(output_layout)
-    x_factor = int(output_papersize.width // input_properties.pagesize.width)
-    y_factor = int(output_papersize.height // input_properties.pagesize.height)
+    x_factor = int(output_papersize.width // pagesize.width)
+    y_factor = int(output_papersize.height // pagesize.height)
     return Factor(x=x_factor, y=y_factor)
 
 
