@@ -21,10 +21,7 @@ import tempfile
 
 import click
 
-from nobubo import assembly, disassembly, pdf, calc, writer
-
-
-
+from nobubo import assembly, disassembly, pdf, calc, output
 
 
 def validate_output_layout(ctx, param, value):
@@ -70,7 +67,6 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
     Further information and the readme can be found on https://github.com/bytinbit/nobubo
 
     """
-    # TODO refactor code amount in with whole function
     try:
         with tempfile.TemporaryDirectory() as td:
             temp_output_dir = pathlib.Path(td)
@@ -91,15 +87,10 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                 temp_collage_paths: [pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
                 print(f"Successfully assembled collage from {input_path}.")
 
-                for counter, collage_path in enumerate(temp_collage_paths):
-
-                    with collage_path.open("rb") as collagefile:
-                        reader = PyPDF2.PdfFileReader(collagefile, strict=False)
-                        collage = reader.getPage(0)
-                        if output_properties.output_layout:
-                            disassembly.create_output_files_toplevel(temp_collage_paths, output_properties)
-                        else:  # default: no output_layout specified, print collage pdf
-                            writer.write_collage(temp_collage_paths, output_properties)
+                if output_properties.output_layout is not None:
+                    disassembly.create_output_files(temp_collage_paths, input_properties, output_properties)
+                else:  # default: no output_layout specified, print collage pdf
+                    output.write_collage(temp_collage_paths, output_properties)
 
     except OSError as e:
         print(f"While reading the file, this error occurred:\n{e}")
