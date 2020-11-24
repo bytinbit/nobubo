@@ -1,4 +1,4 @@
-# Copyright 2019, Méline Sieber
+# Copyright 2020, Méline Sieber
 #
 # This file is part of Nobubo.
 #
