@@ -29,8 +29,8 @@ class TestCalculations:
         assert paper.width == 2607.874
         assert paper.height == 3364.724
 
-    def test_calculate_nup_factors(self, pdfproperty, nup_factor_custom):
-        factor = calc.calculate_nup_factors([920, 1187], pdfproperty)
+    def test_calculate_nup_factors(self, nup_factor_custom, pdfproperty):
+        factor = calc.calculate_nup_factors(pdfproperty, [920, 1187])
         assert factor.x == nup_factor_custom.x
         assert factor.y == nup_factor_custom.y
 
