@@ -18,7 +18,7 @@ import PyPDF2
 import pathlib
 import sys
 
-from nobubo import assembly, disassembly, pdf, calc, writer
+from nobubo import assembly, disassembly, pdf, calc
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
@@ -37,7 +37,7 @@ def write_collage(temp_collage_paths: [pathlib.Path], output_properties: pdf.Out
         with collage_path.open("rb") as collagefile:
             reader = PyPDF2.PdfFileReader(collagefile, strict=False)
             collage = reader.getPage(0)
-            new_outputpath = calc.generate_new_outputpath(output_properties, counter)
+            new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
             writer.addPage(collage)
             write_chops(writer, new_outputpath)
             print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")

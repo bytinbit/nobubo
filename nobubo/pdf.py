@@ -50,6 +50,7 @@ class InputProperties:
     layout: [Layout]
     reverse_assembly: bool = False
 
+
 @dataclass
 class OutputProperties:
     output_path: pathlib.Path
