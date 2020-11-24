@@ -80,14 +80,15 @@ def _assemble(input_properties: pdf.InputProperties,
     ]
 
     input_filepath = temp_output_dir / "texfile.tex"
-    output_filepath = temp_output_dir / "output.pdf"
+    output_filename = f"output_{calc.generate_random_string()}.pdf"
+    output_filepath = temp_output_dir / output_filename
 
     with input_filepath.open("w") as f:  # pathlib has its own open method
         f.writelines(file_content)
 
     command = ["pdflatex",
                "-interaction=nonstopmode",
-               f"-jobname=output",
+               f"-jobname={output_filename.rstrip('.pdf') }",
                f"-output-directory={temp_output_dir}",
                input_filepath]
 
