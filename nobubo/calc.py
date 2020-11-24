@@ -93,4 +93,4 @@ def calculate_pagerange_reverse(input_properties: pdf.InputProperties) -> (int, 
 
 def generate_new_outputpath(output_properties: pdf.OutputProperties, page_count: int):
     new_filename = f"{output_properties.output_path.stem}_{page_count + 1}{output_properties.output_path.suffix}"
-    new_outputpath = output_properties.output_path.parent / new_filename
+    return output_properties.output_path.parent / new_filename
