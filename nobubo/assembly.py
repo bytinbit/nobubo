@@ -45,10 +45,10 @@ def assemble_collage(input_properties: pdf.InputProperties,
         all_collages_paths.append(_assemble(input_properties, temp_output_dir, layout))
     return all_collages_paths
 
+
 def _assemble(input_properties: pdf.InputProperties,
               temp_output_dir: pathlib.Path,
-              current_layout: pdf.Layout,  # TODO: input here is 1 layout_elem, but input_property contains already list of all layout elems
-              ) -> pathlib.Path:
+              current_layout: pdf.Layout) -> pathlib.Path:  # TODO: input here is 1 layout_elem, but input_property contains already list of all layout elems
 
     page_width = input_properties.pagesize.width
     page_height = input_properties.pagesize.height
@@ -56,7 +56,7 @@ def _assemble(input_properties: pdf.InputProperties,
     collage_height = page_height * current_layout.rows
 
     if input_properties.reverse_assembly:
-        start, end, step = calc.calculate_pagerange_reverse(input_properties)
+        start, end, step = calc.calculate_pagerange_reverse(current_layout)
         l = list(reversed([(x+1, x+current_layout.columns) for x in range(start, end, step)]))
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
