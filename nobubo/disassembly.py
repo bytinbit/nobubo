@@ -25,27 +25,28 @@ import subprocess
 
 import PyPDF2
 
-from nobubo import pdf, calc, writer
+from nobubo import pdf, calc, output
 
 
-def create_output_files_toplevel(temp_collage_paths: [pathlib.Path],
+def create_output_files(temp_collage_paths: [pathlib.Path],
                         input_properties: pdf.InputProperties,
                         output_properties: pdf.OutputProperties):
-    for counter, collage_path in temp_collage_paths:
+    for counter, collage_path in enumerate(temp_collage_paths):
         with collage_path.open("rb") as collagefile:
             reader = PyPDF2.PdfFileReader(collagefile, strict=False)
             collage = reader.getPage(0)
-            new_outputpath = calc.generate_new_outputpath(output_properties, counter)
+            new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
             print(f"\nChopping up the collage...")
-            chopped_up_files = create_output_files(collage, input_properties, output_properties.output_layout)
+            chopped_up_files = _create_output_files(collage, input_properties, input_properties.layout[counter], output_properties.output_layout)
             print(f"Successfully chopped up the collage.\n")
-            writer.write_chops(chopped_up_files, new_outputpath)
+            output.write_chops(chopped_up_files, new_outputpath)
             print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
 
 
-def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
-                        input_properties: pdf.InputProperties,
-                        output_layout: [int]) -> PyPDF2.PdfFileWriter:
+def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
+                         input_properties: pdf.InputProperties,
+                         current_layout: pdf.Layout,
+                         output_layout: [int]) -> PyPDF2.PdfFileWriter:
     """
     Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
     :param assembled_collage: One pdf page that contains all assembled pattern pages.
@@ -53,12 +54,13 @@ def create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
-    n_up_factor = calc.calculate_nup_factors(output_layout, input_properties)
-    return _chop_up(assembled_collage, input_properties, n_up_factor)
+    n_up_factor = calc.calculate_nup_factors(input_properties, output_layout)
+    return _chop_up(assembled_collage, input_properties, current_layout, n_up_factor)
 
 
 def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
              input_properties: pdf.InputProperties,
+             current_layout: pdf.Layout,
              n_up_factor: calc.Factor) -> PyPDF2.PdfFileWriter:
     """
     Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified page size.
@@ -68,16 +70,16 @@ def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
     upperright_factor = calc.Factor(x=1, y=1)
 
     writer = PyPDF2.PdfFileWriter()
-
-    for x in range(0, calc.calculate_pages_needed(input_properties.layout, n_up_factor)):  # TODO FIX
+    for x in range(0, calc.calculate_pages_needed(current_layout, n_up_factor)):
         page = copy(assembled_collage)
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
+        # TODO refactor: not needed to pass full input_properties to functions, only pagesize needed
         lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, input_properties)
-        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, input_properties)
+        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, input_properties)
 
         # adjust multiplying factor
-        colsleft = _calculate_colsrows_left(input_properties.layout.columns, upperright_factor.x, n_up_factor.x)
+        colsleft = _calculate_colsrows_left(current_layout.columns, upperright_factor.x, n_up_factor.x)
         lowerleft_factor, upperright_factor = _adjust_factors(lowerleft_factor, upperright_factor, colsleft)
 
         page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
@@ -100,17 +102,18 @@ def _calculate_lowerleft_point(lowerleft_factor: calc.Factor,
 
 def _calculate_upperright_point(upperright_factor: calc.Factor,
                                 n_up_factor: calc.Factor,
+                                current_layout: pdf.Layout,
                                 input_properties: pdf.InputProperties) -> pdf.Point:
     upperright = pdf.Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
-    rowsleft = _calculate_colsrows_left(input_properties.layout.rows, upperright_factor.y, n_up_factor.y)  # FIX
+    rowsleft = _calculate_colsrows_left(current_layout.rows, upperright_factor.y, n_up_factor.y)  # FIX
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
-        upperright.y = input_properties.layout.rows * input_properties.pagesize.height
+        upperright.y = current_layout.rows * input_properties.pagesize.height
     else:
         upperright.y = upperright_factor.y * n_up_factor.y * input_properties.pagesize.height
 
     # Manage COLS: apply transformation to upper right, x-value
-    colsleft = _calculate_colsrows_left(input_properties.layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
+    colsleft = _calculate_colsrows_left(current_layout.columns, upperright_factor.x, n_up_factor.x)  # COLS
     if colsleft > 0:  # still assembling the same horizontal line
         upperright.x = upperright_factor.x * n_up_factor.x * input_properties.pagesize.width
 
@@ -118,7 +121,7 @@ def _calculate_upperright_point(upperright_factor: calc.Factor,
         if colsleft == 0:  # cols % n_up_factor == 0
             upperright.x = upperright_factor.x * n_up_factor.x * input_properties.pagesize.width
         if colsleft < 0:  # remainder pages left for COLS
-            upperright.x = input_properties.layout.columns * input_properties.pagesize.width
+            upperright.x = current_layout.columns * input_properties.pagesize.width
     return upperright
 
 

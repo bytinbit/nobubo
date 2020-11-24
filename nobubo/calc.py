@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 """
-Helpers for conversions and calculations.
+Helpers for calculations, conversions, generations.
 """
 import math
+import pathlib
+import random
+import string
 from dataclasses import dataclass
 
 import PyPDF2
@@ -41,7 +44,6 @@ def parse_output_layout(output_layout_cli: str) -> [int]:
         return convert_to_mm("841x1189")
     elif "x" in output_layout_cli:
         return convert_to_mm(output_layout_cli)
-
 
 
 def calculate_pages_needed(layout: pdf.Layout, n_up_factor: Factor) -> int:
@@ -72,10 +74,10 @@ def convert_to_userspaceunits(width_height: [int, int]) -> pdf.PageSize:
     conversion_factor = 2.834645669
 
     return pdf.PageSize(width=(round(width_height[0] * conversion_factor, 3)),
-                    height=(round(width_height[1] * conversion_factor, 3)))
+                       height=(round(width_height[1] * conversion_factor, 3)))
 
 
-def calculate_nup_factors(output_layout: [int], input_properties: pdf.InputProperties) -> Factor:
+def calculate_nup_factors(input_properties: pdf.InputProperties, output_layout: [int]) -> Factor:
     output_papersize = convert_to_userspaceunits(output_layout)
     x_factor = int(output_papersize.width // input_properties.pagesize.width)
     y_factor = int(output_papersize.height // input_properties.pagesize.height)
@@ -87,10 +89,14 @@ def convert_to_mm(output_layout: str) -> [int, int]:
     return [int(x) for x in ol_in_mm]
 
 
-def calculate_pagerange_reverse(input_properties: pdf.InputProperties) -> (int, int, int):
-    return input_properties.layout.overview, (input_properties.layout.overview + (input_properties.layout.columns * input_properties.layout.rows)), input_properties.layout.columns
+def calculate_pagerange_reverse(layout: pdf.Layout) -> (int, int, int):
+    return layout.overview, (layout.overview + (layout.columns * layout.rows)), layout.columns
 
 
-def generate_new_outputpath(output_properties: pdf.OutputProperties, page_count: int):
-    new_filename = f"{output_properties.output_path.stem}_{page_count + 1}{output_properties.output_path.suffix}"
-    return output_properties.output_path.parent / new_filename
+def generate_new_outputpath(output_path: pathlib.Path, page_count: int):
+    new_filename = f"{output_path.stem}_{page_count + 1}{output_path.suffix}"
+    return output_path.parent / new_filename
+
+
+def generate_random_string():
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k = 7))
