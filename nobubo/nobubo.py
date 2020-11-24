@@ -74,12 +74,13 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
                 reader = PyPDF2.PdfFileReader(inputfile, strict=False)
 
                 width, height = calc.calculate_page_dimensions(reader.getPage(1))  # first page (getPage(0)) may contain overview
-                input_properties = pdf.InputProperties(input_filepath=pathlib.Path(input_path),
-                                                       output_path=pathlib.Path(output_path),
-                                                       number_of_pages=reader.getNumPages(),
-                                                       pagesize=pdf.PageSize(width=width, height=height),
-                                                       layout=[pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout],
-                                                       reverse_assembly=reverse_assembly)
+                input_properties = pdf.InputProperties(
+                                   input_filepath=pathlib.Path(input_path),
+                                   output_path=pathlib.Path(output_path),
+                                   number_of_pages=reader.getNumPages(),
+                                   pagesize=pdf.PageSize(width=width, height=height),
+                                   layout=[pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout],
+                                   reverse_assembly=reverse_assembly)
 
                 output_properties = pdf.OutputProperties(output_path=pathlib.Path(output_path),
                                                          output_layout=calc.parse_output_layout(output_layout_cli))

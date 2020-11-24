@@ -55,16 +55,6 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     :return: The pdf with several pages, ready to write to disk.
     """
     n_up_factor = calc.calculate_nup_factors(input_properties, output_layout)
-    return _chop_up(assembled_collage, input_properties, current_layout, n_up_factor)
-
-
-def _chop_up(assembled_collage: PyPDF2.pdf.PageObject,
-             input_properties: pdf.InputProperties,
-             current_layout: pdf.Layout,
-             n_up_factor: calc.Factor) -> PyPDF2.PdfFileWriter:
-    """
-    Takes a collage with all assembled pattern pages, divides it up so that they fit on a previously specified page size.
-    """
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = calc.Factor(x=0, y=0)
     upperright_factor = calc.Factor(x=1, y=1)

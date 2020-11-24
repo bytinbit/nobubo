@@ -48,7 +48,7 @@ def assemble_collage(input_properties: pdf.InputProperties,
 
 def _assemble(input_properties: pdf.InputProperties,
               temp_output_dir: pathlib.Path,
-              current_layout: pdf.Layout) -> pathlib.Path:  # TODO: input here is 1 layout_elem, but input_property contains already list of all layout elems
+              current_layout: pdf.Layout) -> pathlib.Path:
 
     page_width = input_properties.pagesize.width
     page_height = input_properties.pagesize.height
