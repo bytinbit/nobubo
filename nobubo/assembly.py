@@ -46,10 +46,8 @@ def _assemble(input_properties: pdf.InputProperties,
               temp_output_dir: pathlib.Path,
               current_layout: pdf.Layout) -> pathlib.Path:
 
-    page_width = input_properties.pagesize.width
-    page_height = input_properties.pagesize.height
-    collage_width = page_width * current_layout.columns
-    collage_height = page_height * current_layout.rows
+    collage_width = input_properties.pagesize.width * current_layout.columns
+    collage_height = input_properties.pagesize.height * current_layout.rows
 
     if input_properties.reverse_assembly:
         start, end, step = calc.calculate_pagerange_reverse(current_layout)

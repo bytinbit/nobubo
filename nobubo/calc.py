@@ -46,6 +46,10 @@ def parse_output_layout(output_layout_cli: str) -> [int]:
         return convert_to_mm(output_layout_cli)
 
 
+def parse_input_layouts(input_layout: (int, int, int)) ->[pdf.Layout]:
+    return [pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
+
+
 def calculate_pages_needed(layout: pdf.Layout, n_up_factor: Factor) -> int:
     return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
@@ -100,3 +104,4 @@ def generate_new_outputpath(output_path: pathlib.Path, page_count: int):
 
 def generate_random_string():
     return "".join(random.choices(string.ascii_lowercase + string.digits, k = 7))
+

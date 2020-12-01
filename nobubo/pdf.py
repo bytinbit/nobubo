@@ -16,7 +16,7 @@
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-Module with data classes about PDF properties, points and pattern layouts.
+Data classes for nobubo input and output properties and pdf properties.
 """
 import pathlib
 from dataclasses import dataclass
@@ -42,6 +42,15 @@ class Layout:
 
 
 @dataclass
+class Point:
+    """
+    Point on a pdf page in user space units.
+    """
+    x: float
+    y: float
+
+
+@dataclass
 class InputProperties:
     input_filepath: pathlib.Path
     output_path: pathlib.Path
@@ -56,13 +65,5 @@ class OutputProperties:
     output_path: pathlib.Path
     output_layout: [int]
 
-
-@dataclass
-class Point:
-    """
-    Point on a pdf page in user space units.
-    """
-    x: float
-    y: float
 
 
