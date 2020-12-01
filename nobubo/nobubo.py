@@ -70,28 +70,15 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
     try:
         with tempfile.TemporaryDirectory() as td:
             temp_output_dir = pathlib.Path(td)
-            with open(pathlib.Path(input_path), "rb") as inputfile:
-                reader = PyPDF2.PdfFileReader(inputfile, strict=False)
+            input_properties, output_properties = calc.parse_cli_input(input_layout, output_layout_cli,
+                                                                       reverse_assembly, input_path, output_path)
+            temp_collage_paths: [pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
+            print(f"Successfully assembled collage from {input_path}.")
 
-                width, height = calc.calculate_page_dimensions(reader.getPage(1))  # first page (getPage(0)) may contain overview
-                input_properties = pdf.InputProperties(
-                                   input_filepath=pathlib.Path(input_path),
-                                   output_path=pathlib.Path(output_path),
-                                   number_of_pages=reader.getNumPages(),
-                                   pagesize=pdf.PageSize(width=width, height=height),
-                                   layout=calc.parse_input_layouts(input_layout),
-                                   reverse_assembly=reverse_assembly)
-
-                output_properties = pdf.OutputProperties(output_path=pathlib.Path(output_path),
-                                                         output_layout=calc.parse_output_layout(output_layout_cli))
-
-                temp_collage_paths: [pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
-                print(f"Successfully assembled collage from {input_path}.")
-
-                if output_properties.output_layout is not None:
-                    disassembly.create_output_files(temp_collage_paths, input_properties, output_properties)
-                else:  # default: no output_layout specified, print collage pdf
-                    output.write_collage(temp_collage_paths, output_properties)
+            if output_properties.output_layout is not None:
+                disassembly.create_output_files(temp_collage_paths, input_properties, output_properties)
+            else:  # default: no output_layout specified, print collage pdf
+                output.write_collage(temp_collage_paths, output_properties)
 
     except OSError as e:
         print(f"While reading the file, this error occurred:\n{e}")
