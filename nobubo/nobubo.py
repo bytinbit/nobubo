@@ -29,7 +29,7 @@ def validate_output_layout(ctx, param, value):
         value is not None and (value == "a0" or calc.convert_to_mm(value))
         return value
     except ValueError:
-        raise click.BadParameter(f"If custom layout was chosen, have you written it as 'mmxmm', e.g. 222x444?.")
+        raise click.BadParameter(f"If custom layout was chosen, have you written it as 'mmxmm', such as 222x444?")
 
 
 @click.command()
@@ -55,7 +55,6 @@ def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_p
     In order for Nobubo to function, you need the original pdf pattern.
 
     Create a backup of the original if you are afraid to have it damaged in any way.
-
     The author takes no responsibility if you face any fit issues or other problems now or later on.
 
     Example usage:
