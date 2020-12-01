@@ -14,14 +14,13 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
-import PyPDF2
 import pathlib
 import sys
 import tempfile
 
 import click
 
-from nobubo import assembly, disassembly, pdf, calc, output
+from nobubo import assembly, disassembly, calc, output
 
 
 def validate_output_layout(ctx, param, value):
@@ -33,43 +32,47 @@ def validate_output_layout(ctx, param, value):
 
 
 @click.command()
-@click.option("--il", "input_layout", nargs=3, type=click.INT, multiple=True, required=True,
-              help="Input layout of the pdf. Can be used multiple times if more than 1 overview sheet per pdf exists.",
+@click.option("--il", "input_layout_cli", nargs=3, type=click.INT, multiple=True, required=True,
+              help="Input layout of the pdf. Can be used multiple times if there is more than 1 overview sheet per pdf.",
               metavar="OVERVIEW COLUMNS ROWS")
 @click.option("--ol", "output_layout_cli", nargs=1, type=click.STRING,
               callback=validate_output_layout,
               help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
               metavar="a0 | mmxmm")
 @click.option("--reverse", "reverse_assembly", is_flag="True",
-              help="No reverse flag: collage is assembled from top left to bottom right. With reverse flag: collage "
+              help="No reverse flag: collage is assembled from top left to bottom right. With flag: collage "
                    "is assembled from bottom left to top right.")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
-def main(input_layout, output_layout_cli, reverse_assembly, input_path, output_path):
+def main(input_layout_cli, output_layout_cli, reverse_assembly, input_path, output_path):
     """
     Creates a collage from digital pattern pages and then chops it up into a desired output layout.
     The collage is assembled according to one or several overview sheets.
     These overviews are usually provided along with the pattern pages in the same pdf.
     If no overview sheet is in the pattern pdf itself, write 0 in the arguments given: --il 0 8 4.
 
-    In order for Nobubo to function, you need the original pdf pattern.
-
+    Note: In order for nobubo to function, you need the original pdf pattern.
     Create a backup of the original if you are afraid to have it damaged in any way.
     The author takes no responsibility if you face any fit issues or other problems now or later on.
 
-    Example usage:
+    Example: A digital pattern contains 2 overview sheets at page 1 and 34 with different layouts each. The result
+    should be printed on A0 paper:
 
-    2 overview sheets at page 1 and 34 with differing layouts, which are then assembled to be printed on a0 paper:
-
-    python nobubo.py --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
+    python -m nobubo --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
 
     Further information and the readme can be found on https://github.com/bytinbit/nobubo
+
+    Arguments:
+
+    INPUT_PATH: Input path to your pdf pattern.
+
+    OUTPUT_PATH: Where the output should be saved.
 
     """
     try:
         with tempfile.TemporaryDirectory() as td:
             temp_output_dir = pathlib.Path(td)
-            input_properties, output_properties = calc.parse_cli_input(input_layout, output_layout_cli,
+            input_properties, output_properties = calc.parse_cli_input(input_layout_cli, output_layout_cli,
                                                                        reverse_assembly, input_path, output_path)
             temp_collage_paths: [pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
             print(f"Successfully assembled collage from {input_path}.")
