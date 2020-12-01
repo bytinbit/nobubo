@@ -37,6 +37,30 @@ class Factor:
     y: int
 
 
+def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, reverse_assembly: bool,
+                    input_path: str, output_path: str) -> (pdf.InputProperties, pdf.OutputProperties):
+    with open(pathlib.Path(input_path), "rb") as inputfile:
+        reader = PyPDF2.PdfFileReader(inputfile, strict=False)
+
+        width, height = calculate_page_dimensions(
+            reader.getPage(1))  # first page (getPage(0)) may contain overview
+        input_properties = pdf.InputProperties(
+            input_filepath=pathlib.Path(input_path),
+            output_path=pathlib.Path(output_path),
+            number_of_pages=reader.getNumPages(),
+            pagesize=pdf.PageSize(width=width, height=height),
+            layout=parse_input_layouts(input_layout),
+            reverse_assembly=reverse_assembly)
+
+        output_properties = pdf.OutputProperties(output_path=pathlib.Path(output_path),
+                                                 output_layout=parse_output_layout(output_layout_cli))
+        return input_properties, output_properties
+
+
+def parse_input_layouts(input_layout: (int, int, int)) ->[pdf.Layout]:
+    return [pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
+
+
 def parse_output_layout(output_layout_cli: str) -> [int]:
     if output_layout_cli is None:
         return None
@@ -44,10 +68,6 @@ def parse_output_layout(output_layout_cli: str) -> [int]:
         return convert_to_mm("841x1189")
     elif "x" in output_layout_cli:
         return convert_to_mm(output_layout_cli)
-
-
-def parse_input_layouts(input_layout: (int, int, int)) ->[pdf.Layout]:
-    return [pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
 
 def calculate_pages_needed(layout: pdf.Layout, n_up_factor: Factor) -> int:
