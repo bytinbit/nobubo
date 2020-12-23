@@ -39,12 +39,15 @@ def validate_output_layout(ctx, param, value):
               callback=validate_output_layout,
               help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
               metavar="a0 | mmxmm")
+@click.option("--margin", "print_margin", nargs=1, type=click.INT,
+              help="Define an optional print margin in mm.",
+              metavar="mm")
 @click.option("--reverse", "reverse_assembly", is_flag="True",
               help="No reverse flag: collage is assembled from top left to bottom right. With flag: collage "
                    "is assembled from bottom left to top right.")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
-def main(input_layout_cli, output_layout_cli, reverse_assembly, input_path, output_path):
+def main(input_layout_cli, output_layout_cli, print_margin, reverse_assembly, input_path, output_path):
     """
     Creates a collage from digital pattern pages and then chops it up into a desired output layout.
     The collage is assembled according to one or several overview sheets.
@@ -72,7 +75,7 @@ def main(input_layout_cli, output_layout_cli, reverse_assembly, input_path, outp
     try:
         with tempfile.TemporaryDirectory() as td:
             temp_output_dir = pathlib.Path(td)
-            input_properties, output_properties = calc.parse_cli_input(input_layout_cli, output_layout_cli,
+            input_properties, output_properties = calc.parse_cli_input(input_layout_cli, output_layout_cli, print_margin,
                                                                        reverse_assembly, input_path, output_path)
             temp_collage_paths: [pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
             print(f"Successfully assembled collage from {input_path}.")

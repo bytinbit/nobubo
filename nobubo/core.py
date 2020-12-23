@@ -64,6 +64,3 @@ class InputProperties:
 class OutputProperties:
     output_path: pathlib.Path
     output_layout: [int]
-
-
-

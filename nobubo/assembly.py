@@ -21,10 +21,10 @@ Contains functions for various output layouts.
 import pathlib
 import subprocess
 
-from nobubo import pdf, calc
+from nobubo import core, calc
 
 
-def assemble_collage(input_properties: pdf.InputProperties,
+def assemble_collage(input_properties: core.InputProperties,
                      temp_output_dir: pathlib.Path) -> [pathlib.Path]:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
@@ -42,9 +42,9 @@ def assemble_collage(input_properties: pdf.InputProperties,
     return all_collages_paths
 
 
-def _assemble(input_properties: pdf.InputProperties,
+def _assemble(input_properties: core.InputProperties,
               temp_output_dir: pathlib.Path,
-              current_layout: pdf.Layout) -> pathlib.Path:
+              current_layout: core.Layout) -> pathlib.Path:
 
     collage_width = input_properties.pagesize.width * current_layout.columns
     collage_height = input_properties.pagesize.height * current_layout.rows
