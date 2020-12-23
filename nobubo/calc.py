@@ -22,6 +22,7 @@ import pathlib
 import random
 import string
 from dataclasses import dataclass
+from typing import List
 
 import PyPDF2
 
@@ -37,8 +38,9 @@ class Factor:
     y: int
 
 
-def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, reverse_assembly: bool,
-                    input_path: str, output_path: str) -> (pdf.InputProperties, pdf.OutputProperties):
+def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print_margin: int,
+                    reverse_assembly: bool, input_path: str, output_path: str
+                    ) -> (pdf.InputProperties, pdf.OutputProperties):
     with open(pathlib.Path(input_path), "rb") as inputfile:
         reader = PyPDF2.PdfFileReader(inputfile, strict=False)
 
@@ -53,7 +55,8 @@ def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, rever
             reverse_assembly=reverse_assembly)
 
         output_properties = pdf.OutputProperties(output_path=pathlib.Path(output_path),
-                                                 output_layout=parse_output_layout(output_layout_cli))
+                                                 output_layout=parse_output_layout(output_layout_cli, print_margin),
+                                                 )
         return input_properties, output_properties
 
 
@@ -61,13 +64,18 @@ def parse_input_layouts(input_layout: (int, int, int)) ->[pdf.Layout]:
     return [pdf.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
 
-def parse_output_layout(output_layout_cli: str) -> [int]:
+def parse_output_layout(output_layout_cli: str, print_margin: int) -> [int]:
+    print_size: List[int] = []
     if output_layout_cli is None:
         return None
     if output_layout_cli == "a0":
-        return convert_to_mm("841x1189")
+        print_size: List[int] = convert_to_mm("841x1189")
     elif "x" in output_layout_cli:
-        return convert_to_mm(output_layout_cli)
+        print_size: List[int] = convert_to_mm(output_layout_cli)
+    if print_margin:
+        return [size - (2 * print_margin) for size in print_size]
+    else:
+        return print_size
 
 
 def calculate_pages_needed(layout: pdf.Layout, n_up_factor: Factor) -> int:
