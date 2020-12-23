@@ -57,6 +57,7 @@ def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print
         output_properties = pdf.OutputProperties(output_path=pathlib.Path(output_path),
                                                  output_layout=parse_output_layout(output_layout_cli, print_margin),
                                                  )
+        print(output_properties)
         return input_properties, output_properties
 
 
@@ -72,6 +73,7 @@ def parse_output_layout(output_layout_cli: str, print_margin: int) -> [int]:
         print_size: List[int] = convert_to_mm("841x1189")
     elif "x" in output_layout_cli:
         print_size: List[int] = convert_to_mm(output_layout_cli)
+
     if print_margin:
         return [size - (2 * print_margin) for size in print_size]
     else:
@@ -89,7 +91,8 @@ def calculate_page_dimensions(page: PyPDF2.pdf.PageObject) -> (float, float):
     :param page: A pattern page.
     :return: list with x, y value.
     """
-    return round(float(page.cropBox[2])-float(page.cropBox[0]), 2), round(float(page.cropBox[3])-float(page.cropBox[1]), 2)
+    return round(float(page.cropBox[2])-float(page.cropBox[0]), 2), \
+           round(float(page.cropBox[3])-float(page.cropBox[1]), 2)
 
 
 def convert_to_userspaceunits(width_height: [int, int]) -> pdf.PageSize:
@@ -106,7 +109,7 @@ def convert_to_userspaceunits(width_height: [int, int]) -> pdf.PageSize:
     conversion_factor = 2.834645669
 
     return pdf.PageSize(width=(round(width_height[0] * conversion_factor, 3)),
-                       height=(round(width_height[1] * conversion_factor, 3)))
+                        height=(round(width_height[1] * conversion_factor, 3)))
 
 
 def calculate_nup_factors(pagesize: pdf.PageSize, output_layout: [int]) -> Factor:
@@ -131,5 +134,5 @@ def generate_new_outputpath(output_path: pathlib.Path, page_count: int):
 
 
 def generate_random_string():
-    return "".join(random.choices(string.ascii_lowercase + string.digits, k = 7))
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=7))
 

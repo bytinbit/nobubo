@@ -40,8 +40,8 @@ def validate_output_layout(ctx, param, value):
               help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
               metavar="a0 | mmxmm")
 @click.option("--margin", "print_margin", nargs=1, type=click.INT,
-              help="Define a print margin in mm.",
-              metavar="MARGIN")
+              help="Define an optional print margin in mm.",
+              metavar="mm")
 @click.option("--reverse", "reverse_assembly", is_flag="True",
               help="No reverse flag: collage is assembled from top left to bottom right. With flag: collage "
                    "is assembled from bottom left to top right.")
