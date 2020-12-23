@@ -5,7 +5,7 @@ import pytest
 import textract
 
 
-from nobubo import pdf, calc
+from nobubo import core, calc
 
 
 class PdfTester:
@@ -56,28 +56,28 @@ def testdata() -> pathlib.Path:
 
 
 @pytest.fixture
-def pdfproperty() -> pdf.InputProperties:
-    return pdf.InputProperties(input_filepath=pathlib.Path("test.pdf"),
+def pdfproperty() -> core.InputProperties:
+    return core.InputProperties(input_filepath=pathlib.Path("test.pdf"),
                                output_path=pathlib.Path("output_test.pdf"),
                                number_of_pages=57,
-                               pagesize=pdf.PageSize(width=483.307, height=729.917),
-                               layout=[pdf.Layout(overview=1, columns=8, rows=7)])
+                               pagesize=core.PageSize(width=483.307, height=729.917),
+                               layout=[core.Layout(overview=1, columns=8, rows=7)])
     # 8 cols, 7 rows + 1 overview page = 57
 
 @pytest.fixture
-def one_overview_even() -> pdf.Layout:
-    return pdf.Layout(overview=1, columns=8, rows=7)
+def one_overview_even() -> core.Layout:
+    return core.Layout(overview=1, columns=8, rows=7)
 
 
 @pytest.fixture
-def one_overview_uneven() -> pdf.Layout:
-    return pdf.Layout(overview=1, columns=9, rows=4)
+def one_overview_uneven() -> core.Layout:
+    return core.Layout(overview=1, columns=9, rows=4)
 
 
 @pytest.fixture()
-def two_overviews() -> [pdf.Layout, pdf.Layout]:
-    first = pdf.Layout(overview=1, columns=5, rows=5)
-    second = pdf.Layout(overview=27, columns=5, rows=5)
+def two_overviews() -> [core.Layout, core.Layout]:
+    first = core.Layout(overview=1, columns=5, rows=5)
+    second = core.Layout(overview=27, columns=5, rows=5)
     return [first, second]
 
 

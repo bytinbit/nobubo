@@ -18,7 +18,7 @@ import PyPDF2
 import pathlib
 import sys
 
-from nobubo import pdf, calc
+from nobubo import core, calc
 
 
 def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
@@ -31,7 +31,7 @@ def write_chops(pypdf2_writer: PyPDF2.PdfFileWriter, output_path: pathlib.Path):
         sys.exit(1)
 
 
-def write_collage(temp_collage_paths: [pathlib.Path], output_properties: pdf.OutputProperties):
+def write_collage(temp_collage_paths: [pathlib.Path], output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
         writer = PyPDF2.PdfFileWriter()
         new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)

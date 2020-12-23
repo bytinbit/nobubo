@@ -24,12 +24,12 @@ import pathlib
 
 import PyPDF2
 
-from nobubo import pdf, calc, output
+from nobubo import core, calc, output
 
 
 def create_output_files(temp_collage_paths: [pathlib.Path],
-                        input_properties: pdf.InputProperties,
-                        output_properties: pdf.OutputProperties):
+                        input_properties: core.InputProperties,
+                        output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
         with collage_path.open("rb") as collagefile:
             reader = PyPDF2.PdfFileReader(collagefile, strict=False)
@@ -44,8 +44,8 @@ def create_output_files(temp_collage_paths: [pathlib.Path],
 
 
 def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
-                         pagesize: pdf.PageSize,
-                         current_layout: pdf.Layout,
+                         pagesize: core.PageSize,
+                         current_layout: core.Layout,
                          output_layout: [int]) -> PyPDF2.PdfFileWriter:
     """
     Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
@@ -64,8 +64,8 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
         page = copy(assembled_collage)
         # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
 
-        lowerleft: pdf.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, pagesize)
-        upperright: pdf.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, pagesize)
+        lowerleft: core.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, pagesize)
+        upperright: core.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, pagesize)
 
         # adjust multiplying factor
         colsleft = _calculate_colsrows_left(current_layout.columns, upperright_factor.x, n_up_factor.x)
@@ -84,16 +84,16 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
 
 def _calculate_lowerleft_point(lowerleft_factor: calc.Factor,
                                n_up_factor: calc.Factor,
-                               pagesize: pdf.PageSize) -> pdf.Point:
-    return pdf.Point(x=lowerleft_factor.x * n_up_factor.x * pagesize.width,
+                               pagesize: core.PageSize) -> core.Point:
+    return core.Point(x=lowerleft_factor.x * n_up_factor.x * pagesize.width,
                      y=lowerleft_factor.y * n_up_factor.y * pagesize.height)
 
 
 def _calculate_upperright_point(upperright_factor: calc.Factor,
                                 n_up_factor: calc.Factor,
-                                current_layout: pdf.Layout,
-                                pagesize: pdf.PageSize) -> pdf.Point:
-    upperright = pdf.Point(x=0, y=0)
+                                current_layout: core.Layout,
+                                pagesize: core.PageSize) -> core.Point:
+    upperright = core.Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
     rowsleft = _calculate_colsrows_left(current_layout.rows, upperright_factor.y, n_up_factor.y)
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
