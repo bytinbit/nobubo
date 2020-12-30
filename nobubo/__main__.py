@@ -7,4 +7,4 @@ https://www.python.org/dev/peps/pep-0338/
 """
 from nobubo import nobubo
 if __name__ == '__main__':
-    nobubo.main()
+    nobubo.main(prog_name="python -m nobubo")  # https://github.com/pallets/click/issues/1399
