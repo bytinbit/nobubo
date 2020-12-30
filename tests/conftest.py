@@ -4,7 +4,6 @@ import pytest
 
 import textract
 
-
 from nobubo import core, calc
 
 

@@ -10,20 +10,48 @@ Nobubo has been developed and tested with several download patterns from Burda, 
 ## Prerequisites
 * A digital pattern where each page is made to be printed on A4 or US letter size. **If you haven't purchased a digital pattern, Nobubo is useless**.
 * Each page is already cropped, so that only the bare pattern is visible (no white borders around the pattern). Nobubo is able to handle cropped pdfs, but you still have to do it yourself.
-* At least one overview sheet that shows what the assembled pattern should look like in the end. Usually, the assembled pattern pages form a huge rectangle. Some vendors disregard this and the assembled pattern is of a weird "rectangle + 2 pages" shape. Nobubo can only handle rectangle shapes, so you still have to print and assemble those leftover pages by hand.
-* Python >=3.7, `click, PyPDF2`
+* At least one overview sheet that shows what the assembled pattern should look like in the end. Usually, the assembled pattern pages form a huge rectangle. Some vendors disregard this and the assembled pattern is of a weird "rectangle + 2 pages" shape. Nobubo can only handle rectangle shapes, so those leftover pages have to be assembled by hand.
+* Python >=3.7
 * `pdflatex` [must be installed](https://tex.stackexchange.com/questions/49569/where-to-download-pdflatex-exe)
 
+## Installation
+
+1. Clone this repository and change into the folder `nobubo`.
+
+2. [Create a virtual environment](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv) in the cloned repository and activate it.
+
+3. Install all required modules:
+
+ ```bash
+$ pip install -r requirements.txt
+ ```
+
+4. Check the installation with one of the mock patterns:
+
+
+ ```bash
+$ python -m nobubo --il 1 8 4 --ol a0 "tests/testdata/mockpattern_oneoverview_8x4.pdf" "sample.pdf"
+ ```
+
 ## Usage
+
+Show basic information:
+
 ```bash
-$ python -m nobubo --il OVERVIEW COLUMNS ROWS --ol {a0|mmxmm} {--reverse} INPUTPATH OUTPUTPATH
+$ python -m nobubo --help
 ```
 
-Have a look at the mock patterns in the test folder. Use them with with the above commands and see how it works.
+Available commands:
+
+```bash
+$ python -m nobubo --il OVERVIEW COLUMNS ROWS --ol {a0|mmxmm} {--reverse} {--margin mm} INPUTPATH OUTPUTPATH
+```
+
+Have a look at the mock patterns in the test folder. Use them with with the above commands and see how it works. 
 
 ### Example with one overview sheet, reverse assembly, A0 output
 
-This example pattern has 5 rows and 6 columns on one overview sheet on page 1 (see also picture below):
+This example pattern has one overview sheet on page 1 with 6 columns and 5 rows (see also picture below) and is assembled from bottom left to top right:
 
 ```bash
 $ python -m nobubo --il 1 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
@@ -41,11 +69,11 @@ $ python -m nobubo --il 1 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf"
 
 The pdf has 6 columns and 5 rows, which means the final pdf collage will comprise four A0 pages to print, since 16 A4 pages fit on one A0 page. This is how the sample overview sheet might look like and how it will be split up:
 
-<img src="img/nobubo.png" alt="sample pattern" width=50%/>
+<img src="img/nobubo.png" alt="sample pattern" width=40%/>
 
 Of course, you can still choose to print pages 2-4 on A4 from your original pattern and just page 1 on A0.
 
-**The order of assembly differs between pattern companies. Burda assembles the pages from bottom left to top right, whereas others (Knipmode) assemble them from top left to bottom right. Please compare the order of the pdf pages in the pdf itself to the overview to see in which way the pages are assembled.**
+**The order of assembly differs between pattern companies. Burda assembles the pages from bottom left to top right, whereas others (Knipmode) assemble them from top left to bottom right. Please compare the order of the pdf pages in the pdf file itself to the overview to see in which way the pages are assembled.**
 
 ### Example with two overview sheets
 
@@ -53,9 +81,9 @@ Of course, you can still choose to print pages 2-4 on A4 from your original patt
 $ python -m nobubo --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
 ```
 
-The first overview sheet is on page 1 with 4 rows, 8 columns: `--il 1 8 4`.  The second overview sheet is on page 34 with 3 rows, 7 columns: `--il 34 7 3`. The assembly is from top left to bottom right, the output on A0.
+The first overview sheet is on page 1 with 8 columns, 4 rows: `--il 1 8 4`.  The second overview sheet is on page 34 with 7 columns, 3 rows: `--il 34 7 3`. The assembly is from top left to bottom right, the output on A0.
 
-### Example with just a collage
+### Example with a collage output
 
 ``` bash
 $ python -m nobubo --il 1 8 4 --il 34 7 3 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
@@ -63,16 +91,18 @@ $ python -m nobubo --il 1 8 4 --il 34 7 3 "home/alice/mypattern.pdf"  "home/alic
 
 This prints only two pdfs (=2 overview sheets) which contain each a huge collage.
 
-### Example with no overview sheet
+### Example with no overview sheet and printing margin
 
-Some pattern companies provide the overview sheet separately, for example in the pdf together with the sewing instructions. Then, the pattern pdf really and only contains the A4 pages of the pattern. In this case, write `0` for the overview sheet:
+Some pattern companies provide the overview sheet separately, for example in the pdf together with the sewing instructions. Then, the pattern pdf really and only contains the A4 pages of the pattern. In this case, write `0` for the overview sheet. 
+
+Use the optional flag `--margin 20` so that a printing border of 2 cm is included on every A0 page:
 
 ```bash
-$ python -m nobubo --il 0 6 5 --ol a0 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
+$ python -m nobubo --il 0 6 5 --ol a0 --margin 20 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
 ```
 
 ## Caveats
-* Please double-check and compare the overview sheet with the amount of pdf pages given (rows * columns = amount of pages needed).  If the result is wrong, check if you counted the rows and columns correctly or if a second overview sheet hides in later pages.
+* Please double-check and compare the overview sheet with the amount of pdf pages given (rows * columns = amount of pages needed).  If the result is wrong, check if you counted the rows and columns correctly or if a second overview sheet hides in later pages. Burda for example includes several overview sheets and their corresponding pages in one pdf.
 * Check if the pattern must be assembled from top left to bottom right (default) or bottom left to top right (use `--reverse` flag)
 * When you print the final pattern pages,  double-check and measure the control square. Don't forget to print 100% "as is", with any scaling or page fitting off.
 
