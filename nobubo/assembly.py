@@ -65,7 +65,7 @@ def _assemble(input_properties: core.InputProperties,
     file_content = [
         "\\batchmode\n",
         "\\documentclass[a4paper,]{article}\n",
-        f"\\usepackage[papersize={{{collage_width}pt,{collage_height}pt}}]{{geometry}}\n",  # include vars
+        f"\\usepackage[papersize={{{collage_width}pt,{collage_height}pt}}]{{geometry}}\n",
         "\\usepackage[utf8]{inputenc}\n",
         "\\usepackage{pdfpages}\n",
         "\\begin{document}\n",
@@ -74,15 +74,14 @@ def _assemble(input_properties: core.InputProperties,
     ]
 
     input_filepath = temp_output_dir / "texfile.tex"
-    output_filename = f"output_{calc.generate_random_string()}.pdf"
-    output_filepath = temp_output_dir / output_filename
+    output_filename = f"output_{calc.generate_random_string()}"
 
     with input_filepath.open("w") as f:  # pathlib has its own open method
         f.writelines(file_content)
 
     command = ["pdflatex",
                "-interaction=nonstopmode",
-               f"-jobname={output_filename.rstrip('.pdf') }",
+               f"-jobname={output_filename}",
                f"-output-directory={temp_output_dir}",
                input_filepath]
 
@@ -91,7 +90,7 @@ def _assemble(input_properties: core.InputProperties,
     except subprocess.CalledProcessError as e:
         print(f"Error while calling pdflatex:\n{e.output}")
 
-    return output_filepath
+    return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")
 
 
 
