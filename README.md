@@ -7,6 +7,8 @@ That's why I wrote nobubo: This tool assembles the pages of a digital pdf patter
 
 Nobubo has been developed and tested with several download patterns from Burda, Knipmode and other brands successfully.
 
+In the end, even though nobubo as been developed with sewing patterns in mind, it is basically a fancy n-up tool for PDFs in general.
+
 ## Prerequisites
 * A digital pattern where each page is made to be printed on A4 or US letter size. **If you haven't purchased a digital pattern, Nobubo is useless**.
 * Each page is already cropped, so that only the bare pattern is visible (no white borders around the pattern). Nobubo is able to handle cropped pdfs, but you still have to do it yourself.
