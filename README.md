@@ -33,7 +33,7 @@ Check the installation with one of the mock patterns:
 $ nobubo --il 1 8 4 --ol a0 "tests/testdata/mockpattern_oneoverview_8x4.pdf" "sample.pdf"
 ```
 
-**Installation without pip: **
+**Installation without pip:**
 
  ```bash
 $ pip install -r requirements.txt
