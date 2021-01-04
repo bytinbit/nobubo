@@ -13,6 +13,9 @@ setup(
     author="Méline Sieber",
     license="AGPLv3",
     packages=setuptools.find_packages(),
+    entry_points = {
+        "console_scripts": ["nobubo = nobubo.nobubo:main"]
+        },
     python_requires=">=3.7",
     install_requires=["click", "PyPDF2"],
     classifiers=[
