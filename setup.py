@@ -14,7 +14,7 @@ setup(
     license="AGPLv3",
     packages=setuptools.find_packages(),
     python_requires=">=3.7",
-    install_requires=["click", "PyPDF2"]
+    install_requires=["click", "pikepdf"],
     classifiers=[
         "Topic :: Printing",
         "Topic :: Utilities",
