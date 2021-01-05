@@ -59,7 +59,7 @@ def _create_output_files(collage: Pdf,
 
     output = Pdf.new()
     output.copy_foreign(collage.Root) # TODO must Root be updated if new pages are added?
-    # Root must be copied too, not only the page: thanks to https://github.com/cfcurtis/sewingutils
+    # Root must be copied too, not only the page: thanks to https://github.com/cfcurtis/sewingutils for this!
     for i in range(0, calc.calculate_pages_needed(current_layout, n_up_factor)):
         page = output.copy_foreign(collage.pages[0])
 

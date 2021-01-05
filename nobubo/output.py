@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
-import PyPDF2
 from pikepdf import Pdf
 import pathlib
 import sys

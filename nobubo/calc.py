@@ -24,7 +24,7 @@ import string
 from dataclasses import dataclass
 from typing import List
 
-import PyPDF2
+import pikepdf
 
 from nobubo import core
 
@@ -41,15 +41,13 @@ class Factor:
 def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print_margin: int,
                     reverse_assembly: bool, input_path: str, output_path: str
                     ) -> (core.InputProperties, core.OutputProperties):
-    with open(pathlib.Path(input_path), "rb") as inputfile:
-        reader = PyPDF2.PdfFileReader(inputfile, strict=False)
-
-        width, height = calculate_page_dimensions(
-            reader.getPage(1))  # first page (getPage(0)) may contain overview
+    with pikepdf.open(pathlib.Path(input_path)) as inputfile:
+        # first page (getPage(0)) may contain overview, so get second one
+        width, height = calculate_page_dimensions(inputfile.pages[1])
         input_properties = core.InputProperties(
             input_filepath=pathlib.Path(input_path),
             output_path=pathlib.Path(output_path),
-            number_of_pages=reader.getNumPages(),
+            number_of_pages=len(inputfile.pages),
             pagesize=core.PageSize(width=width, height=height),
             layout=parse_input_layouts(input_layout),
             reverse_assembly=reverse_assembly)
@@ -57,7 +55,7 @@ def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print
         output_properties = core.OutputProperties(output_path=pathlib.Path(output_path),
                                                   output_layout=parse_output_layout(output_layout_cli, print_margin),
                                                   )
-        return input_properties, output_properties
+    return input_properties, output_properties
 
 
 def parse_input_layouts(input_layout: (int, int, int)) ->[core.Layout]:
@@ -83,15 +81,17 @@ def calculate_pages_needed(layout: core.Layout, n_up_factor: Factor) -> int:
     return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
 
-def calculate_page_dimensions(page: PyPDF2.pdf.PageObject) -> (float, float):
+def calculate_page_dimensions(page: pikepdf.Page) -> (float, float):
     """
     Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
-    Uses the cropBox value, since this is the area visible to the printer.
-    :param page: A pattern page.
+    :param page: A PDF page.
     :return: list with x, y value.
     """
-    return round(float(page.cropBox[2])-float(page.cropBox[0]), 2), \
-           round(float(page.cropBox[3])-float(page.cropBox[1]), 2)
+    if not hasattr(page, "CropBox"):
+        box = page.MediaBox
+    else:
+        box = page.CropBox
+    return round(float(box[2])-float(box[0]), 2), round(float(box[3])-float(box[1]), 2)
 
 
 def convert_to_userspaceunits(width_height: [int, int]) -> core.PageSize:
