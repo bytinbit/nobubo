@@ -1,5 +1,6 @@
 import pathlib
-import PyPDF2
+# import PyPDF2
+import pikepdf
 import pytest
 
 import textract
@@ -15,22 +16,27 @@ class PdfTester:
 
     def read(self):
         for filepath in self.outputdir.glob("*.pdf"):
-            file = open(filepath, "rb")
+            file = pikepdf.open(filepath)
             self._files.append(file)
-            self.readers[filepath.name] = PyPDF2.PdfFileReader(file)
+            self.readers[filepath.name] = file
         return sorted(self.readers.keys())
 
     def pagesize(self, filename: str, pagenumber: int=0) -> [float, float]:
         reader = self.readers[filename]
-        page = reader.getPage(pagenumber)
-        return [round(float(page.cropBox[2])-float(page.cropBox[0]), 2), round(float(page.cropBox[3])-float(page.cropBox[1]), 2)]
+        page = reader.pages[pagenumber]
+        if not hasattr(page, "CropBox"):
+            box = page.MediaBox
+        else:
+            box = page.CropBox
+        return [round(float(box[2])-float(box[0]), 2),
+                round(float(box[3])-float(box[1]), 2)]
 
     def pagecount(self, filename: str) -> int:
         reader = self.readers[filename]
-        return reader.getNumPages()
+        return len(reader.pages)
 
     # TODO is there a better way to check the order of the pages?
-    def pages_order(self, filepath: str, pageamount: int=1) -> [str, str]:
+    def pages_order(self, filepath: str) -> [str, str]:
         text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
         # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
         res = list(filter(lambda a: a not in '\x0c', text))
@@ -78,11 +84,6 @@ def two_overviews() -> [core.Layout, core.Layout]:
     first = core.Layout(overview=1, columns=5, rows=5)
     second = core.Layout(overview=27, columns=5, rows=5)
     return [first, second]
-
-
-@pytest.fixture()
-def one_pdf_page_same_boxes() -> PyPDF2.pdf.PageObject:
-    return PyPDF2.pdf.PageObject.createBlankPage(None, 483.307, 729.917)
 
 
 @pytest.fixture()
