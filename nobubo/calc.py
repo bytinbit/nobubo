@@ -68,6 +68,8 @@ def parse_output_layout(output_layout_cli: str, print_margin: int) -> [int]:
         return None
     if output_layout_cli == "a0":
         print_size: List[int] = convert_to_mm("841x1189")
+    if output_layout_cli == "us":  # Arch E /Arch 6 size of 36 × 48 inches
+        print_size: List[int] = convert_to_mm("914x1220")
     elif "x" in output_layout_cli:
         print_size: List[int] = convert_to_mm(output_layout_cli)
 
