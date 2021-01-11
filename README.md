@@ -59,7 +59,7 @@ $ nobubo --help
 Available commands:
 
 ```bash
-$ nobubo --il OVERVIEW COLUMNS ROWS --ol {a0|mmxmm} {--reverse} {--margin mm} INPUTPATH OUTPUTPATH
+$ nobubo --il OVERVIEW COLUMNS ROWS --ol {a0|us|mmxmm} {--reverse} {--margin mm} INPUTPATH OUTPUTPATH
 ```
 
 Have a look at the mock patterns in the test folder. Use them with with the above commands and see how it works. 
@@ -76,6 +76,7 @@ $ nobubo --il 1 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf" "home/ali
   * `6 5`: columns and rows you count on the overview sheet.
 * `--ol` (output layout) defines the size on which the pattern shall be printed. Currently supported:
   * `a0`: Output size is A0.
+  * `us`: Output size is "copyshop size" of 36 x 48 inches, also called ["Arch E / Arch 6" ](https://en.wikipedia.org/wiki/Paper_size#Architectural_sizes)
   * `mmxmm`: use a custom output size in millimeters, e.g. `920x1187`.
 * if `--ol` is omitted, Nobubo just prints a huge collage of all assembled pages without chopping them up into an output layout.
 * `--reverse`: as default, the pattern is assembled from top left to bottom right. Use the `--reverse` flag to assemble it from bottom left to top right, which is needed for Burda patterns for example.
