@@ -20,6 +20,7 @@ Helpers for calculations, conversions, generations.
 import math
 import pathlib
 import random
+import re
 import string
 from dataclasses import dataclass
 from typing import List
@@ -62,16 +63,16 @@ def parse_input_layouts(input_layout: (int, int, int)) ->[core.Layout]:
     return [core.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
 
-def parse_output_layout(output_layout_cli: str, print_margin: int) -> [int]:
+def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> [int]:
     print_size: List[int] = []
     if output_layout_cli is None:
         return None
     if output_layout_cli == "a0":
-        print_size: List[int] = convert_to_mm("841x1189")
+        print_size = convert_to_mm("841x1189")
     if output_layout_cli == "us":  # Arch E /Arch 6 size of 36 × 48 inches
-        print_size: List[int] = convert_to_mm("914x1220")
+        print_size = convert_to_mm("914x1220")
     elif "x" in output_layout_cli:
-        print_size: List[int] = convert_to_mm(output_layout_cli)
+        print_size = convert_to_mm(output_layout_cli)
 
     if print_margin:
         return [size - (2 * print_margin) for size in print_size]
@@ -121,7 +122,7 @@ def calculate_nup_factors(pagesize: core.PageSize, output_layout: [int]) -> Fact
 
 
 def convert_to_mm(output_layout: str) -> [int, int]:
-    ol_in_mm = output_layout.split("x")
+    ol_in_mm = re.compile(r"\d+[x]\d+").findall(output_layout)[0].split("x")
     return [int(x) for x in ol_in_mm]
 
 
