@@ -18,35 +18,48 @@ In the end, even though nobubo as been developed with sewing patterns in mind, i
 
 ## Installation
 
-1. Clone this repository and change into the folder `nobubo`.
+1. Clone this repository.
+2. Change into the folder you just cloned, it's called `nobubo`.
+3. [Create a virtual environment](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv) in the cloned repository and activate it.
+4. Stay in the folder and install nobubo locally via pip:
 
-2. [Create a virtual environment](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv) in the cloned repository and activate it.
+```bash
+$ pip install .
+```
 
-3. Install all required modules:
+Check the installation with one of the mock patterns:
+
+```bash
+$ nobubo --il 1 8 4 --ol a0 "tests/testdata/mockpattern_oneoverview_8x4.pdf" "sample.pdf"
+```
+
+**Installation without pip:**
 
  ```bash
 $ pip install -r requirements.txt
  ```
 
-4. Check the installation with one of the mock patterns:
+Check the installation with one of the mock patterns:
 
 
  ```bash
 $ python -m nobubo --il 1 8 4 --ol a0 "tests/testdata/mockpattern_oneoverview_8x4.pdf" "sample.pdf"
  ```
 
+All further commands must then be run with `pytho -m nobubo`.
+
 ## Usage
 
 Show basic information:
 
 ```bash
-$ python -m nobubo --help
+$ nobubo --help
 ```
 
 Available commands:
 
 ```bash
-$ python -m nobubo --il OVERVIEW COLUMNS ROWS --ol {a0|mmxmm} {--reverse} {--margin mm} INPUTPATH OUTPUTPATH
+$ nobubo --il OVERVIEW COLUMNS ROWS --ol {a0|mmxmm} {--reverse} {--margin mm} INPUTPATH OUTPUTPATH
 ```
 
 Have a look at the mock patterns in the test folder. Use them with with the above commands and see how it works. 
@@ -56,7 +69,7 @@ Have a look at the mock patterns in the test folder. Use them with with the abov
 This example pattern has one overview sheet on page 1 with 6 columns and 5 rows (see also picture below) and is assembled from bottom left to top right:
 
 ```bash
-$ python -m nobubo --il 1 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
+$ nobubo --il 1 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
 ```
 *  `--il ` (input layout) is required and followed by three numbers:
   * `1`: the page on which the overview sheet is located. `0` if there is no overview.
@@ -80,7 +93,7 @@ Of course, you can still choose to print pages 2-4 on A4 from your original patt
 ### Example with two overview sheets
 
 ```bash
-$ python -m nobubo --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
+$ nobubo --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
 ```
 
 The first overview sheet is on page 1 with 8 columns, 4 rows: `--il 1 8 4`.  The second overview sheet is on page 34 with 7 columns, 3 rows: `--il 34 7 3`. The assembly is from top left to bottom right, the output on A0.
@@ -88,7 +101,7 @@ The first overview sheet is on page 1 with 8 columns, 4 rows: `--il 1 8 4`.  The
 ### Example with a collage output
 
 ``` bash
-$ python -m nobubo --il 1 8 4 --il 34 7 3 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
+$ nobubo --il 1 8 4 --il 34 7 3 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
 ```
 
 This prints only two pdfs (=2 overview sheets) which contain each a huge collage.
@@ -100,7 +113,7 @@ Some pattern companies provide the overview sheet separately, for example in the
 Use the optional flag `--margin 20` so that a printing border of 2 cm is included on every A0 page:
 
 ```bash
-$ python -m nobubo --il 0 6 5 --ol a0 --margin 20 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
+$ nobubo --il 0 6 5 --ol a0 --margin 20 "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
 ```
 
 ## Caveats

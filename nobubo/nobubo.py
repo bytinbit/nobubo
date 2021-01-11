@@ -54,16 +54,16 @@ def main(input_layout_cli, output_layout_cli, print_margin, reverse_assembly, in
     These overviews are usually provided along with the pattern pages in the same pdf.
     If no overview sheet is in the pattern pdf itself, write 0 in the arguments given: --il 0 8 4.
 
-    Note: In order for nobubo to function, you need the original pdf pattern.
+    Note: In order to use nobubo, you need the original pdf pattern.
     Create a backup of the original if you are afraid to have it damaged in any way.
     The author takes no responsibility if you face any fit issues or other problems now or later on.
 
-    Example: A digital pattern contains 2 overview sheets at page 1 and 34 with different layouts each. The result
-    should be printed on A0 paper:
+    Example: A digital pattern contains 2 overview sheets at page 1 and 34 with different layouts each.
+    The output is to be printed on A0 paper:
 
-    python -m nobubo --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
+    $ nobubo --il 1 8 4 -il 34 7 3 --ol a0 "home/alice/mypattern.pdf" "home/alice/results/test_collage.pdf"
 
-    Further information and the readme can be found on https://github.com/bytinbit/nobubo
+    See the readme for further information: https://github.com/bytinbit/nobubo
 
     Arguments:
 
