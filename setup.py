@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="nobubo-bytinbit",
-    version="1.1.0",
+    version="1.2.0",
     description="Nobubo assembles a digital pdf sewing pattern and chops it into a desired output size to be printed.",
     long_description=long_description,
     long_description_content_type="text/markdown",    
@@ -17,7 +17,7 @@ setup(
         "console_scripts": ["nobubo = nobubo.nobubo:main"]
         },
     python_requires=">=3.7",
-    install_requires=["click", "PyPDF2"],
+    install_requires=["click", "pikepdf"],
     classifiers=[
         "Topic :: Printing",
         "Topic :: Utilities",

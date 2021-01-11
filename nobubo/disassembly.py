@@ -22,7 +22,7 @@ Contains functions for various output layouts.
 from copy import copy
 import pathlib
 
-import PyPDF2
+from pikepdf import Pdf, Page
 
 from nobubo import core, calc, output
 
@@ -31,25 +31,23 @@ def create_output_files(temp_collage_paths: [pathlib.Path],
                         input_properties: core.InputProperties,
                         output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
-        with collage_path.open("rb") as collagefile:
-            reader = PyPDF2.PdfFileReader(collagefile, strict=False)
-            collage = reader.getPage(0)
-            new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
-            print(f"\nChopping up the collage...")
-            chopped_up_files = _create_output_files(collage, input_properties.pagesize,
-                                                    input_properties.layout[counter], output_properties.output_layout)
-            print(f"Successfully chopped up the collage.\n")
-            output.write_chops(chopped_up_files, new_outputpath)
-            print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
+        collage = Pdf.open(collage_path)
+        new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
+        print(f"\nChopping up the collage...")
+        chopped_up_files = _create_output_files(collage, input_properties.pagesize,
+                                                input_properties.layout[counter], output_properties.output_layout)
+        print(f"Successfully chopped up the collage.\n")
+        output.write_chops(chopped_up_files, new_outputpath)
+        print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
 
 
-def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
+def _create_output_files(collage: Pdf,
                          pagesize: core.PageSize,
                          current_layout: core.Layout,
-                         output_layout: [int]) -> PyPDF2.PdfFileWriter:
+                         output_layout: [int]) -> Pdf:
     """
     Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
-    :param assembled_collage: One pdf page that contains all assembled pattern pages.
+    :param collage: One pdf page that contains all assembled pattern pages.
     :param input_properties: Properties of the pdf.
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
@@ -59,10 +57,11 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
     lowerleft_factor = calc.Factor(x=0, y=0)
     upperright_factor = calc.Factor(x=1, y=1)
 
-    writer = PyPDF2.PdfFileWriter()
-    for x in range(0, calc.calculate_pages_needed(current_layout, n_up_factor)):
-        page = copy(assembled_collage)
-        # cf. https://stackoverflow.com/questions/52315259/pypdf2-cant-add-multiple-cropped-pages#
+    output = Pdf.new()
+    output.copy_foreign(collage.Root) # TODO must Root be updated if new pages are added?
+    # Root must be copied too, not only the page: thanks to https://github.com/cfcurtis/sewingutils for this!
+    for i in range(0, calc.calculate_pages_needed(current_layout, n_up_factor)):
+        page = output.copy_foreign(collage.pages[0])
 
         lowerleft: core.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, pagesize)
         upperright: core.Point = _calculate_upperright_point(upperright_factor, n_up_factor, current_layout, pagesize)
@@ -71,11 +70,10 @@ def _create_output_files(assembled_collage: PyPDF2.pdf.PageObject,
         colsleft = _calculate_colsrows_left(current_layout.columns, upperright_factor.x, n_up_factor.x)
         lowerleft_factor, upperright_factor = _adjust_factors(lowerleft_factor, upperright_factor, colsleft)
 
-        page.cropBox.lowerLeft = (lowerleft.x, lowerleft.y)
-        page.cropBox.upperRight = (upperright.x, upperright.y)
-        writer.addPage(page)
+        page.CropBox = [lowerleft.x, lowerleft.y, upperright.x, upperright.y]
+        output.pages.append(page)
 
-    return writer
+    return output
 
 
 def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) -> int:
