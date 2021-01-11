@@ -1,5 +1,4 @@
 import pathlib
-# import PyPDF2
 import pikepdf
 import pytest
 
