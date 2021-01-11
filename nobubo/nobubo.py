@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 import pathlib
+import re
 import sys
 import tempfile
 
@@ -24,11 +25,11 @@ from nobubo import assembly, disassembly, calc, output
 
 
 def validate_output_layout(ctx, param, value):
-    try:
-        value is not None and (value == "a0" or calc.convert_to_mm(value))
+    p = re.compile(r"(a0)|(us)|(\d+[x]\d+)")
+    if value is None or bool(p.match(value)):
         return value
-    except ValueError:
-        raise click.BadParameter(f"If custom layout was chosen, have you written it as 'mmxmm', such as 222x444?")
+    else:
+        raise click.BadParameter(f"Output layout {value} does not exist. Have you chosen a0, us or a custom layout, such as 222x444?")
 
 
 @click.command()
@@ -37,8 +38,8 @@ def validate_output_layout(ctx, param, value):
               metavar="OVERVIEW COLUMNS ROWS")
 @click.option("--ol", "output_layout_cli", nargs=1, type=click.STRING,
               callback=validate_output_layout,
-              help="Output layout. Supported formats: a0, custom. No output layout provided creates a huge collage.",
-              metavar="a0 | mmxmm")
+              help="Output layout. Supported formats: a0, us, custom. No output layout provided creates a huge collage.",
+              metavar="a0 | us | mmxmm")
 @click.option("--margin", "print_margin", nargs=1, type=click.INT,
               help="Define an optional print margin in mm.",
               metavar="mm")
