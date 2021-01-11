@@ -22,7 +22,7 @@ Contains functions for various output layouts.
 from copy import copy
 import pathlib
 
-from pikepdf import Pdf, Page
+import pikepdf
 
 from nobubo import core, calc, output
 
@@ -31,7 +31,7 @@ def create_output_files(temp_collage_paths: [pathlib.Path],
                         input_properties: core.InputProperties,
                         output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
-        collage = Pdf.open(collage_path)
+        collage = pikepdf.Pdf.open(collage_path)
         new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
         print(f"\nChopping up the collage...")
         chopped_up_files = _create_output_files(collage, input_properties.pagesize,
@@ -41,10 +41,10 @@ def create_output_files(temp_collage_paths: [pathlib.Path],
         print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
 
 
-def _create_output_files(collage: Pdf,
+def _create_output_files(collage: pikepdf.Pdf,
                          pagesize: core.PageSize,
                          current_layout: core.Layout,
-                         output_layout: [int]) -> Pdf:
+                         output_layout: [int]) -> pikepdf.Pdf:
     """
     Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
     :param collage: One pdf page that contains all assembled pattern pages.
@@ -57,7 +57,7 @@ def _create_output_files(collage: Pdf,
     lowerleft_factor = calc.Factor(x=0, y=0)
     upperright_factor = calc.Factor(x=1, y=1)
 
-    output = Pdf.new()
+    output = pikepdf.Pdf.new()
     output.copy_foreign(collage.Root)
     # Root must be copied too, not only the page: thanks to https://github.com/cfcurtis/sewingutils for this!
     for i in range(0, calc.calculate_pages_needed(current_layout, n_up_factor)):
