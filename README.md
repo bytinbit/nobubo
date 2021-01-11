@@ -7,7 +7,7 @@ That's why I wrote nobubo: This tool assembles the pages of a digital pdf patter
 
 Nobubo has been developed and tested with several download patterns from Burda, Knipmode and other brands successfully.
 
-In the end, even though nobubo as been developed with sewing patterns in mind, it is basically a fancy n-up tool for PDFs in general.
+In the end, even though nobubo has been developed with sewing patterns in mind, it is basically a fancy n-up tool for PDFs in general.
 
 ## Prerequisites
 * A digital pattern where each page is made to be printed on A4 or US letter size. **If you haven't purchased a digital pattern, Nobubo is useless**.
@@ -122,3 +122,9 @@ $ nobubo --il 0 6 5 --ol a0 --margin 20 "home/alice/patterns/jacket.pdf" "home/a
 * When you print the final pattern pages,  double-check and measure the control square. Don't forget to print 100% "as is", with any scaling or page fitting off.
 
 **I do not take any responsibility if nobubo leads to ill-matching garments or any other problems whatsoever. You use this tool at your own risk. If in doubt, make a backup of your original pattern pdf. Please have a look at the license if you want to improve the tool yourself.**
+
+## Thanks
+
+[The_Compiler](https://github.com/The-Compiler) for their invaluable feedback and encouragement.
+
+I was stuck on how to use pikepdf properly, [cfcurtis' sewingutils](https://github.com/cfcurtis/sewingutils) provided the answer.
