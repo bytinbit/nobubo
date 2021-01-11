@@ -14,14 +14,14 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
-from pikepdf import Pdf
+import pikepdf
 import pathlib
 import sys
 
 from nobubo import core, calc
 
 
-def write_chops(collage: Pdf, output_path: pathlib.Path):
+def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path):
     print("Writing file...")
     try:
         collage.save(output_path)
@@ -33,6 +33,6 @@ def write_chops(collage: Pdf, output_path: pathlib.Path):
 def write_collage(temp_collage_paths: [pathlib.Path], output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
         new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
-        temp_collage = Pdf.open(collage_path)
+        temp_collage = pikepdf.Pdf.open(collage_path)
         temp_collage.save(new_outputpath)
         print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")
