@@ -156,6 +156,22 @@ def test_one_overview_normal_custom(testdata, tmp_path, pdftester):
 
     assert pdftester.pages_order(tmp_path / "mock_1.pdf") == ["1", "32"]
 
+def test_one_overview_normal_us(testdata, tmp_path, pdftester):
+    filepath = testdata / "mockpattern_oneoverview_8x4.pdf"
+    output_filepath = tmp_path / "mock.pdf"
+    runner = CliRunner()
+    result = runner.invoke(nobubo.main, ["--il", "1", "8", "4", "--ol", "us", str(filepath), str(output_filepath)])
+    print(result.output)
+    assert result.exit_code == 0
+    assert pdftester.read() == ["mock_1.pdf"]
+
+    assert pdftester.pagecount("mock_1.pdf") == 2
+
+    assert pdftester.pagesize("mock_1.pdf", 0) == [2381.2, 3367.56]
+    assert pdftester.pagesize("mock_1.pdf", 1) == [2381.2, 3367.56]
+
+    assert pdftester.pages_order(tmp_path / "mock_1.pdf") == ["1", "32"]
+
 
 def test_two_overviews_normal_a0(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_twooverviews_8x4_7x3.pdf"
