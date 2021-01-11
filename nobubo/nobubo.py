@@ -26,10 +26,12 @@ from nobubo import assembly, disassembly, calc, output
 
 def validate_output_layout(ctx, param, value):
     p = re.compile(r"(a0)|(us)|(\d+[x]\d+)")
-    if value is None or bool(p.match(value)):
+    try:
+        assert value is None or p.match(value)
         return value
-    else:
-        raise click.BadParameter(f"Output layout {value} does not exist. Have you chosen a0, us or a custom layout, such as 222x444?")
+    except AssertionError:
+        raise click.BadParameter(f"Output layout {value} does not exist. "
+                                 f"Have you chosen a0, us or a custom layout, such as 222x444?")
 
 
 @click.command()
