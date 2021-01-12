@@ -36,3 +36,9 @@ class TestCalculations:
         assert mm[0] == 920
         assert mm[1] == 1187
 
+    def test_parse_output_layout(self):
+        assert calc.parse_output_layout("a0") == [841, 1189]
+        assert calc.parse_output_layout("us") == [914, 1220]
+        assert calc.parse_output_layout("123x456") == [123, 456]
+        assert calc.parse_output_layout("123x456s") == [123, 456]
+        assert calc.parse_output_layout("a0", 20) == [801, 1149]
