@@ -21,7 +21,7 @@ Contains functions for various output layouts.
 import pathlib
 import subprocess
 
-from nobubo import core, calc
+from nobubo import core, calc, errors
 
 
 def assemble_collage(input_properties: core.InputProperties,
@@ -50,7 +50,7 @@ def _assemble(input_properties: core.InputProperties,
     collage_height = input_properties.pagesize.height * current_layout.rows
 
     if input_properties.reverse_assembly:
-        start, end, step = calc.calculate_pagerange_reverse(current_layout)
+        start, end, step = calc.pagerange_reverse(current_layout)
         l = list(reversed([(x+1, x+current_layout.columns) for x in range(start, end, step)]))
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
@@ -74,7 +74,7 @@ def _assemble(input_properties: core.InputProperties,
     ]
 
     input_filepath = temp_output_dir / "texfile.tex"
-    output_filename = f"output_{calc.generate_random_string()}"
+    output_filename = f"output_{calc.random_string()}"
 
     with input_filepath.open("w") as f:  # pathlib has its own open method
         f.writelines(file_content)
@@ -86,9 +86,9 @@ def _assemble(input_properties: core.InputProperties,
                input_filepath]
 
     try:
-        _ = subprocess.check_output(command, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        print(f"Error while calling pdflatex:\n{e.output}")
+        subprocess.check_output(command, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError:
+        raise errors.UsageError(f"Error: pdflatex encountered a problem while assembling the collage and had to abort.")
 
     return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")
 
