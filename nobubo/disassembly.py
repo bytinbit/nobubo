@@ -23,14 +23,17 @@ import pathlib
 
 import pikepdf
 
-from nobubo import core, calc
+from nobubo import core, calc, errors
 
 
 def create_output_files(temp_collage_paths: [pathlib.Path],
                         input_properties: core.InputProperties,
                         output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
-        collage = pikepdf.Pdf.open(collage_path)
+        try:
+            collage = pikepdf.Pdf.open(collage_path)
+        except OSError as e:
+            raise errors.UsageError(f"Could not open collage file for disassembly:\n{e}.")
         new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
         print(f"\nChopping up the collage...")
         chopped_up_files = _create_output_files(collage, input_properties.pagesize,
@@ -45,17 +48,19 @@ def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path):
     try:
         collage.save(output_path)
     except OSError as e:
-        print(f"While writing the file, this error occurred:\n{e}")
-        sys.exit(1)
+        raise errors.UsageError(f"An error occurred while writing the output file:\n{e}")
 
 
 def write_collage(temp_collage_paths: [pathlib.Path], output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
         new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
-        temp_collage = pikepdf.Pdf.open(collage_path)
-        temp_collage.save(new_outputpath)
+        try:
+            temp_collage = pikepdf.Pdf.open(collage_path)
+            temp_collage.save(new_outputpath)
+        except OSError as e:
+            raise errors.UsageError(f"An error occurred while writing the collage:\n{e}")
         print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")
-        
+
 
 def _create_output_files(collage: pikepdf.Pdf,
                          pagesize: core.PageSize,

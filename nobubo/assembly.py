@@ -21,7 +21,7 @@ Contains functions for various output layouts.
 import pathlib
 import subprocess
 
-from nobubo import core, calc
+from nobubo import core, calc, errors
 
 
 def assemble_collage(input_properties: core.InputProperties,
@@ -86,9 +86,9 @@ def _assemble(input_properties: core.InputProperties,
                input_filepath]
 
     try:
-        _ = subprocess.check_output(command, stderr=subprocess.STDOUT)
+        subprocess.check_output(command, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        print(f"Error while calling pdflatex:\n{e.output}")
+        raise errors.UsageError(f"{e.output}\nError while calling pdflatex.")
 
     return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")
 

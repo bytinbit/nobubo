@@ -21,8 +21,7 @@ import tempfile
 
 import click
 
-import nobubo.disassembly
-from nobubo import assembly, disassembly, calc
+from nobubo import assembly, disassembly, calc, errors
 
 
 def validate_output_layout(ctx, param, value):
@@ -47,8 +46,8 @@ def validate_output_layout(ctx, param, value):
               help="Define an optional print margin in mm.",
               metavar="mm")
 @click.option("--reverse", "reverse_assembly", is_flag="True",
-              help="No reverse flag: collage is assembled from top left to bottom right. With flag: collage "
-                   "is assembled from bottom left to top right.")
+              help="With reverse flag: collage is assembled from bottom left to top right."
+                   "No flag: collage is assembled from top left to bottom right. ")
 @click.argument("input_path", type=click.STRING)
 @click.argument("output_path", type=click.STRING)
 def main(input_layout_cli, output_layout_cli, print_margin, reverse_assembly, input_path, output_path):
@@ -87,8 +86,7 @@ def main(input_layout_cli, output_layout_cli, print_margin, reverse_assembly, in
             if output_properties.output_layout is not None:
                 disassembly.create_output_files(temp_collage_paths, input_properties, output_properties)
             else:  # default: no output_layout specified, print collage pdf
-                nobubo.disassembly.write_collage(temp_collage_paths, output_properties)
-
-    except OSError as e:
-        print(f"While reading the file, this error occurred:\n{e}")
+                disassembly.write_collage(temp_collage_paths, output_properties)
+    except (errors.UsageError, click.BadParameter) as e:
+        print(e)
         sys.exit(1)

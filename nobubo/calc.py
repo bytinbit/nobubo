@@ -27,7 +27,7 @@ from typing import List
 
 import pikepdf
 
-from nobubo import core
+from nobubo import core, errors
 
 
 @dataclass
@@ -42,20 +42,22 @@ class Factor:
 def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print_margin: int,
                     reverse_assembly: bool, input_path: str, output_path: str
                     ) -> (core.InputProperties, core.OutputProperties):
-    with pikepdf.open(pathlib.Path(input_path)) as inputfile:
-        # first page (getPage(0)) may contain overview, so get second one
-        width, height = calculate_page_dimensions(inputfile.pages[1])
-        input_properties = core.InputProperties(
-            input_filepath=pathlib.Path(input_path),
-            output_path=pathlib.Path(output_path),
-            number_of_pages=len(inputfile.pages),
-            pagesize=core.PageSize(width=width, height=height),
-            layout=parse_input_layouts(input_layout),
-            reverse_assembly=reverse_assembly)
-
-        output_properties = core.OutputProperties(output_path=pathlib.Path(output_path),
-                                                  output_layout=parse_output_layout(output_layout_cli, print_margin),
-                                                  )
+    try:
+        with pikepdf.open(pathlib.Path(input_path)) as inputfile:
+            # first page (getPage(0)) may contain overview, so get second one
+            width, height = calculate_page_dimensions(inputfile.pages[1])
+            input_properties = core.InputProperties(
+                input_filepath=pathlib.Path(input_path),
+                output_path=pathlib.Path(output_path),
+                number_of_pages=len(inputfile.pages),
+                pagesize=core.PageSize(width=width, height=height),
+                layout=parse_input_layouts(input_layout),
+                reverse_assembly=reverse_assembly)
+            output_properties = core.OutputProperties(
+                output_path=pathlib.Path(output_path),
+                output_layout=parse_output_layout(output_layout_cli, print_margin))
+    except OSError as e:
+        raise errors.UsageError(f"While reading the input input pdf file, this error occurred:\n{e}")
     return input_properties, output_properties
 
 

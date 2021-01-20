@@ -16,7 +16,7 @@
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-Data classes for nobubo input and output properties and pdf properties.
+Data classes for input, output and pdf properties.
 """
 import pathlib
 from dataclasses import dataclass
