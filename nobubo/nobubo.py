@@ -21,7 +21,8 @@ import tempfile
 
 import click
 
-from nobubo import assembly, disassembly, calc, output
+import nobubo.disassembly
+from nobubo import assembly, disassembly, calc
 
 
 def validate_output_layout(ctx, param, value):
@@ -86,7 +87,7 @@ def main(input_layout_cli, output_layout_cli, print_margin, reverse_assembly, in
             if output_properties.output_layout is not None:
                 disassembly.create_output_files(temp_collage_paths, input_properties, output_properties)
             else:  # default: no output_layout specified, print collage pdf
-                output.write_collage(temp_collage_paths, output_properties)
+                nobubo.disassembly.write_collage(temp_collage_paths, output_properties)
 
     except OSError as e:
         print(f"While reading the file, this error occurred:\n{e}")

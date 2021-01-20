@@ -18,13 +18,12 @@
 """
 Contains functions for various output layouts.
 """
-
-from copy import copy
+import sys
 import pathlib
 
 import pikepdf
 
-from nobubo import core, calc, output
+from nobubo import core, calc
 
 
 def create_output_files(temp_collage_paths: [pathlib.Path],
@@ -37,9 +36,26 @@ def create_output_files(temp_collage_paths: [pathlib.Path],
         chopped_up_files = _create_output_files(collage, input_properties.pagesize,
                                                 input_properties.layout[counter], output_properties.output_layout)
         print(f"Successfully chopped up the collage.\n")
-        output.write_chops(chopped_up_files, new_outputpath)
+        write_chops(chopped_up_files, new_outputpath)
         print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
 
+
+def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path):
+    print("Writing file...")
+    try:
+        collage.save(output_path)
+    except OSError as e:
+        print(f"While writing the file, this error occurred:\n{e}")
+        sys.exit(1)
+
+
+def write_collage(temp_collage_paths: [pathlib.Path], output_properties: core.OutputProperties):
+    for counter, collage_path in enumerate(temp_collage_paths):
+        new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
+        temp_collage = pikepdf.Pdf.open(collage_path)
+        temp_collage.save(new_outputpath)
+        print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")
+        
 
 def _create_output_files(collage: pikepdf.Pdf,
                          pagesize: core.PageSize,
