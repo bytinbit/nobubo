@@ -4,6 +4,7 @@ import pytest
 
 import textract
 
+import nobubo.core
 from nobubo import core, calc
 
 
@@ -86,10 +87,10 @@ def two_overviews() -> [core.Layout, core.Layout]:
 
 
 @pytest.fixture()
-def n_up_factor_a0() -> calc.Factor:
-    return calc.Factor(x=4, y=4)
+def n_up_factor_a0() -> nobubo.core.Factor:
+    return nobubo.core.Factor(x=4, y=4)
 
 
 @pytest.fixture()
-def nup_factor_custom() -> calc.Factor:
-    return calc.Factor(x=5, y=4)
+def nup_factor_custom() -> nobubo.core.Factor:
+    return nobubo.core.Factor(x=5, y=4)

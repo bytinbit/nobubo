@@ -18,11 +18,11 @@
 """
 Contains functions for various output layouts.
 """
-import sys
 import pathlib
 
 import pikepdf
 
+import nobubo.core
 from nobubo import core, calc, errors
 
 
@@ -75,8 +75,8 @@ def _create_output_files(collage: pikepdf.Pdf,
     """
     n_up_factor = calc.nup_factors(pagesize, output_layout)
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = calc.Factor(x=0, y=0)
-    upperright_factor = calc.Factor(x=1, y=1)
+    lowerleft_factor = nobubo.core.Factor(x=0, y=0)
+    upperright_factor = nobubo.core.Factor(x=1, y=1)
 
     output = pikepdf.Pdf.new()
     output.copy_foreign(collage.Root)
@@ -101,15 +101,15 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
     return layout_element - (factor * nup_factor)
 
 
-def _calculate_lowerleft_point(lowerleft_factor: calc.Factor,
-                               n_up_factor: calc.Factor,
+def _calculate_lowerleft_point(lowerleft_factor: nobubo.core.Factor,
+                               n_up_factor: nobubo.core.Factor,
                                pagesize: core.PageSize) -> core.Point:
     return core.Point(x=lowerleft_factor.x * n_up_factor.x * pagesize.width,
                      y=lowerleft_factor.y * n_up_factor.y * pagesize.height)
 
 
-def _calculate_upperright_point(upperright_factor: calc.Factor,
-                                n_up_factor: calc.Factor,
+def _calculate_upperright_point(upperright_factor: nobubo.core.Factor,
+                                n_up_factor: nobubo.core.Factor,
                                 current_layout: core.Layout,
                                 pagesize: core.PageSize) -> core.Point:
     upperright = core.Point(x=0, y=0)
@@ -133,22 +133,23 @@ def _calculate_upperright_point(upperright_factor: calc.Factor,
     return upperright
 
 
-def _adjust_factors(lowerleft_factor: calc.Factor, upperright_factor: calc.Factor, colsleft: int) -> (
-        calc.Factor, calc.Factor):
+def _adjust_factors(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor, colsleft: int) -> (
+        nobubo.core.Factor, nobubo.core.Factor):
     if colsleft > 0:  # still assembling the same horizontal line
         return _advance_horizontally(lowerleft_factor, upperright_factor)
     else:  # end of line reached, need to go 1 row up
         return _advance_vertically(lowerleft_factor, upperright_factor)
 
 
-def _advance_horizontally(lowerleft_factor: calc.Factor, upperright_factor: calc.Factor) -> (
-        calc.Factor, calc.Factor):
+def _advance_horizontally(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor) -> (
+        nobubo.core.Factor, nobubo.core.Factor):
     lowerleft_factor.x += 1
     upperright_factor.x += 1
     return lowerleft_factor, upperright_factor
 
 
-def _advance_vertically(lowerleft_factor: calc.Factor, upperright_factor: calc.Factor) -> (calc.Factor, calc.Factor):
+def _advance_vertically(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor) -> (
+nobubo.core.Factor, nobubo.core.Factor):
     lowerleft_factor.x = 0
     lowerleft_factor.y += 1
 
