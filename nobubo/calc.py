@@ -57,7 +57,7 @@ def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print
                 output_path=pathlib.Path(output_path),
                 output_layout=parse_output_layout(output_layout_cli, print_margin))
     except OSError as e:
-        raise errors.UsageError(f"While reading the input input pdf file, this error occurred:\n{e}")
+        raise errors.UsageError(f"While reading the input pdf file, this error occurred:\n{e}")
     return input_properties, output_properties
 
 

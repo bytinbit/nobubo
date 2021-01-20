@@ -87,8 +87,8 @@ def _assemble(input_properties: core.InputProperties,
 
     try:
         subprocess.check_output(command, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        raise errors.UsageError(f"{e.output}\nError while calling pdflatex.")
+    except subprocess.CalledProcessError:
+        raise errors.UsageError(f"Error: pdflatex encountered a problem while assembling the collage and had to abort.")
 
     return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")
 
