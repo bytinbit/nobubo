@@ -25,6 +25,7 @@ import string
 from dataclasses import dataclass
 from typing import List
 
+import click
 import pikepdf
 
 from nobubo import core, errors
@@ -45,7 +46,7 @@ def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print
     try:
         with pikepdf.open(pathlib.Path(input_path)) as inputfile:
             # first page (getPage(0)) may contain overview, so get second one
-            width, height = calculate_page_dimensions(inputfile.pages[1])
+            width, height = page_dimensions(inputfile.pages[1])
             input_properties = core.InputProperties(
                 input_filepath=pathlib.Path(input_path),
                 output_path=pathlib.Path(output_path),
@@ -70,11 +71,11 @@ def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> [in
     if output_layout_cli is None:
         return None
     if output_layout_cli == "a0":
-        print_size = convert_to_mm("841x1189")
+        print_size = to_mm("841x1189")
     if output_layout_cli == "us":  # Arch E /Arch 6 size of 36 × 48 inches
-        print_size = convert_to_mm("914x1220")
+        print_size = to_mm("914x1220")
     elif "x" in output_layout_cli:
-        print_size = convert_to_mm(output_layout_cli)
+        print_size = to_mm(output_layout_cli)
 
     if print_margin:
         return [size - (2 * print_margin) for size in print_size]
@@ -82,11 +83,21 @@ def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> [in
         return print_size
 
 
-def calculate_pages_needed(layout: core.Layout, n_up_factor: Factor) -> int:
+def validate_output_layout(ctx, param, value):
+    p = re.compile(r"(a0)|(us)|(\d+[x]\d+)")
+    try:
+        assert value is None or p.match(value)
+        return value
+    except AssertionError:
+        raise click.BadParameter(f"Output layout {value} does not exist. "
+                                 f"Have you chosen a0, us or a custom layout, such as 222x444?")
+
+
+def pages_needed(layout: core.Layout, n_up_factor: Factor) -> int:
     return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
 
-def calculate_page_dimensions(page: pikepdf.Page) -> (float, float):
+def page_dimensions(page: pikepdf.Page) -> (float, float):
     """
     Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
     :param page: A PDF page.
@@ -99,7 +110,7 @@ def calculate_page_dimensions(page: pikepdf.Page) -> (float, float):
     return round(float(box[2])-float(box[0]), 2), round(float(box[3])-float(box[1]), 2)
 
 
-def convert_to_userspaceunits(width_height: [int, int]) -> core.PageSize:
+def to_userspaceunits(width_height: [int, int]) -> core.PageSize:
     """
     Converts a page's physical width and height from millimeters to default user space unit,
     which are defined in the pdf standard as 1/72 inch.
@@ -116,27 +127,26 @@ def convert_to_userspaceunits(width_height: [int, int]) -> core.PageSize:
                          height=(round(width_height[1] * conversion_factor, 3)))
 
 
-def calculate_nup_factors(pagesize: core.PageSize, output_layout: [int]) -> Factor:
-    output_papersize = convert_to_userspaceunits(output_layout)
+def nup_factors(pagesize: core.PageSize, output_layout: [int]) -> Factor:
+    output_papersize = to_userspaceunits(output_layout)
     x_factor = int(output_papersize.width // pagesize.width)
     y_factor = int(output_papersize.height // pagesize.height)
     return Factor(x=x_factor, y=y_factor)
 
 
-def convert_to_mm(output_layout: str) -> [int, int]:
+def to_mm(output_layout: str) -> [int, int]:
     ol_in_mm = re.compile(r"\d+[x]\d+").findall(output_layout)[0].split("x")
     return [int(x) for x in ol_in_mm]
 
 
-def calculate_pagerange_reverse(layout: core.Layout) -> (int, int, int):
+def pagerange_reverse(layout: core.Layout) -> (int, int, int):
     return layout.overview, (layout.overview + (layout.columns * layout.rows)), layout.columns
 
 
-def generate_new_outputpath(output_path: pathlib.Path, page_count: int):
+def new_outputpath(output_path: pathlib.Path, page_count: int):
     new_filename = f"{output_path.stem}_{page_count + 1}{output_path.suffix}"
     return output_path.parent / new_filename
 
 
-def generate_random_string():
+def random_string():
     return "".join(random.choices(string.ascii_lowercase + string.digits, k=7))
-

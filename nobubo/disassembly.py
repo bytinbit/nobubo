@@ -34,7 +34,7 @@ def create_output_files(temp_collage_paths: [pathlib.Path],
             collage = pikepdf.Pdf.open(collage_path)
         except OSError as e:
             raise errors.UsageError(f"Could not open collage file for disassembly:\n{e}.")
-        new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
+        new_outputpath = calc.new_outputpath(output_properties.output_path, counter)
         print(f"\nChopping up the collage...")
         chopped_up_files = _create_output_files(collage, input_properties.pagesize,
                                                 input_properties.layout[counter], output_properties.output_layout)
@@ -53,7 +53,7 @@ def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path):
 
 def write_collage(temp_collage_paths: [pathlib.Path], output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
-        new_outputpath = calc.generate_new_outputpath(output_properties.output_path, counter)
+        new_outputpath = calc.new_outputpath(output_properties.output_path, counter)
         try:
             temp_collage = pikepdf.Pdf.open(collage_path)
             temp_collage.save(new_outputpath)
@@ -73,7 +73,7 @@ def _create_output_files(collage: pikepdf.Pdf,
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
-    n_up_factor = calc.calculate_nup_factors(pagesize, output_layout)
+    n_up_factor = calc.nup_factors(pagesize, output_layout)
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = calc.Factor(x=0, y=0)
     upperright_factor = calc.Factor(x=1, y=1)
@@ -81,7 +81,7 @@ def _create_output_files(collage: pikepdf.Pdf,
     output = pikepdf.Pdf.new()
     output.copy_foreign(collage.Root)
     # Root must be copied too, not only the page: thanks to https://github.com/cfcurtis/sewingutils for this!
-    for i in range(0, calc.calculate_pages_needed(current_layout, n_up_factor)):
+    for i in range(0, calc.pages_needed(current_layout, n_up_factor)):
         page = output.copy_foreign(collage.pages[0])
 
         lowerleft: core.Point = _calculate_lowerleft_point(lowerleft_factor, n_up_factor, pagesize)

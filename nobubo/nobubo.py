@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
 import pathlib
-import re
 import sys
 import tempfile
 
@@ -24,22 +23,12 @@ import click
 from nobubo import assembly, disassembly, calc, errors
 
 
-def validate_output_layout(ctx, param, value):
-    p = re.compile(r"(a0)|(us)|(\d+[x]\d+)")
-    try:
-        assert value is None or p.match(value)
-        return value
-    except AssertionError:
-        raise click.BadParameter(f"Output layout {value} does not exist. "
-                                 f"Have you chosen a0, us or a custom layout, such as 222x444?")
-
-
 @click.command()
 @click.option("--il", "input_layout_cli", nargs=3, type=click.INT, multiple=True, required=True,
               help="Input layout of the pdf. Can be used multiple times if there is more than 1 overview sheet per pdf.",
               metavar="OVERVIEW COLUMNS ROWS")
 @click.option("--ol", "output_layout_cli", nargs=1, type=click.STRING,
-              callback=validate_output_layout,
+              callback=calc.validate_output_layout,
               help="Output layout. Supported formats: a0, us, custom. No output layout provided creates a huge collage.",
               metavar="a0 | us | mmxmm")
 @click.option("--margin", "print_margin", nargs=1, type=click.INT,
