@@ -22,22 +22,13 @@ import pathlib
 import random
 import re
 import string
-from dataclasses import dataclass
 from typing import List
 
 import click
 import pikepdf
 
 from nobubo import core, errors
-
-
-@dataclass
-class Factor:
-    """
-    Factor class for multiplication.
-    """
-    x: int
-    y: int
+from nobubo.core import Factor
 
 
 def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print_margin: int,

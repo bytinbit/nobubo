@@ -18,14 +18,14 @@
 """
 Data classes for input, output and pdf properties.
 """
-import pathlib
 from dataclasses import dataclass
+import pathlib
 
 
 @dataclass
 class PageSize:
     """
-    Page size where width and height are in user space units.
+    Page size whose width and height are in user space units.
     """
     width: float = 0
     height: float = 0
@@ -52,6 +52,9 @@ class Point:
 
 @dataclass
 class InputProperties:
+    """
+    Holds all information of the input pdf.
+    """
     input_filepath: pathlib.Path
     output_path: pathlib.Path
     number_of_pages: int
@@ -62,5 +65,17 @@ class InputProperties:
 
 @dataclass
 class OutputProperties:
+    """
+    Holds all information of the output pdf.
+    """
     output_path: pathlib.Path
     output_layout: [int]
+
+
+@dataclass
+class Factor:
+    """
+    Factor class for multiplication.
+    """
+    x: int
+    y: int
