@@ -35,8 +35,11 @@ class PageSize:
 class Layout:
     """
     A Pattern layout.
+
+    first_page: The number of the pdf page which marks the beginning of the pattern pages
+    that are covered by the columns and rows.
     """
-    overview: int
+    first_page: int
     columns: int
     rows: int
 

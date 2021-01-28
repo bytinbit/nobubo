@@ -54,7 +54,7 @@ def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print
 
 
 def parse_input_layouts(input_layout: (int, int, int)) ->[core.Layout]:
-    return [core.Layout(overview=data[0], columns=data[1], rows=data[2]) for data in input_layout]
+    return [core.Layout(first_page=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
 
 def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> [int]:
@@ -131,7 +131,7 @@ def to_mm(output_layout: str) -> [int, int]:
 
 
 def pagerange_reverse(layout: core.Layout) -> (int, int, int):
-    return layout.overview, (layout.overview + (layout.columns * layout.rows)), layout.columns
+    return layout.first_page, (layout.first_page + (layout.columns * layout.rows)), layout.columns
 
 
 def new_outputpath(output_path: pathlib.Path, page_count: int):

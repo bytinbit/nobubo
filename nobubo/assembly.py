@@ -55,8 +55,8 @@ def _assemble(input_properties: core.InputProperties,
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
     else:
-        begin = current_layout.overview
-        end = current_layout.overview + (current_layout.columns * current_layout.rows) - 1
+        begin = current_layout.first_page
+        end = current_layout.first_page + (current_layout.columns * current_layout.rows) - 1
         page_range = f"{begin}-{end}"
 
     file_content = [
