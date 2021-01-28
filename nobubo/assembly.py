@@ -55,12 +55,9 @@ def _assemble(input_properties: core.InputProperties,
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
     else:
-        if current_layout.overview == 0:  # file has no overview page
-            page_range = f"1-{current_layout.columns*current_layout.rows}"
-        else:
-            begin = current_layout.overview
-            end = current_layout.overview + (current_layout.columns * current_layout.rows) - 1
-            page_range = f"{begin}-{end}"
+        begin = current_layout.overview
+        end = current_layout.overview + (current_layout.columns * current_layout.rows) - 1
+        page_range = f"{begin}-{end}"
 
     file_content = [
         "\\batchmode\n",
