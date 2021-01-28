@@ -66,23 +66,23 @@ def pdfproperty() -> core.InputProperties:
                                output_path=pathlib.Path("output_test.pdf"),
                                number_of_pages=57,
                                pagesize=core.PageSize(width=483.307, height=729.917),
-                               layout=[core.Layout(overview=1, columns=8, rows=7)])
+                               layout=[core.Layout(first_page=2, columns=8, rows=7)])
     # 8 cols, 7 rows + 1 overview page = 57
 
 @pytest.fixture
 def one_overview_even() -> core.Layout:
-    return core.Layout(overview=1, columns=8, rows=7)
+    return core.Layout(first_page=2, columns=8, rows=7)
 
 
 @pytest.fixture
 def one_overview_uneven() -> core.Layout:
-    return core.Layout(overview=1, columns=9, rows=4)
+    return core.Layout(first_page=2, columns=9, rows=4)
 
 
 @pytest.fixture()
 def two_overviews() -> [core.Layout, core.Layout]:
-    first = core.Layout(overview=1, columns=5, rows=5)
-    second = core.Layout(overview=27, columns=5, rows=5)
+    first = core.Layout(first_page=2, columns=5, rows=5)
+    second = core.Layout(first_page=28, columns=5, rows=5)
     return [first, second]
 
 

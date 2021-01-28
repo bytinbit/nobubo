@@ -51,16 +51,13 @@ def _assemble(input_properties: core.InputProperties,
 
     if input_properties.reverse_assembly:
         start, end, step = calc.pagerange_reverse(current_layout)
-        l = list(reversed([(x+1, x+current_layout.columns) for x in range(start, end, step)]))
+        l = list(reversed([(x, x+current_layout.columns-1) for x in range(start, end, step)]))
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
     else:
-        if current_layout.overview == 0:  # file has no overview page
-            page_range = f"1-{current_layout.columns*current_layout.rows}"
-        else:
-            begin = current_layout.overview + 1
-            end = current_layout.overview + (current_layout.columns * current_layout.rows)
-            page_range = f"{begin}-{end}"
+        begin = current_layout.first_page
+        end = current_layout.first_page + (current_layout.columns * current_layout.rows) - 1
+        page_range = f"{begin}-{end}"
 
     file_content = [
         "\\batchmode\n",
