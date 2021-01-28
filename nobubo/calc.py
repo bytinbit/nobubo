@@ -131,7 +131,7 @@ def to_mm(output_layout: str) -> [int, int]:
 
 
 def pagerange_reverse(layout: core.Layout) -> (int, int, int):
-    return layout.first_page, (layout.first_page + (layout.columns * layout.rows)), layout.columns
+    return layout.first_page, layout.first_page + (layout.columns * layout.rows) - 1, layout.columns
 
 
 def new_outputpath(output_path: pathlib.Path, page_count: int):

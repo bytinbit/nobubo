@@ -51,7 +51,7 @@ def _assemble(input_properties: core.InputProperties,
 
     if input_properties.reverse_assembly:
         start, end, step = calc.pagerange_reverse(current_layout)
-        l = list(reversed([(x+1, x+current_layout.columns) for x in range(start, end, step)]))
+        l = list(reversed([(x, x+current_layout.columns-1) for x in range(start, end, step)]))
         tuples = ["-".join(map(str, i)) for i in l]
         page_range = ",".join(tuples)
     else:
