@@ -10,7 +10,7 @@ Nobubo has been developed and tested with several download patterns from Burda, 
 ## Prerequisites
 * A digital pattern where each page is made to be printed on A4 or US letter size. **If you haven't purchased a digital pattern, nobubo is useless**.
 * Each page is already cropped, so that only the bare pattern is visible (no white borders around the pattern). Nobubo is able to handle cropped pdfs, but you still have to do it yourself.
-* Usually, the assembled pattern pages form a huge rectangle. Some brands provide a handy overview how all the assembled pages are supposed to like like. Some brands, however, disregard this rectangle shape and the assembled pattern is of a weird "rectangle + 2 pages" shape. Nobubo can only handle rectangle shapes, so those leftover pages have to be assembled by hand.
+* Usually, the assembled pattern pages form a huge rectangle. Some brands provide a handy overview how all the assembled pages are supposed to look like. Some brands, however, disregard this rectangle shape and the assembled pattern is of a weird "rectangle + n pages" shape. Nobubo can only handle rectangle shapes, so those leftover pages have to be assembled by hand.
 * Python >=3.7
 * `pdflatex` [must be installed](https://tex.stackexchange.com/questions/49569/where-to-download-pdflatex-exe)
 
@@ -31,7 +31,7 @@ Check the installation with one of the mock patterns and run nobubo:
 $ nobubo --il 2 8 4 --ol a0 "tests/testdata/mockpattern_oneoverview_8x4.pdf" "sample.pdf"
 ```
 
-**Installation requirements file:**
+**Installation via requirements file:**
 
  ```bash
 $ pip install -r requirements.txt
@@ -60,7 +60,7 @@ Available commands:
 $ nobubo --il FIRSTPAGE COLUMNS ROWS --ol {a0|us|mmxmm} {--reverse} {--margin mm} INPUTPATH OUTPUTPATH
 ```
 
-Have a look at the mock patterns in the test folder. Use them with with the above commands and see how it works. 
+Have a look at the mock patterns in the test folder. Use them with with the above commands to see how nobubo works. 
 
 ### Example with one overview sheet, reverse assembly, A0 output
 
@@ -77,7 +77,7 @@ $ nobubo --il 2 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf" "home/ali
   * `us`: Output size is "copyshop size" of 36 x 48 inches, also called "[Arch E / Arch 6 ](https://en.wikipedia.org/wiki/Paper_size#Architectural_sizes)".
   * `mmxmm`: use a custom output size in millimeters, e.g. `920x1187`.
 * if `--ol` is omitted, nobubo just prints a huge collage of all assembled pages without chopping them up into an output layout.
-* `--reverse`: as default, the pattern is assembled from top left to bottom right. Use the `--reverse` flag to assemble it from bottom left to top right, which is needed for Burda patterns for example.
+* `--reverse`: as default, the pattern is assembled from top left to bottom right. Use the `--reverse` flag to assemble it from bottom left to top right, which is for example needed for Burda patterns.
 * `"home/alice/patterns/jacket.pdf"`: the path to the original pattern including filename.
 * `"home/alice/patterns/jacket_a0.pdf"`: the path where the collage should be saved, including filename.
 
@@ -116,4 +116,4 @@ This prints only two pdfs (=2 overview sheets) which contain each a huge collage
 
 [The_Compiler](https://github.com/The-Compiler) for their invaluable feedback and encouragement.
 
-I was stuck on how to use pikepdf properly, [cfcurtis' sewingutils](https://github.com/cfcurtis/sewingutils) provided the answer.
+I was stuck on how to use pikepdf properly, [cfcurtis' sewingutils](https://github.com/cfcurtis/sewingutils) provided an answer.
