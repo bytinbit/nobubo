@@ -19,7 +19,7 @@
 Contains functions for various output layouts.
 """
 import pathlib
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import pikepdf
 
@@ -29,7 +29,7 @@ from nobubo import core, calc, errors
 
 def create_output_files(temp_collage_paths: List[pathlib.Path],
                         input_properties: core.InputProperties,
-                        output_properties: core.OutputProperties):
+                        output_properties: core.OutputProperties) -> None:
     for counter, collage_path in enumerate(temp_collage_paths):
         try:
             collage = pikepdf.Pdf.open(collage_path)
@@ -44,7 +44,7 @@ def create_output_files(temp_collage_paths: List[pathlib.Path],
         print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
 
 
-def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path):
+def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path) -> None:
     print("Writing file...")
     try:
         collage.save(output_path)
@@ -52,7 +52,7 @@ def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path):
         raise errors.UsageError(f"An error occurred while writing the output file:\n{e}")
 
 
-def write_collage(temp_collage_paths: List[pathlib.Path], output_properties: core.OutputProperties):
+def write_collage(temp_collage_paths: List[pathlib.Path], output_properties: core.OutputProperties) -> None:
     for counter, collage_path in enumerate(temp_collage_paths):
         new_outputpath = calc.new_outputpath(output_properties.output_path, counter)
         try:
@@ -66,7 +66,7 @@ def write_collage(temp_collage_paths: List[pathlib.Path], output_properties: cor
 def _create_output_files(collage: pikepdf.Pdf,
                          pagesize: core.PageSize,
                          current_layout: core.Layout,
-                         output_layout: List[int]) -> pikepdf.Pdf:
+                         output_layout: Optional[List[int]]) -> pikepdf.Pdf:
     """
     Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
     :param collage: One pdf page that contains all assembled pattern pages.
@@ -74,12 +74,14 @@ def _create_output_files(collage: pikepdf.Pdf,
     :param output_layout: The desired output layout.
     :return: The pdf with several pages, ready to write to disk.
     """
+    assert output_layout is not None
     n_up_factor = calc.nup_factors(pagesize, output_layout)
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
     lowerleft_factor = nobubo.core.Factor(x=0, y=0)
     upperright_factor = nobubo.core.Factor(x=1, y=1)
 
-    output = pikepdf.Pdf.new()
+    pike = pikepdf.Pdf()
+    output = pike.new()
     output.copy_foreign(collage.Root)
     # Root must be copied too, not only the page: thanks to https://github.com/cfcurtis/sewingutils for this!
     for i in range(0, calc.pages_needed(current_layout, n_up_factor)):

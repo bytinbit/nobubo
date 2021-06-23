@@ -47,7 +47,8 @@ def parse_cli_input(input_layout: List[Tuple[int, int, int]], output_layout_cli:
                 reverse_assembly=reverse_assembly)
             output_properties = core.OutputProperties(
                 output_path=pathlib.Path(output_path),
-                output_layout=parse_output_layout(output_layout_cli, print_margin))
+                output_layout= parse_output_layout(output_layout_cli, print_margin) if output_layout_cli else None
+            )
     except OSError as e:
         raise errors.UsageError(f"While reading the input pdf file, this error occurred:\n{e}")
     return input_properties, output_properties
@@ -59,8 +60,6 @@ def parse_input_layouts(input_layout: List[Tuple[int, int, int]]) -> List[core.L
 
 def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> List[int]:
     print_size: List[int] = []
-    if output_layout_cli is None:
-        return None
     if output_layout_cli == "a0":
         print_size = to_mm("841x1189")
     if output_layout_cli == "us":  # Arch E /Arch 6 size of 36 × 48 inches
@@ -95,9 +94,11 @@ def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
     :return: list with x, y value.
     """
     if not hasattr(page, "CropBox"):
-        box = page.MediaBox
+        # page is of type Object, and either MediaBox, CropBox or TrimBox are all of type pikepdf.objects.Object
+        # they exist (or not) depending on the pdf itself
+        box = page.MediaBox  # type: ignore
     else:
-        box = page.CropBox
+        box = page.CropBox  # type: ignore
     return round(float(box[2])-float(box[0]), 2), round(float(box[3])-float(box[1]), 2)
 
 
@@ -134,7 +135,7 @@ def pagerange_reverse(layout: core.Layout) -> Tuple[int, int, int]:
     return layout.first_page, layout.first_page + (layout.columns * layout.rows) - 1, layout.columns
 
 
-def new_outputpath(output_path: pathlib.Path, page_count: int):
+def new_outputpath(output_path: pathlib.Path, page_count: int) -> pathlib.Path:
     new_filename = f"{output_path.stem}_{page_count + 1}{output_path.suffix}"
     return output_path.parent / new_filename
 

@@ -20,7 +20,7 @@ Data classes for input, output and pdf properties.
 """
 from dataclasses import dataclass
 import pathlib
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -73,7 +73,7 @@ class OutputProperties:
     Holds all information of the output pdf.
     """
     output_path: pathlib.Path
-    output_layout: List[int]
+    output_layout: Optional[List[int]]
 
 
 @dataclass

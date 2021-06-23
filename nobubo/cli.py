@@ -17,6 +17,7 @@
 import pathlib
 import sys
 import tempfile
+from typing import List
 
 import click
 
@@ -68,7 +69,7 @@ def main(input_layout_cli, output_layout_cli, print_margin, reverse_assembly, in
             temp_output_dir = pathlib.Path(td)
             input_properties, output_properties = calc.parse_cli_input(input_layout_cli, output_layout_cli, print_margin,
                                                                        reverse_assembly, input_path, output_path)
-            temp_collage_paths: [pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
+            temp_collage_paths: List[pathlib.Path] = assembly.assemble_collage(input_properties, temp_output_dir)
             print(f"Successfully assembled collage from {input_path}.")
 
             if output_properties.output_layout is not None:

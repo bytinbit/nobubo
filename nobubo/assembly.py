@@ -81,7 +81,7 @@ def _assemble(input_properties: core.InputProperties,
                "-interaction=nonstopmode",
                f"-jobname={output_filename}",
                f"-output-directory={temp_output_dir}",
-               input_filepath]
+               str(input_filepath)]
 
     try:
         subprocess.check_output(command, stderr=subprocess.STDOUT)
