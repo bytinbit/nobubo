@@ -1,0 +1,5 @@
+name: Run tests with tox
+on: [push]
+jobs:
+  # install pip, tox
+  
