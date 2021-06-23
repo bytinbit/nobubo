@@ -4,16 +4,20 @@ from nobubo import calc
 
 class TestCalculations:
 
-    def test_calculate_pages_needed_oneoverview_a0_evenlayout(self, one_overview_even, n_up_factor_a0):
+    def test_calculate_pages_needed_oneoverview_a0_evenlayout(
+            self, one_overview_even, n_up_factor_a0):
         assert calc.pages_needed(one_overview_even, n_up_factor_a0) == 4
 
-    def test_calculate_pages_needed_oneoverview_custom_evenlayout(self, one_overview_even, nup_factor_custom):
+    def test_calculate_pages_needed_oneoverview_custom_evenlayout(
+            self, one_overview_even, nup_factor_custom):
         assert calc.pages_needed(one_overview_even, nup_factor_custom) == 4
 
-    def test_calculate_pages_needed_oneoverview_a0_unevenlayout(self, one_overview_uneven, n_up_factor_a0):
+    def test_calculate_pages_needed_oneoverview_a0_unevenlayout(
+            self, one_overview_uneven, n_up_factor_a0):
         assert calc.pages_needed(one_overview_uneven, n_up_factor_a0) == 3
 
-    def test_calculate_pages_needed_oneoverview_custom_unevenlayout(self, one_overview_uneven, nup_factor_custom):
+    def test_calculate_pages_needed_oneoverview_custom_unevenlayout(
+            self, one_overview_uneven, nup_factor_custom):
         assert calc.pages_needed(one_overview_uneven, nup_factor_custom) == 2
 
     def test_userspaceunits_conversion_a0(self):

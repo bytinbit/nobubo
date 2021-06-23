@@ -91,7 +91,9 @@ passenv = TERM
 commands = mypy {posargs} nobubo tests
 
 [testenv:flake8]
-commands = flake8 {posargs:}
+description = Run flake8 for linting
+deps = flake8
+commands = flake8 nobubo tests --max-line-length 88 {posargs}
 
 [testenv:pikepdf-main]
 description = Run project tests against pikepdf-main branch

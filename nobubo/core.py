@@ -37,7 +37,8 @@ class Layout:
     """
     A Pattern layout.
 
-    first_page: The number of the pdf page which marks the beginning of the pattern pages
+    first_page: The number of the pdf page
+    which marks the beginning of the pattern pages
     that are covered by the columns and rows.
     """
     first_page: int

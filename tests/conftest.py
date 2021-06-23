@@ -23,15 +23,15 @@ class PdfTester:
             self.readers[filepath.name] = file
         return sorted(self.readers.keys())
 
-    def pagesize(self, filename: str, pagenumber: int=0) -> List[float]:
+    def pagesize(self, filename: str, pagenumber: int = 0) -> List[float]:
         reader = self.readers[filename]
         page = reader.pages[pagenumber]
         if not hasattr(page, "CropBox"):
             box = page.MediaBox
         else:
             box = page.CropBox
-        return [round(float(box[2])-float(box[0]), 2),
-                round(float(box[3])-float(box[1]), 2)]
+        return [round(float(box[2]) - float(box[0]), 2),
+                round(float(box[3]) - float(box[1]), 2)]
 
     def pagecount(self, filename: str) -> int:
         reader = self.readers[filename]
@@ -42,7 +42,8 @@ class PdfTester:
         text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
         # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
         res = list(filter(lambda a: a not in '\x0c', text))
-        # tests for the first element in the top left corner and the last element in the bottom right corner
+        # tests for the first element in the top left corner
+        # and the last element in the bottom right corner
         return [res[0], res[-1]]
 
     def cleanup(self):
@@ -65,11 +66,12 @@ def testdata() -> pathlib.Path:
 @pytest.fixture
 def pdfproperty() -> core.InputProperties:
     return core.InputProperties(input_filepath=pathlib.Path("test.pdf"),
-                               output_path=pathlib.Path("output_test.pdf"),
-                               number_of_pages=57,
-                               pagesize=core.PageSize(width=483.307, height=729.917),
-                               layout=[core.Layout(first_page=2, columns=8, rows=7)])
+                                output_path=pathlib.Path("output_test.pdf"),
+                                number_of_pages=57,
+                                pagesize=core.PageSize(width=483.307, height=729.917),
+                                layout=[core.Layout(first_page=2, columns=8, rows=7)])
     # 8 cols, 7 rows + 1 overview page = 57
+
 
 @pytest.fixture
 def one_overview_even() -> core.Layout:

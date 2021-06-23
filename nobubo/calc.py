@@ -31,8 +31,11 @@ from nobubo import core, errors
 from nobubo.core import Factor
 
 
-def parse_cli_input(input_layout: List[Tuple[int, int, int]], output_layout_cli: str, print_margin: int,
-                    reverse_assembly: bool, input_path: str, output_path: str
+def parse_cli_input(input_layout: List[Tuple[int, int, int]],
+                    output_layout_cli: str,
+                    print_margin: int,
+                    reverse_assembly: bool,
+                    input_path: str, output_path: str
                     ) -> Tuple[core.InputProperties, core.OutputProperties]:
     try:
         with pikepdf.open(pathlib.Path(input_path)) as inputfile:
@@ -47,15 +50,18 @@ def parse_cli_input(input_layout: List[Tuple[int, int, int]], output_layout_cli:
                 reverse_assembly=reverse_assembly)
             output_properties = core.OutputProperties(
                 output_path=pathlib.Path(output_path),
-                output_layout= parse_output_layout(output_layout_cli, print_margin) if output_layout_cli else None
+                output_layout=parse_output_layout(output_layout_cli, print_margin)
+                if output_layout_cli else None
             )
     except OSError as e:
-        raise errors.UsageError(f"While reading the input pdf file, this error occurred:\n{e}")
+        raise errors.UsageError(f"While reading the input pdf file, "
+                                f"this error occurred:\n{e}")
     return input_properties, output_properties
 
 
 def parse_input_layouts(input_layout: List[Tuple[int, int, int]]) -> List[core.Layout]:
-    return [core.Layout(first_page=data[0], columns=data[1], rows=data[2]) for data in input_layout]
+    return [core.Layout(first_page=data[0], columns=data[1], rows=data[2])
+            for data in input_layout]
 
 
 def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> List[int]:
@@ -80,32 +86,38 @@ def validate_output_layout(ctx, param, value):
         return value
     except AssertionError:
         raise click.BadParameter(f"Output layout {value} does not exist. "
-                                 f"Have you chosen a0, us or a custom layout, such as 222x444?")
+                                 "Have you chosen a0, us or a custom layout, "
+                                 "such as 222x444?")
 
 
 def pages_needed(layout: core.Layout, n_up_factor: Factor) -> int:
-    return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
+    x = layout.columns / n_up_factor.x
+    y = layout.rows / n_up_factor.y
+    return math.ceil(x) * math.ceil(y)
 
 
 def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
     """
-    Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
+    Calculates the x, y value for the offset in default user space units
+    as defined in the pdf standard.
     :param page: A PDF page.
     :return: list with x, y value.
     """
     if not hasattr(page, "CropBox"):
-        # page is of type Object, and either MediaBox, CropBox or TrimBox are all of type pikepdf.objects.Object
+        # page is of type Object, and either MediaBox, CropBox or TrimBox
+        # are all of type pikepdf.objects.Object
         # they exist (or not) depending on the pdf itself
         box = page.MediaBox  # type: ignore
     else:
         box = page.CropBox  # type: ignore
-    return round(float(box[2])-float(box[0]), 2), round(float(box[3])-float(box[1]), 2)
+    return round(float(box[2]) - float(box[0]), 2), round(float(box[3]) - float(box[1]),
+                                                          2)
 
 
 def to_userspaceunits(width_height: List[int]) -> core.PageSize:
     """
-    Converts a page's physical width and height from millimeters to default user space unit,
-    which are defined in the pdf standard as 1/72 inch.
+    Converts a page's physical width and height from millimeters to
+    default user space unit, which is defined in the pdf standard as 1/72 inch.
 
     :param width_height: Width and height of the physical page in millimeters (mm),
     on which the pattern will be printed.
@@ -132,7 +144,9 @@ def to_mm(output_layout: str) -> List[int]:
 
 
 def pagerange_reverse(layout: core.Layout) -> Tuple[int, int, int]:
-    return layout.first_page, layout.first_page + (layout.columns * layout.rows) - 1, layout.columns
+    return layout.first_page, \
+           layout.first_page + (layout.columns * layout.rows) - 1, \
+           layout.columns
 
 
 def new_outputpath(output_path: pathlib.Path, page_count: int) -> pathlib.Path:
