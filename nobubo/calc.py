@@ -22,7 +22,7 @@ import pathlib
 import random
 import re
 import string
-from typing import List
+from typing import List, Tuple
 
 import click
 import pikepdf
@@ -31,9 +31,9 @@ from nobubo import core, errors
 from nobubo.core import Factor
 
 
-def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print_margin: int,
+def parse_cli_input(input_layout: List[Tuple[int, int, int]], output_layout_cli: str, print_margin: int,
                     reverse_assembly: bool, input_path: str, output_path: str
-                    ) -> (core.InputProperties, core.OutputProperties):
+                    ) -> Tuple[core.InputProperties, core.OutputProperties]:
     try:
         with pikepdf.open(pathlib.Path(input_path)) as inputfile:
             # first page (getPage(0)) may contain overview, so get second one
@@ -53,11 +53,11 @@ def parse_cli_input(input_layout: (int, int, int), output_layout_cli: str, print
     return input_properties, output_properties
 
 
-def parse_input_layouts(input_layout: (int, int, int)) ->[core.Layout]:
+def parse_input_layouts(input_layout: List[Tuple[int, int, int]]) -> List[core.Layout]:
     return [core.Layout(first_page=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
 
-def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> [int]:
+def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> List[int]:
     print_size: List[int] = []
     if output_layout_cli is None:
         return None
@@ -88,7 +88,7 @@ def pages_needed(layout: core.Layout, n_up_factor: Factor) -> int:
     return math.ceil(layout.columns/n_up_factor.x) * math.ceil(layout.rows/n_up_factor.y)
 
 
-def page_dimensions(page: pikepdf.Page) -> (float, float):
+def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
     """
     Calculates the x, y value for the offset in default user space units as defined in the pdf standard.
     :param page: A PDF page.
@@ -101,7 +101,7 @@ def page_dimensions(page: pikepdf.Page) -> (float, float):
     return round(float(box[2])-float(box[0]), 2), round(float(box[3])-float(box[1]), 2)
 
 
-def to_userspaceunits(width_height: [int, int]) -> core.PageSize:
+def to_userspaceunits(width_height: List[int]) -> core.PageSize:
     """
     Converts a page's physical width and height from millimeters to default user space unit,
     which are defined in the pdf standard as 1/72 inch.
@@ -118,19 +118,19 @@ def to_userspaceunits(width_height: [int, int]) -> core.PageSize:
                          height=(round(width_height[1] * conversion_factor, 3)))
 
 
-def nup_factors(pagesize: core.PageSize, output_layout: [int]) -> Factor:
+def nup_factors(pagesize: core.PageSize, output_layout: List[int]) -> Factor:
     output_papersize = to_userspaceunits(output_layout)
     x_factor = int(output_papersize.width // pagesize.width)
     y_factor = int(output_papersize.height // pagesize.height)
     return Factor(x=x_factor, y=y_factor)
 
 
-def to_mm(output_layout: str) -> [int, int]:
+def to_mm(output_layout: str) -> List[int]:
     ol_in_mm = re.compile(r"\d+[x]\d+").findall(output_layout)[0].split("x")
     return [int(x) for x in ol_in_mm]
 
 
-def pagerange_reverse(layout: core.Layout) -> (int, int, int):
+def pagerange_reverse(layout: core.Layout) -> Tuple[int, int, int]:
     return layout.first_page, layout.first_page + (layout.columns * layout.rows) - 1, layout.columns
 
 

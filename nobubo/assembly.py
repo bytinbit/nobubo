@@ -20,12 +20,13 @@ Contains functions for various output layouts.
 """
 import pathlib
 import subprocess
+from typing import List
 
 from nobubo import core, calc, errors
 
 
 def assemble_collage(input_properties: core.InputProperties,
-                     temp_output_dir: pathlib.Path) -> [pathlib.Path]:
+                     temp_output_dir: pathlib.Path) -> List[pathlib.Path]:
     """
     Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
     The default assembles it from top left to the bottom right.
@@ -34,7 +35,7 @@ def assemble_collage(input_properties: core.InputProperties,
     :return A list of all the path to the collages, each with all pattern pages assembled on one single page.
 
     """
-    all_collages_paths: [pathlib.Path] = []
+    all_collages_paths: List[pathlib.Path] = []
     for counter, layout in enumerate(input_properties.layout):
         print(f"Assembling overview {counter + 1} of {len(input_properties.layout)}\n")
         print(f"Creating collage... Please be patient, this may take some time.")

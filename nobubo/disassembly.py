@@ -19,6 +19,7 @@
 Contains functions for various output layouts.
 """
 import pathlib
+from typing import List, Tuple
 
 import pikepdf
 
@@ -26,7 +27,7 @@ import nobubo.core
 from nobubo import core, calc, errors
 
 
-def create_output_files(temp_collage_paths: [pathlib.Path],
+def create_output_files(temp_collage_paths: List[pathlib.Path],
                         input_properties: core.InputProperties,
                         output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
@@ -51,7 +52,7 @@ def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path):
         raise errors.UsageError(f"An error occurred while writing the output file:\n{e}")
 
 
-def write_collage(temp_collage_paths: [pathlib.Path], output_properties: core.OutputProperties):
+def write_collage(temp_collage_paths: List[pathlib.Path], output_properties: core.OutputProperties):
     for counter, collage_path in enumerate(temp_collage_paths):
         new_outputpath = calc.new_outputpath(output_properties.output_path, counter)
         try:
@@ -65,7 +66,7 @@ def write_collage(temp_collage_paths: [pathlib.Path], output_properties: core.Ou
 def _create_output_files(collage: pikepdf.Pdf,
                          pagesize: core.PageSize,
                          current_layout: core.Layout,
-                         output_layout: [int]) -> pikepdf.Pdf:
+                         output_layout: List[int]) -> pikepdf.Pdf:
     """
     Chops up the collage that consists of all the pattern pages to individual pages of the desired output size.
     :param collage: One pdf page that contains all assembled pattern pages.
@@ -133,23 +134,22 @@ def _calculate_upperright_point(upperright_factor: nobubo.core.Factor,
     return upperright
 
 
-def _adjust_factors(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor, colsleft: int) -> (
-        nobubo.core.Factor, nobubo.core.Factor):
+def _adjust_factors(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor, colsleft: int) -> Tuple[
+        nobubo.core.Factor, nobubo.core.Factor]:
     if colsleft > 0:  # still assembling the same horizontal line
         return _advance_horizontally(lowerleft_factor, upperright_factor)
     else:  # end of line reached, need to go 1 row up
         return _advance_vertically(lowerleft_factor, upperright_factor)
 
 
-def _advance_horizontally(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor) -> (
-        nobubo.core.Factor, nobubo.core.Factor):
+def _advance_horizontally(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor) -> Tuple[nobubo.core.Factor, nobubo.core.Factor]:
     lowerleft_factor.x += 1
     upperright_factor.x += 1
     return lowerleft_factor, upperright_factor
 
 
-def _advance_vertically(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor) -> (
-nobubo.core.Factor, nobubo.core.Factor):
+def _advance_vertically(lowerleft_factor: nobubo.core.Factor, upperright_factor: nobubo.core.Factor) -> Tuple[
+nobubo.core.Factor, nobubo.core.Factor]:
     lowerleft_factor.x = 0
     lowerleft_factor.y += 1
 

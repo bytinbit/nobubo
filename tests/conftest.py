@@ -1,18 +1,20 @@
 import pathlib
+from typing import Dict, Any, List
+
 import pikepdf
 import pytest
 
 import textract
 
 import nobubo.core
-from nobubo import core, calc
+from nobubo import core
 
 
 class PdfTester:
     def __init__(self, outputdir: pathlib.Path) -> None:
         self.outputdir = outputdir
-        self.readers = {}  # reader for every generated pdf
-        self._files = []  # save file objects
+        self.readers: Dict[str, Any] = {}  # reader for every generated pdf
+        self._files: List[Any] = []  # save file objects
 
     def read(self):
         for filepath in self.outputdir.glob("*.pdf"):
@@ -21,7 +23,7 @@ class PdfTester:
             self.readers[filepath.name] = file
         return sorted(self.readers.keys())
 
-    def pagesize(self, filename: str, pagenumber: int=0) -> [float, float]:
+    def pagesize(self, filename: str, pagenumber: int=0) -> List[float]:
         reader = self.readers[filename]
         page = reader.pages[pagenumber]
         if not hasattr(page, "CropBox"):
@@ -36,7 +38,7 @@ class PdfTester:
         return len(reader.pages)
 
     # TODO is there a better way to check the order of the pages?
-    def pages_order(self, filepath: str) -> [str, str]:
+    def pages_order(self, filepath: str) -> List[str]:
         text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
         # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
         res = list(filter(lambda a: a not in '\x0c', text))
@@ -80,7 +82,7 @@ def one_overview_uneven() -> core.Layout:
 
 
 @pytest.fixture()
-def two_overviews() -> [core.Layout, core.Layout]:
+def two_overviews() -> List[core.Layout]:
     first = core.Layout(first_page=2, columns=5, rows=5)
     second = core.Layout(first_page=28, columns=5, rows=5)
     return [first, second]

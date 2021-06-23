@@ -20,6 +20,7 @@ Data classes for input, output and pdf properties.
 """
 from dataclasses import dataclass
 import pathlib
+from typing import List
 
 
 @dataclass
@@ -62,7 +63,7 @@ class InputProperties:
     output_path: pathlib.Path
     number_of_pages: int
     pagesize: PageSize
-    layout: [Layout]
+    layout: List[Layout]
     reverse_assembly: bool = False
 
 
@@ -72,7 +73,7 @@ class OutputProperties:
     Holds all information of the output pdf.
     """
     output_path: pathlib.Path
-    output_layout: [int]
+    output_layout: List[int]
 
 
 @dataclass
