@@ -4,8 +4,10 @@ from nobubo import cli
 
 
 def test_no_overview_normal_collage(testdata, tmp_path, pdftester):
+
     filepath = testdata / "mockpattern_nooverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
+    print(f"\nPATH: filepath: {filepath}\n\toutput_filepath: {output_filepath}\n\ttestdata: {testdata}\n\ttmp_path: {tmp_path}")
     runner = CliRunner()
     result = runner.invoke(cli.main, ["--il", "1", "8", "4",
                                       str(filepath), str(output_filepath)])

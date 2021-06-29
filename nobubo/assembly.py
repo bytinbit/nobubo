@@ -79,6 +79,7 @@ def _assemble(input_properties: core.InputProperties,
 
     input_filepath = temp_output_dir / "texfile.tex"
     output_filename = f"output_{calc.random_string()}"
+    print(f"ASSEMBLY: input_filepath: {input_filepath}, output_filename: {output_filename}")
 
     with input_filepath.open("w") as f:  # pathlib has its own open method
         f.writelines(file_content)
@@ -91,10 +92,10 @@ def _assemble(input_properties: core.InputProperties,
 
     try:
         subprocess.check_output(command, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
         raise errors.UsageError("Error: pdflatex encountered a problem while "
-                                "assembling the collage and had to abort.")
+                                f"assembling the collage and had to abort:\n{e}")
     except FileNotFoundError as e:
-        raise errors.UsageError(f"The file to assemble the collage was not found:\n{e}")
+        raise errors.UsageError(f"pdflatex or the output file was not found:\n{e}")
 
     return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")

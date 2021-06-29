@@ -2,28 +2,45 @@ name: Run tests with tox
 on: [push]
 jobs:
   # install pip, tox
-  tox:
-    name: tox tests
+  self-tests:
+    name: pytest tests with tox
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - testenv: py
-            python: 3.8
-          - testenv: py
-            python: 3.9
-          - testenv: mypy
-            python: 3.8
-          - testenv: flake8
-            python: 3.8
+          - python: 3.8
+            testenv: py
+          - python: 3.9
+            testenv: py            
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python
+      - name: set up Python
         uses: actions/setup-python@v2
         with:
           python-version: "${{ matrix.python }}"
       - name: install tox
         run: pip install tox
-      - run: "tox -e ${{ matrix.testenv}}"
+      - name: install texlive-base
+        run: sudo apt-get install --no-install-recommends texlive-latex-recommended 
+        run: pdflatex -version            
+      - name: run tox
+        run: "tox -e ${{ matrix.testenv}}"
+  # quality:
+  #   name: quality tests with tox
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     python: 3.8
+  #     testenv: [mypy, flake8]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: "${{ matrix.python }}"
+  #     - name: install tox
+  #       run: pip install tox
+  #     - name: run tox
+  #       run: "tox -e ${{ matrix.testenv}}"
+
 
 # run weekly every sunday-evening pikepdf-main
