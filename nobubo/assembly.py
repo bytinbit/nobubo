@@ -94,5 +94,7 @@ def _assemble(input_properties: core.InputProperties,
     except subprocess.CalledProcessError:
         raise errors.UsageError("Error: pdflatex encountered a problem while "
                                 "assembling the collage and had to abort.")
+    except FileNotFoundError as e:
+        raise errors.UsageError(f"The file to assemble the collage was not found:\n{e}")
 
     return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")
