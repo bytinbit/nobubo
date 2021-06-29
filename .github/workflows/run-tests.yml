@@ -2,39 +2,28 @@ name: Run tests with tox
 on: [push]
 jobs:
   # install pip, tox
-  pytest:
-    name: tests with pytest
+  tox:
+    name: tox tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - testenv: py
+            python: 3.8
+          - testenv: py
+            python: 3.9
+          - testenv: mypy
+            python: 3.8
+          - testenv: flake8
+            python: 3.8
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: "${{ matrix.python }}"
       - name: install tox
         run: pip install tox
-      - run: tox -e py
-  mypy:
-    name: typing with mypy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: install tox
-        run: pip install tox
-      - run: tox -e mypy
-  flake8:
-    name: linting with flake8
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: install tox
-        run: pip install tox
-      - run: tox -e flake8
+      - run: "tox -e ${{ matrix.testenv}}"
+
+# run weekly every sunday-evening pikepdf-main
