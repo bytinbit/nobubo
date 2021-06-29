@@ -79,7 +79,6 @@ def _assemble(input_properties: core.InputProperties,
 
     input_filepath = temp_output_dir / "texfile.tex"
     output_filename = f"output_{calc.random_string()}"
-    print(f"ASSEMBLY: input_filepath: {input_filepath}, output_filename: {output_filename}")
 
     with input_filepath.open("w") as f:  # pathlib has its own open method
         f.writelines(file_content)

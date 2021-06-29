@@ -93,7 +93,7 @@ commands = mypy {posargs} nobubo tests
 [testenv:flake8]
 description = Run flake8 for linting
 deps = flake8
-commands = flake8 nobubo tests --max-line-length 88 {posargs}
+commands = flake8 --max-line-length 88 nobubo tests {posargs}
 
 [testenv:pikepdf-main]
 description = Run project tests against pikepdf-main branch
