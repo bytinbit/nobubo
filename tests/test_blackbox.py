@@ -1,13 +1,15 @@
 from click.testing import CliRunner
 
-from nobubo import nobubo
+from nobubo import cli
 
 
 def test_no_overview_normal_collage(testdata, tmp_path, pdftester):
+
     filepath = testdata / "mockpattern_nooverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "1", "8", "4", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "1", "8", "4",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -23,7 +25,8 @@ def test_no_overview_reverse_collage(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_nooverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "1", "8", "4", "--reverse", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "1", "8", "4", "--reverse",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -34,11 +37,13 @@ def test_no_overview_reverse_collage(testdata, tmp_path, pdftester):
 
     assert pdftester.pages_order(tmp_path / "mock_1.pdf") == ["25", "8"]
 
+
 def test_one_overview_normal_collage(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_oneoverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -54,7 +59,8 @@ def test_one_overview_reverse_collage(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_oneoverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--reverse", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--reverse",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -70,7 +76,8 @@ def test_two_overviews_normal_collage(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_twooverviews_8x4_7x3.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--il", "35", "7", "3", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--il", "35", "7", "3",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf", "mock_2.pdf"]
@@ -89,7 +96,8 @@ def test_two_overviews_reverse_collage(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_twooverviews_8x4_7x3.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--il", "35", "7", "3", "--reverse", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--il", "35", "7", "3",
+                                      "--reverse", str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf", "mock_2.pdf"]
@@ -108,7 +116,8 @@ def test_one_overview_normal_a0(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_oneoverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--ol", "a0", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--ol", "a0",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -125,7 +134,8 @@ def test_one_overview_reverse_a0(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_oneoverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--ol", "a0", "--reverse", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--ol", "a0", "--reverse",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -142,7 +152,8 @@ def test_one_overview_normal_custom(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_oneoverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--ol", "920x1187", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--ol", "920x1187",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -156,11 +167,13 @@ def test_one_overview_normal_custom(testdata, tmp_path, pdftester):
 
     assert pdftester.pages_order(tmp_path / "mock_1.pdf") == ["1", "32"]
 
+
 def test_one_overview_normal_us(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_oneoverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--ol", "us", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--ol", "us",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -177,7 +190,9 @@ def test_two_overviews_normal_a0(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_twooverviews_8x4_7x3.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--il", "35", "7", "3", "--ol", "a0", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--il", "35", "7",
+                                      "3", "--ol", "a0",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf", "mock_2.pdf"]
@@ -198,7 +213,9 @@ def test_two_overviews_reverse_a0(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_twooverviews_8x4_7x3.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(nobubo.main, ["--il", "2", "8", "4", "--il", "35", "7", "3", "--ol", "a0", "--reverse", str(filepath), str(output_filepath)])
+    result = runner.invoke(cli.main, ["--il", "2", "8", "4", "--il", "35", "7",
+                                      "3", "--ol", "a0", "--reverse",
+                                      str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf", "mock_2.pdf"]
@@ -213,7 +230,3 @@ def test_two_overviews_reverse_a0(testdata, tmp_path, pdftester):
 
     assert pdftester.pages_order(tmp_path / "mock_1.pdf") == ["25A", "8A"]
     assert pdftester.pages_order(tmp_path / "mock_2.pdf") == ["15B", "7B"]
-
-
-
-

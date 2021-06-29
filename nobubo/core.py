@@ -20,6 +20,7 @@ Data classes for input, output and pdf properties.
 """
 from dataclasses import dataclass
 import pathlib
+from typing import List, Optional
 
 
 @dataclass
@@ -36,7 +37,8 @@ class Layout:
     """
     A Pattern layout.
 
-    first_page: The number of the pdf page which marks the beginning of the pattern pages
+    first_page: The number of the pdf page
+    which marks the beginning of the pattern pages
     that are covered by the columns and rows.
     """
     first_page: int
@@ -62,7 +64,7 @@ class InputProperties:
     output_path: pathlib.Path
     number_of_pages: int
     pagesize: PageSize
-    layout: [Layout]
+    layout: List[Layout]
     reverse_assembly: bool = False
 
 
@@ -72,7 +74,7 @@ class OutputProperties:
     Holds all information of the output pdf.
     """
     output_path: pathlib.Path
-    output_layout: [int]
+    output_layout: Optional[List[int]]
 
 
 @dataclass

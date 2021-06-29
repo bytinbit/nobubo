@@ -20,24 +20,27 @@ Contains functions for various output layouts.
 """
 import pathlib
 import subprocess
+from typing import List
 
 from nobubo import core, calc, errors
 
 
 def assemble_collage(input_properties: core.InputProperties,
-                     temp_output_dir: pathlib.Path) -> [pathlib.Path]:
+                     temp_output_dir: pathlib.Path) -> List[pathlib.Path]:
     """
-    Takes a pattern pdf where one page equals a part of the pattern and assembles it to one huge collage.
+    Takes a pattern pdf where one page equals a part of the pattern and
+    assembles it to one huge collage.
     The default assembles it from top left to the bottom right.
     :param input_properties: Properties of the input pdf.
     :param temp_output_dir: The temporary path where all calculations should happen.
-    :return A list of all the path to the collages, each with all pattern pages assembled on one single page.
+    :return A list of all the path to the collages, each with all pattern pages
+            assembled on one single page.
 
     """
-    all_collages_paths: [pathlib.Path] = []
+    all_collages_paths: List[pathlib.Path] = []
     for counter, layout in enumerate(input_properties.layout):
         print(f"Assembling overview {counter + 1} of {len(input_properties.layout)}\n")
-        print(f"Creating collage... Please be patient, this may take some time.")
+        print("Creating collage... Please be patient, this may take some time.")
         all_collages_paths.append(_assemble(input_properties, temp_output_dir, layout))
     return all_collages_paths
 
@@ -45,28 +48,32 @@ def assemble_collage(input_properties: core.InputProperties,
 def _assemble(input_properties: core.InputProperties,
               temp_output_dir: pathlib.Path,
               current_layout: core.Layout) -> pathlib.Path:
-
     collage_width = input_properties.pagesize.width * current_layout.columns
     collage_height = input_properties.pagesize.height * current_layout.rows
 
     if input_properties.reverse_assembly:
         start, end, step = calc.pagerange_reverse(current_layout)
-        l = list(reversed([(x, x+current_layout.columns-1) for x in range(start, end, step)]))
-        tuples = ["-".join(map(str, i)) for i in l]
+        page_range_for_pdflatex = list(reversed([(x, x + current_layout.columns - 1)
+                                                 for x in range(start, end, step)]))
+        tuples = ["-".join(map(str, i)) for i in page_range_for_pdflatex]
         page_range = ",".join(tuples)
     else:
         begin = current_layout.first_page
-        end = current_layout.first_page + (current_layout.columns * current_layout.rows) - 1
+        end_of_section = current_layout.columns * current_layout.rows
+        end = current_layout.first_page + end_of_section - 1
         page_range = f"{begin}-{end}"
 
     file_content = [
         "\\batchmode\n",
         "\\documentclass[a4paper,]{article}\n",
-        f"\\usepackage[papersize={{{collage_width}pt,{collage_height}pt}}]{{geometry}}\n",
+        f"\\usepackage[papersize={{{collage_width}pt,"
+        f"{collage_height}pt}}]{{geometry}}\n",
         "\\usepackage[utf8]{inputenc}\n",
         "\\usepackage{pdfpages}\n",
         "\\begin{document}\n",
-        f"\\includepdfmerge[nup={current_layout.columns}x{current_layout.rows}, noautoscale=true, scale=1.0]{{{str(input_properties.input_filepath)},{page_range} }}\n",
+        f"\\includepdfmerge[nup={current_layout.columns}x{current_layout.rows}, "
+        f"noautoscale=true, scale=1.0]"
+        f"{{{str(input_properties.input_filepath)},{page_range} }}\n",
         "\\end{document}\n",
     ]
 
@@ -80,17 +87,14 @@ def _assemble(input_properties: core.InputProperties,
                "-interaction=nonstopmode",
                f"-jobname={output_filename}",
                f"-output-directory={temp_output_dir}",
-               input_filepath]
+               str(input_filepath)]
 
     try:
         subprocess.check_output(command, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError:
-        raise errors.UsageError(f"Error: pdflatex encountered a problem while assembling the collage and had to abort.")
+    except subprocess.CalledProcessError as e:
+        raise errors.UsageError("Error: pdflatex encountered a problem while "
+                                f"assembling the collage and had to abort:\n{e}")
+    except FileNotFoundError as e:
+        raise errors.UsageError(f"pdflatex or the output file was not found:\n{e}")
 
     return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")
-
-
-
-
-
-
