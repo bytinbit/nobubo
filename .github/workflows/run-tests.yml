@@ -22,8 +22,10 @@ jobs:
         run: pip install tox
       - name: install texlive-base
         run: sudo apt-get install --no-install-recommends texlive-latex-recommended 
-      - name: check pdflatex installation  
-        run: pdflatex -version            
+      - name: check pdflatex installation
+        run: pdflatex -version
+      - name: install poppler-utils for textract
+        run: sudo apt-get install poppler-utils
       - name: run tox
         run: "tox -e ${{ matrix.testenv}}"
   # quality:

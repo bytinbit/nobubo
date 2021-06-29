@@ -38,6 +38,7 @@ class PdfTester:
         return len(reader.pages)
 
     # TODO is there a better way to check the order of the pages?
+    # requires poppler to be installed on the system too
     def pages_order(self, filepath: str) -> List[str]:
         text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
         # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
