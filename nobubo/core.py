@@ -24,48 +24,12 @@ from typing import List, Optional
 
 
 @dataclass
-class PageSize:
-    """
-    Page size whose width and height are in user space units.
-    """
-    width: float = 0
-    height: float = 0
-
-
-@dataclass
-class Layout:
-    """
-    A Pattern layout.
-
-    first_page: The number of the pdf page
-    which marks the beginning of the pattern pages
-    that are covered by the columns and rows.
-    """
-    first_page: int
-    columns: int
-    rows: int
-
-
-@dataclass
 class Point:
     """
     Point on a pdf page in user space units.
     """
     x: float
     y: float
-
-
-class InputProperties:
-    """
-    Holds all information of the input pdf.
-    """
-
-    def __init__(self, input_filepath: pathlib.Path, number_of_pages: int, pagesize: PageSize, layout: List[Layout], reverse_assembly: bool = False):
-        self.input_filepath = input_filepath
-        self.number_of_pages = number_of_pages
-        self.pagesize = pagesize
-        self.layout = layout
-        self.reverse_assembly = reverse_assembly
 
 
 class OutputProperties:
