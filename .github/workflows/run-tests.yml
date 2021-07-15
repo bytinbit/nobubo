@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        testenv: [mypy, flake8]
+        testenv: [mypy, linting]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
