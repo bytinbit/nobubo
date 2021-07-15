@@ -61,7 +61,6 @@ class InputProperties:
     Holds all information of the input pdf.
     """
     input_filepath: pathlib.Path
-    output_path: pathlib.Path
     number_of_pages: int
     pagesize: PageSize
     layout: List[Layout]

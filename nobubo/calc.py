@@ -43,7 +43,6 @@ def parse_cli_input(input_layout: List[Tuple[int, int, int]],
             width, height = page_dimensions(inputfile.pages[1])
             input_properties = core.InputProperties(
                 input_filepath=pathlib.Path(input_path),
-                output_path=pathlib.Path(output_path),
                 number_of_pages=len(inputfile.pages),
                 pagesize=core.PageSize(width=width, height=height),
                 layout=parse_input_layouts(input_layout),
