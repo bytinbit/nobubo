@@ -6,8 +6,8 @@ import pytest
 
 import textract
 
+import nobubo.disassembly
 from nobubo.assembly import InputProperties
-import nobubo.core
 
 
 class PdfTester:
@@ -92,10 +92,10 @@ def two_overviews() -> List[nobubo.assembly.Layout]:
 
 
 @pytest.fixture()
-def n_up_factor_a0() -> nobubo.core.Factor:
-    return nobubo.core.Factor(x=4, y=4)
+def n_up_factor_a0() -> nobubo.disassembly.Factor:
+    return nobubo.disassembly.Factor(x=4, y=4)
 
 
 @pytest.fixture()
-def nup_factor_custom() -> nobubo.core.Factor:
-    return nobubo.core.Factor(x=5, y=4)
+def nup_factor_custom() -> nobubo.disassembly.Factor:
+    return nobubo.disassembly.Factor(x=5, y=4)

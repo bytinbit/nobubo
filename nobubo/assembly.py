@@ -25,7 +25,7 @@ import subprocess
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from nobubo import core, errors
+from nobubo import errors
 
 
 

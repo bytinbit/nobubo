@@ -24,7 +24,8 @@ import click
 import pikepdf
 
 import nobubo.assembly
-from nobubo import disassembly, errors, core
+import nobubo.disassembly
+from nobubo import disassembly, errors
 from nobubo.assembly import InputProperties, Layout
 
 
@@ -117,7 +118,7 @@ def parse_cli_input(input_layout: List[Tuple[int, int, int]],
                     print_margin: int,
                     reverse_assembly: bool,
                     input_path: str, output_path: str
-                    ) -> Tuple[InputProperties, core.OutputProperties]:
+                    ) -> Tuple[InputProperties, nobubo.disassembly.OutputProperties]:
     try:
         with pikepdf.open(pathlib.Path(input_path)) as inputfile:
             # first page (getPage(0)) may contain overview, so get second one
@@ -128,7 +129,7 @@ def parse_cli_input(input_layout: List[Tuple[int, int, int]],
                 pagesize=nobubo.assembly.PageSize(width=width, height=height),
                 layout=parse_input_layouts(input_layout),
                 reverse_assembly=reverse_assembly)
-            output_properties = core.OutputProperties(
+            output_properties = nobubo.disassembly.OutputProperties(
                 output_path=pathlib.Path(output_path),
                 output_layout=parse_output_layout(output_layout_cli, print_margin)
                 if output_layout_cli else None

@@ -20,20 +20,29 @@ Contains functions for various output layouts.
 """
 import math
 import pathlib
+from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
 import pikepdf
 
 import nobubo.assembly
-import nobubo.core
-from nobubo import core, errors
+from nobubo import errors
 from nobubo.assembly import Layout, PageSize
-from nobubo.core import Factor
+
+
+class OutputProperties:
+    """
+    Holds all information of the output pdf.
+    """
+
+    def __init__(self, output_path: pathlib.Path, output_layout: Optional[List[int]]):
+        self.output_path = output_path
+        self.output_layout = output_layout
 
 
 def create_output_files(temp_collage_paths: List[pathlib.Path],
                         input_properties: nobubo.assembly.InputProperties,
-                        output_properties: core.OutputProperties) -> None:
+                        output_properties: OutputProperties) -> None:
     for counter, collage_path in enumerate(temp_collage_paths):
         try:
             collage = pikepdf.Pdf.open(collage_path)
@@ -60,7 +69,7 @@ def write_chops(collage: pikepdf.Pdf, output_path: pathlib.Path) -> None:
 
 
 def write_collage(temp_collage_paths: List[pathlib.Path],
-                  output_properties: core.OutputProperties) -> None:
+                  output_properties: OutputProperties) -> None:
     for counter, collage_path in enumerate(temp_collage_paths):
         new_outputpath = generate_new_outputpath(output_properties.output_path, counter)
         try:
@@ -87,8 +96,8 @@ def _create_output_files(collage: pikepdf.Pdf,
     assert output_layout is not None
     n_up_factor = nup_factors(pagesize, output_layout)
     # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
-    lowerleft_factor = nobubo.core.Factor(x=0, y=0)
-    upperright_factor = nobubo.core.Factor(x=1, y=1)
+    lowerleft_factor = Factor(x=0, y=0)
+    upperright_factor = Factor(x=1, y=1)
 
     output = pikepdf.Pdf.new()  # type: ignore [call-arg]
     output.copy_foreign(collage.Root)
@@ -97,13 +106,13 @@ def _create_output_files(collage: pikepdf.Pdf,
     for i in range(0, pages_needed(current_layout, n_up_factor)):
         page = output.copy_foreign(collage.pages[0])
 
-        lowerleft: core.Point = _calculate_lowerleft_point(lowerleft_factor,
-                                                           n_up_factor,
-                                                           pagesize)
-        upperright: core.Point = _calculate_upperright_point(upperright_factor,
-                                                             n_up_factor,
-                                                             current_layout,
-                                                             pagesize)
+        lowerleft: Point = _calculate_lowerleft_point(lowerleft_factor,
+                                                      n_up_factor,
+                                                      pagesize)
+        upperright: Point = _calculate_upperright_point(upperright_factor,
+                                                        n_up_factor,
+                                                        current_layout,
+                                                        pagesize)
 
         # adjust multiplying factor
         colsleft = _calculate_colsrows_left(current_layout.columns,
@@ -123,18 +132,36 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
     return layout_element - (factor * nup_factor)
 
 
-def _calculate_lowerleft_point(lowerleft_factor: nobubo.core.Factor,
-                               n_up_factor: nobubo.core.Factor,
-                               pagesize: nobubo.assembly.PageSize) -> core.Point:
-    return core.Point(x=lowerleft_factor.x * n_up_factor.x * pagesize.width,
-                      y=lowerleft_factor.y * n_up_factor.y * pagesize.height)
+@dataclass
+class Point:
+    """
+    Point on a pdf page in user space units.
+    """
+    x: float
+    y: float
 
 
-def _calculate_upperright_point(upperright_factor: nobubo.core.Factor,
-                                n_up_factor: nobubo.core.Factor,
+@dataclass
+class Factor:
+    """
+    Factor class for multiplication.
+    """
+    x: int
+    y: int
+
+
+def _calculate_lowerleft_point(lowerleft_factor: Factor,
+                               n_up_factor: Factor,
+                               pagesize: nobubo.assembly.PageSize) -> Point:
+    return Point(x=lowerleft_factor.x * n_up_factor.x * pagesize.width,
+                 y=lowerleft_factor.y * n_up_factor.y * pagesize.height)
+
+
+def _calculate_upperright_point(upperright_factor: Factor,
+                                n_up_factor: Factor,
                                 current_layout: nobubo.assembly.Layout,
-                                pagesize: nobubo.assembly.PageSize) -> core.Point:
-    upperright = core.Point(x=0, y=0)
+                                pagesize: nobubo.assembly.PageSize) -> Point:
+    upperright = Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
     rowsleft = _calculate_colsrows_left(current_layout.rows,
                                         upperright_factor.y,
@@ -159,27 +186,27 @@ def _calculate_upperright_point(upperright_factor: nobubo.core.Factor,
     return upperright
 
 
-def _adjust_factors(lowerleft_factor: nobubo.core.Factor,
-                    upperright_factor: nobubo.core.Factor,
+def _adjust_factors(lowerleft_factor: Factor,
+                    upperright_factor: Factor,
                     colsleft: int) -> Tuple[
-        nobubo.core.Factor, nobubo.core.Factor]:
+    Factor, Factor]:
     if colsleft > 0:  # still assembling the same horizontal line
         return _advance_horizontally(lowerleft_factor, upperright_factor)
     else:  # end of line reached, need to go 1 row up
         return _advance_vertically(lowerleft_factor, upperright_factor)
 
 
-def _advance_horizontally(lowerleft_factor: nobubo.core.Factor,
-                          upperright_factor: nobubo.core.Factor
-                          ) -> Tuple[nobubo.core.Factor, nobubo.core.Factor]:
+def _advance_horizontally(lowerleft_factor: Factor,
+                          upperright_factor: Factor
+                          ) -> Tuple[Factor, Factor]:
     lowerleft_factor.x += 1
     upperright_factor.x += 1
     return lowerleft_factor, upperright_factor
 
 
-def _advance_vertically(lowerleft_factor: nobubo.core.Factor,
-                        upperright_factor: nobubo.core.Factor
-                        ) -> Tuple[nobubo.core.Factor, nobubo.core.Factor]:
+def _advance_vertically(lowerleft_factor: Factor,
+                        upperright_factor: Factor
+                        ) -> Tuple[Factor, Factor]:
     lowerleft_factor.x = 0
     lowerleft_factor.y += 1
 
