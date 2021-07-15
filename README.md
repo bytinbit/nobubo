@@ -10,11 +10,22 @@ Nobubo has been developed and tested with several download patterns from Burda, 
 ## Prerequisites
 * A digital pattern where each page is made to be printed on A4 or US letter size. **If you haven't purchased a digital pattern, nobubo is useless**.
 * Each page is already cropped, so that only the bare pattern is visible (no white borders around the pattern). Nobubo is able to handle cropped pdfs, but you still have to do it yourself.
-* Usually, the assembled pattern pages form a huge rectangle. Some brands provide a handy overview how all the assembled pages are supposed to look like. Some brands, however, disregard this rectangle shape and the assembled pattern is of a weird "rectangle + n pages" shape. Nobubo can only handle rectangle shapes, so those leftover pages have to be assembled by hand.
-* Python >=3.7
+* Usually, the assembled pattern pages form a huge rectangle. Some brands provide a handy overview how all the assembled pages are supposed to look like. Some brands, however, disregard this rectangle shape and the assembled pattern is of a weird "rectangle + n pages" shape. Nobubo can only handle rectangle shapes, so those leftover pages have to be print out and taped by hand.
+* Python >=3.8
 * `pdflatex` [must be installed](https://tex.stackexchange.com/questions/49569/where-to-download-pdflatex-exe)
 
 ## Installation
+
+### Using pip
+
+1. [Create a virtual environment](https://docs.python-guide.org/dev/virtualenvs/#lower-level-virtualenv) 
+2. Activate it and install via pip:
+
+```bash
+$ pip install nobubo
+```
+
+### Using git
 
 1. Clone this repository.
 2. Change into the folder you just cloned, it's called `nobubo`.
@@ -30,21 +41,6 @@ Check the installation with one of the mock patterns and run nobubo:
 ```bash
 $ nobubo --il 2 8 4 --ol a0 "tests/testdata/mockpattern_oneoverview_8x4.pdf" "sample.pdf"
 ```
-
-**Installation via requirements file:**
-
- ```bash
-$ pip install -r requirements.txt
- ```
-
-Check the installation with one of the mock patterns:
-
-
- ```bash
-$ python -m nobubo --il 2 8 4 --ol a0 "tests/testdata/mockpattern_oneoverview_8x4.pdf" "sample.pdf"
- ```
-
-All further commands must then be run with `pytho -m nobubo`.
 
 ## Usage
 
@@ -83,7 +79,7 @@ $ nobubo --il 2 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf" "home/ali
 
 The pdf has 6 columns and 5 rows, which means the final pdf collage will be four A0 pages to print, since 16 A4 pages fit on one A0 page. This is how the sample overview sheet might look like and how it will be split up:
 
-<img src="img/nobubo.png" alt="sample pattern" width=40%/>
+<img src="img/nobubo.png" alt="sample pattern" width=30%/>
 
 Of course, you can still choose to print pages 2-4 on A4 from your original pattern and just page 1 on A0.
 
