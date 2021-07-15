@@ -74,28 +74,7 @@ def pdfproperty() -> InputProperties:
     # 8 cols, 7 rows + 1 overview page = 57
 
 
-@pytest.fixture
-def one_overview_even() -> nobubo.assembly.Layout:
-    return nobubo.assembly.Layout(first_page=2, columns=8, rows=7)
 
 
-@pytest.fixture
-def one_overview_uneven() -> nobubo.assembly.Layout:
-    return nobubo.assembly.Layout(first_page=2, columns=9, rows=4)
 
 
-@pytest.fixture()
-def two_overviews() -> List[nobubo.assembly.Layout]:
-    first = nobubo.assembly.Layout(first_page=2, columns=5, rows=5)
-    second = nobubo.assembly.Layout(first_page=28, columns=5, rows=5)
-    return [first, second]
-
-
-@pytest.fixture()
-def n_up_factor_a0() -> nobubo.disassembly.Factor:
-    return nobubo.disassembly.Factor(x=4, y=4)
-
-
-@pytest.fixture()
-def nup_factor_custom() -> nobubo.disassembly.Factor:
-    return nobubo.disassembly.Factor(x=5, y=4)

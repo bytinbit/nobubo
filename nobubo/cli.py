@@ -23,10 +23,9 @@ from typing import List, Tuple
 import click
 import pikepdf
 
-import nobubo.assembly
-import nobubo.disassembly
-from nobubo import disassembly, errors
-from nobubo.assembly import InputProperties, Layout
+from nobubo import errors
+from nobubo.disassembly import OutputProperties
+from nobubo.assembly import InputProperties, Layout, PageSize
 
 
 def validate_output_layout(ctx, param, value):
@@ -103,11 +102,11 @@ def main(input_layout_cli, output_layout_cli, print_margin, reverse_assembly,
             print(f"Successfully assembled collage from {input_path}.")
 
             if output_properties.output_layout is not None:
-                disassembly.create_output_files(temp_collage_paths,
+                output_properties.create_output_files(temp_collage_paths,
                                                 input_properties,
-                                                output_properties)
+                                                )
             else:  # default: no output_layout specified, print collage pdf
-                disassembly.write_collage(temp_collage_paths, output_properties)
+                output_properties.write_collage(temp_collage_paths, )
     except (errors.UsageError, click.BadParameter) as e:
         print(e)
         sys.exit(1)
@@ -118,18 +117,18 @@ def parse_cli_input(input_layout: List[Tuple[int, int, int]],
                     print_margin: int,
                     reverse_assembly: bool,
                     input_path: str, output_path: str
-                    ) -> Tuple[InputProperties, nobubo.disassembly.OutputProperties]:
+                    ) -> Tuple[InputProperties, OutputProperties]:
     try:
         with pikepdf.open(pathlib.Path(input_path)) as inputfile:
             # first page (getPage(0)) may contain overview, so get second one
             width, height = page_dimensions(inputfile.pages[1])
-            input_properties = nobubo.assembly.InputProperties(
+            input_properties = InputProperties(
                 input_filepath=pathlib.Path(input_path),
                 number_of_pages=len(inputfile.pages),
-                pagesize=nobubo.assembly.PageSize(width=width, height=height),
+                pagesize=PageSize(width=width, height=height),
                 layout=parse_input_layouts(input_layout),
                 reverse_assembly=reverse_assembly)
-            output_properties = nobubo.disassembly.OutputProperties(
+            output_properties = OutputProperties(
                 output_path=pathlib.Path(output_path),
                 output_layout=parse_output_layout(output_layout_cli, print_margin)
                 if output_layout_cli else None
