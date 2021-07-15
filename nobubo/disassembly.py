@@ -65,7 +65,6 @@ class NobuboOutput:
         self.output_path = output_path
         self.output_pagesize = output_pagesize
 
-
     def create_output_files(
         self,
         temp_collage_paths: List[pathlib.Path],
@@ -124,7 +123,7 @@ class NobuboOutput:
         of the desired output size.
         :param collage: One pdf page that contains all assembled pattern pages.
         :param input_pagesize: size of an input pdf page
-        :param output_layout: The desired output layout.
+        :param current_layout: the current layout of the input pdf
         :return: The pdf with several pages, ready to write to disk.
         """
         assert self.output_pagesize is not None
@@ -163,8 +162,8 @@ class NobuboOutput:
     def pages_needed(self, layout: Layout, n_up_factor: Factor) -> int:
         """
         Calculate the pages needed for the required output layout.
-        :param layout: layout of
-        :param n_up_factor:
+        :param layout: layout of the input pdf
+        :param n_up_factor: how many pages of the input pdf fit on the desired layout
         :return:
         """
         x = layout.columns / n_up_factor.x
@@ -175,10 +174,10 @@ class NobuboOutput:
         self, input_pagesize: PageSize, output_pagesize: PageSize
     ) -> Factor:
         """
-        Calculates the n-up factor for the output pdf, i.e. how many input pages
+        Calculate the n-up factor for the output pdf, i.e. how many input pages
         fit on the desired output layout.
-        :param input_pagesize: Size of a page of the input pdf
-        :param output_pagesize: the output layout in mm
+        :param input_pagesize: Size of a page of the input pdf in user space units
+        :param output_pagesize: the output layout in user space units
         :return:
         """
         x_factor = int(output_pagesize.width // input_pagesize.width)
