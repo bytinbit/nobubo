@@ -6,6 +6,7 @@ https://www.python.org/dev/peps/pep-0338/
 
 """
 from nobubo import cli
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # https://github.com/pallets/click/issues/1399
     cli.main(prog_name="python -m nobubo")

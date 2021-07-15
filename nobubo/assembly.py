@@ -28,12 +28,12 @@ from typing import List, Tuple
 from nobubo import errors
 
 
-
 @dataclass
 class PageSize:
     """
     Page size whose width and height are in user space units.
     """
+
     width: float = 0
     height: float = 0
 
@@ -47,21 +47,35 @@ class Layout:
     which marks the beginning of the pattern pages
     that are covered by the columns and rows.
     """
+
     first_page: int
     columns: int
     rows: int
 
-class InputProperties:
+
+class NobuboInput:
     """
     Holds all information of the input pdf.
     """
 
-    def __init__(self,
-                 input_filepath: pathlib.Path,
-                 number_of_pages: int,
-                 pagesize: PageSize,
-                 layout: List[Layout],
-                 reverse_assembly: bool = False):
+    def __init__(
+        self,
+        input_filepath: pathlib.Path,
+        number_of_pages: int,
+        pagesize: PageSize,
+        layout: List[Layout],
+        reverse_assembly: bool = False,
+    ):
+        """
+        Holds all information concerning the input pdf and is responsible
+        for creating the collage.
+        :param input_filepath: path to the input pdf
+        :param number_of_pages: total amount of pages in the pdf
+        :param pagesize: width and height of a pdf page in user space units
+        :param layout: layout of the pdfs
+        :param reverse_assembly: False: assemble pdf from top left to bottom right,
+        True: assemble pdf from bottom left to top right.
+        """
         self.input_filepath = input_filepath
         self.number_of_pages = number_of_pages
         self.pagesize = pagesize
@@ -73,7 +87,6 @@ class InputProperties:
         Takes a pattern pdf where one page equals a part of the pattern and
         assembles it to one huge collage.
         The default assembles it from top left to the bottom right.
-        :param input_properties: Properties of the input pdf.
         :param temp_output_dir: The temporary path where all calculations should happen.
         :return A list of all the path to the collages, each with all pattern pages
                 assembled on one single page.
@@ -86,16 +99,22 @@ class InputProperties:
             all_collages_paths.append(self._assemble(temp_output_dir, current_layout))
         return all_collages_paths
 
-    def _assemble(self,
-                  temp_output_dir: pathlib.Path,
-                  current_layout: Layout) -> pathlib.Path:
+    def _assemble(
+        self, temp_output_dir: pathlib.Path, current_layout: Layout
+    ) -> pathlib.Path:
         collage_width = self.pagesize.width * current_layout.columns
         collage_height = self.pagesize.height * current_layout.rows
 
         if self.reverse_assembly:
-            start, end, step = pagerange_reverse(current_layout)
-            page_range_for_pdflatex = list(reversed([(x, x + current_layout.columns - 1)
-                                                     for x in range(start, end, step)]))
+            start, end, step = reverse_pagerange(current_layout)
+            page_range_for_pdflatex = list(
+                reversed(
+                    [
+                        (x, x + current_layout.columns - 1)
+                        for x in range(start, end, step)
+                    ]
+                )
+            )
             tuples = ["-".join(map(str, i)) for i in page_range_for_pdflatex]
             page_range = ",".join(tuples)
         else:
@@ -121,32 +140,36 @@ class InputProperties:
         input_filepath = temp_output_dir / "texfile.tex"
         output_filename = f"output_{random_string()}"
 
-        with input_filepath.open("w") as f:  # pathlib has its own open method
+        with input_filepath.open("w") as f:
             f.writelines(file_content)
 
-        command = ["pdflatex",
-                   "-interaction=nonstopmode",
-                   f"-jobname={output_filename}",
-                   f"-output-directory={temp_output_dir}",
-                   str(input_filepath)]
+        command = [
+            "pdflatex",
+            "-interaction=nonstopmode",
+            f"-jobname={output_filename}",
+            f"-output-directory={temp_output_dir}",
+            str(input_filepath),
+        ]
 
         try:
             subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
-            raise errors.UsageError("Error: pdflatex encountered a problem while "
-                                    f"assembling the collage and had to abort:\n{e}")
+            raise errors.UsageError(
+                "Error: pdflatex encountered a problem while "
+                f"assembling the collage and had to abort:\n{e}"
+            )
         except FileNotFoundError as e:
             raise errors.UsageError(f"pdflatex or the output file was not found:\n{e}")
 
         return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")
 
 
-
-
-def pagerange_reverse(layout: Layout) -> Tuple[int, int, int]:
-    return layout.first_page, \
-           layout.first_page + (layout.columns * layout.rows) - 1, \
-           layout.columns
+def reverse_pagerange(layout: Layout) -> Tuple[int, int, int]:
+    return (
+        layout.first_page,
+        layout.first_page + (layout.columns * layout.rows) - 1,
+        layout.columns,
+    )
 
 
 def random_string():
