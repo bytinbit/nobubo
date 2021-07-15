@@ -90,7 +90,7 @@ deps = mypy
 passenv = TERM
 commands = mypy {posargs} nobubo tests
 
-[testenv:flake8]
+[testenv:linting]
 description = Run flake8 for linting
 deps = flake8
 commands = flake8 --max-line-length 88 nobubo tests {posargs}

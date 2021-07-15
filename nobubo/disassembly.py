@@ -128,11 +128,12 @@ class NobuboOutput:
         """
         assert self.output_pagesize is not None
         n_up_factor = self.nup_factors(input_pagesize, self.output_pagesize)
-        # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
+        # only two points are needed to be cropped,
+        # lower left (x, y) and upper right (x, y)
         lowerleft_factor = Factor(x=0, y=0)
         upperright_factor = Factor(x=1, y=1)
 
-        output = pikepdf.Pdf.new()  # type: ignore [call-arg]
+        output = pikepdf.Pdf.new()
         output.copy_foreign(collage.Root)
         # Root must be copied too, not only the page:
         # thanks to https://github.com/cfcurtis/sewingutils
