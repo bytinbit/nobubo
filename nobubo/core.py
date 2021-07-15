@@ -55,25 +55,27 @@ class Point:
     y: float
 
 
-@dataclass
 class InputProperties:
     """
     Holds all information of the input pdf.
     """
-    input_filepath: pathlib.Path
-    number_of_pages: int
-    pagesize: PageSize
-    layout: List[Layout]
-    reverse_assembly: bool = False
+
+    def __init__(self, input_filepath: pathlib.Path, number_of_pages: int, pagesize: PageSize, layout: List[Layout], reverse_assembly: bool = False):
+        self.input_filepath = input_filepath
+        self.number_of_pages = number_of_pages
+        self.pagesize = pagesize
+        self.layout = layout
+        self.reverse_assembly = reverse_assembly
 
 
-@dataclass
 class OutputProperties:
     """
     Holds all information of the output pdf.
     """
-    output_path: pathlib.Path
-    output_layout: Optional[List[int]]
+
+    def __init__(self, output_path: pathlib.Path, output_layout: Optional[List[int]]):
+        self.output_path = output_path
+        self.output_layout = output_layout
 
 
 @dataclass
