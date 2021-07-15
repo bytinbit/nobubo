@@ -5,7 +5,8 @@ import pytest
 import nobubo.cli
 import nobubo.disassembly
 from nobubo.assembly import Layout, PageSize
-from nobubo.disassembly import Factor, OutputProperties, to_userspaceunits
+from nobubo.disassembly import Factor, OutputProperties
+from nobubo.cli import to_userspaceunits
 
 INPUT_PAGE = PageSize(width=483.307, height=729.917)
 
@@ -23,7 +24,7 @@ US = [914, 1220]
 
 @pytest.fixture
 def test_outputdata():
-    return OutputProperties(output_path=pathlib.Path(""), output_layout=None)
+    return OutputProperties(output_path=pathlib.Path(""), output_pagesize=None)
 
 class TestOutputCalculations:
     @pytest.mark.parametrize("overview, nup, expected",
@@ -54,7 +55,8 @@ class TestOutputCalculations:
                                  (INPUT_PAGE, CUSTOM, nup_factor_custom),
                              ])
     def test_calculate_nup_factors(self, input_pagesize, output_pagesize, expected_factor, test_outputdata):
-        factor = test_outputdata.nup_factors(input_pagesize, output_pagesize)
+        output_in_userspace_units = to_userspaceunits(output_pagesize)
+        factor = test_outputdata.nup_factors(input_pagesize, output_in_userspace_units)
         assert factor.x == expected_factor.x
         assert factor.y == expected_factor.y
 
@@ -65,17 +67,15 @@ class TestCliHelpers:
         assert mm[0] == 920
         assert mm[1] == 1187
 
-    def test_parse_output_layout_a0(self):
-        assert nobubo.cli.parse_output_layout("a0") == [841, 1189]
+    @pytest.mark.parametrize("cli_arg, expected_pagesize",
+                             [
+                                 ("a0", PageSize(width=2383.937, height=3370.394)),
+                                 ("us", PageSize(width=2590.866, height=3458.268)),
+                                 ("123x456", PageSize(width=348.661, height=1292.598)),
+                                 ("123x456s", PageSize(width=348.661, height=1292.598))
+                             ])
+    def test_parse_output_layout_a0(self, cli_arg, expected_pagesize):
+        assert nobubo.cli.parse_output_layout(cli_arg) == expected_pagesize
 
-    def test_parse_output_layout_us(self):
-        assert nobubo.cli.parse_output_layout("us") == [914, 1220]
-
-    def test_parse_output_layout_123x456(self):
-        assert nobubo.cli.parse_output_layout("123x456") == [123, 456]
-
-    def test_parse_output_layout_123x456s(self):
-        assert nobubo.cli.parse_output_layout("123x456s") == [123, 456]
-
-    def test_parse_output_layout_a0_20(self):
-        assert nobubo.cli.parse_output_layout("a0", 20) == [801, 1149]
+    def test_parse_output_layout_with_margin(self):
+        assert nobubo.cli.parse_output_layout("a0", 20) == PageSize(width=2270.551, height=3257.008)

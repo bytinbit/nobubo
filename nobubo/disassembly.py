@@ -52,9 +52,9 @@ class OutputProperties:
     Holds all information of the output pdf.
     """
 
-    def __init__(self, output_path: pathlib.Path, output_layout: Optional[List[int]]):
+    def __init__(self, output_path: pathlib.Path, output_pagesize: Optional[PageSize]):
         self.output_path = output_path
-        self.output_layout = output_layout  # TODO change to PageSize?
+        self.output_pagesize = output_pagesize
 
 
     def create_output_files(self, temp_collage_paths: List[pathlib.Path],
@@ -98,19 +98,19 @@ class OutputProperties:
             print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")
 
     def _create_output_files(self, collage: pikepdf.Pdf,
-                             pagesize: nobubo.assembly.PageSize,
+                             input_pagesize: nobubo.assembly.PageSize,
                              current_layout: nobubo.assembly.Layout,
                              ) -> pikepdf.Pdf:
         """
         Chops up the collage that consists of all the pattern pages to individual pages
         of the desired output size.
         :param collage: One pdf page that contains all assembled pattern pages.
-        :param input_properties: Properties of the pdf.
+        :param input_pagesize: size of an input pdf page
         :param output_layout: The desired output layout.
         :return: The pdf with several pages, ready to write to disk.
         """
-        assert self.output_layout is not None
-        n_up_factor = self.nup_factors(pagesize, self.output_layout)
+        assert self.output_pagesize is not None
+        n_up_factor = self.nup_factors(input_pagesize, self.output_pagesize)
         # only two points are needed to be cropped, lower left (x, y) and upper right (x, y)
         lowerleft_factor = Factor(x=0, y=0)
         upperright_factor = Factor(x=1, y=1)
@@ -124,11 +124,11 @@ class OutputProperties:
 
             lowerleft: Point = _calculate_lowerleft_point(lowerleft_factor,
                                                           n_up_factor,
-                                                          pagesize)
+                                                          input_pagesize)
             upperright: Point = _calculate_upperright_point(upperright_factor,
                                                             n_up_factor,
                                                             current_layout,
-                                                            pagesize)
+                                                            input_pagesize)
 
             # adjust multiplying factor
             colsleft = _calculate_colsrows_left(current_layout.columns,
@@ -156,17 +156,16 @@ class OutputProperties:
         return math.ceil(x) * math.ceil(y)
 
 
-    def nup_factors(self, pagesize: PageSize, output_layout: List[int]) -> Factor:
+    def nup_factors(self, input_pagesize: PageSize, output_pagesize: PageSize) -> Factor:
         """
         Calculates the n-up factor for the output pdf, i.e. how many input pages
         fit on the desired output layout.
-        :param pagesize: Size of a page of the input pdf
-        :param output_layout: the output layout in mm
+        :param input_pagesize: Size of a page of the input pdf
+        :param output_pagesize: the output layout in mm
         :return:
         """
-        output_papersize = to_userspaceunits(output_layout)
-        x_factor = int(output_papersize.width // pagesize.width)
-        y_factor = int(output_papersize.height // pagesize.height)
+        x_factor = int(output_pagesize.width // input_pagesize.width)
+        y_factor = int(output_pagesize.height // input_pagesize.height)
         return Factor(x=x_factor, y=y_factor)
 
 
@@ -241,18 +240,3 @@ def _advance_vertically(lowerleft_factor: Factor,
     upperright_factor.y += 1
     return lowerleft_factor, upperright_factor
 
-def to_userspaceunits(width_height: List[int]) -> PageSize:
-    """
-    Converts a page's physical width and height from millimeters to
-    default user space unit, which is defined in the pdf standard as 1/72 inch.
-
-    :param width_height: Width and height of the physical page in millimeters (mm),
-    on which the pattern will be printed.
-    :return: Width and height of the physical page in default user space units.
-    """
-    # 1 mm = 5/127 inches = 0.03937 inches;  1/72 inch = 0.013888889
-    # conversion factor = 5/127 / 1/72 = 360/127 = 2.834645669
-    conversion_factor = 2.834645669
-
-    return PageSize(width=(round(width_height[0] * conversion_factor, 3)),
-                                    height=(round(width_height[1] * conversion_factor, 3)))

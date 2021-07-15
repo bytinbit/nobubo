@@ -101,7 +101,7 @@ def main(input_layout_cli, output_layout_cli, print_margin, reverse_assembly,
                 input_properties.assemble_collage(temp_output_dir)
             print(f"Successfully assembled collage from {input_path}.")
 
-            if output_properties.output_layout is not None:
+            if output_properties.output_pagesize is not None:
                 output_properties.create_output_files(temp_collage_paths,
                                                 input_properties,
                                                 )
@@ -130,7 +130,7 @@ def parse_cli_input(input_layout: List[Tuple[int, int, int]],
                 reverse_assembly=reverse_assembly)
             output_properties = OutputProperties(
                 output_path=pathlib.Path(output_path),
-                output_layout=parse_output_layout(output_layout_cli, print_margin)
+                output_pagesize=parse_output_layout(output_layout_cli, print_margin)
                 if output_layout_cli else None
             )
     except OSError as e:
@@ -145,7 +145,7 @@ def parse_input_layouts(input_layout: List[Tuple[int, int, int]]) -> List[
             for data in input_layout]
 
 
-def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> List[int]:
+def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> PageSize:
     print_size: List[int] = []
     if output_layout_cli == "a0":
         print_size = to_mm("841x1189")
@@ -155,9 +155,10 @@ def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> Lis
         print_size = to_mm(output_layout_cli)
 
     if print_margin:
-        return [size - (2 * print_margin) for size in print_size]
+        return to_userspaceunits([size - (2 * print_margin) for size in print_size])
     else:
-        return print_size
+        return to_userspaceunits(print_size)
+
 
 
 def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
@@ -181,3 +182,20 @@ def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
 def to_mm(output_layout: str) -> List[int]:
     ol_in_mm = re.compile(r"\d+[x]\d+").findall(output_layout)[0].split("x")
     return [int(x) for x in ol_in_mm]
+
+
+def to_userspaceunits(width_height: List[int]) -> PageSize:
+    """
+    Converts a page's physical width and height from millimeters to
+    default user space unit, which is defined in the pdf standard as 1/72 inch.
+
+    :param width_height: Width and height of the physical page in millimeters (mm),
+    on which the pattern will be printed.
+    :return: Width and height of the physical page in default user space units.
+    """
+    # 1 mm = 5/127 inches = 0.03937 inches;  1/72 inch = 0.013888889
+    # conversion factor = 5/127 / 1/72 = 360/127 = 2.834645669
+    conversion_factor = 2.834645669
+
+    return PageSize(width=(round(width_height[0] * conversion_factor, 3)),
+                                    height=(round(width_height[1] * conversion_factor, 3)))
