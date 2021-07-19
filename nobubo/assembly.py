@@ -108,7 +108,7 @@ class NobuboInput:
         all_collages_paths: List[pathlib.Path] = []
         for counter, current_layout in enumerate(self.layout):
             logging.info(f"Assembling overview {counter + 1} of {len(self.layout)}\n")
-            logging.info("Creating collage... Please be patient.")
+            logging.info("Creating collage...")
             all_collages_paths.append(self._assemble(temp_output_dir, current_layout))
         return all_collages_paths
 

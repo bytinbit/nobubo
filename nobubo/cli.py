@@ -22,13 +22,16 @@ import tempfile
 from typing import List
 
 import click
+from rich.console import Console
+from rich.highlighter import NullHighlighter
+from rich.logging import RichHandler
 
 from nobubo import errors
 from nobubo.init_nobubo import parse_cli_input_data, parse_cli_output_data
 
 
 logger = logging.getLogger(__name__)
-
+console = Console()
 
 def validate_output_layout(ctx, param, value):
     p = re.compile(r"(a0)|(us)|(\d+[x]\d+)")
@@ -119,6 +122,11 @@ def main(
     logging.basicConfig(
         level=logging.INFO,
         format="%(message)s",
+        handlers=[
+            RichHandler(
+                rich_tracebacks=True, show_level=False, show_time=False, show_path=False, highlighter=NullHighlighter()
+            )
+        ],
     )
     try:
         nobubo_input = parse_cli_input_data(
@@ -127,14 +135,14 @@ def main(
         nobubo_output = parse_cli_output_data(
             output_layout_cli, print_margin, output_path
         )
-
+        console.rule(style="medium_purple3")
         with tempfile.TemporaryDirectory() as td:
             temp_output_dir = pathlib.Path(td)
             temp_collage_paths: List[pathlib.Path] = nobubo_input.assemble_collage(
                 temp_output_dir
             )
             logger.info(f"Successfully assembled collage from {input_path}.")
-
+            console.rule(style="medium_purple3")
             if nobubo_output.output_pagesize is not None:
                 nobubo_output.create_output_files(
                     temp_collage_paths,
@@ -144,7 +152,7 @@ def main(
                 nobubo_output.write_collage(
                     temp_collage_paths,
                 )
-            logger.info("All done, enjoy your sewing!")
+            console.print(":tada: All done, enjoy your sewing! :thread:")
 
     except (errors.UsageError, click.BadParameter) as e:
         print(e)

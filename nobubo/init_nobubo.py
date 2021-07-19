@@ -20,7 +20,7 @@ def parse_cli_input_data(
 ) -> NobuboInput:
     try:
         with pikepdf.open(pathlib.Path(input_path)) as inputfile:
-            logger.info(f"Received an input pdf with {len(input_layout)} overview(s) and {len(inputfile.pages)} pages.")
+            logger.info(f"Received a pdf with {len(input_layout)} overview(s) and {len(inputfile.pages)} pages.")
             # first page (getPage(0)) may contain overview, so get second one
             width, height = page_dimensions(inputfile.pages[1])
 
