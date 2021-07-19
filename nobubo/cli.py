@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Nobubo.  If not, see <https://www.gnu.org/licenses/>.
+import logging
 import pathlib
 import re
 import sys
@@ -24,6 +25,9 @@ import click
 
 from nobubo import errors
 from nobubo.init_nobubo import parse_cli_input_data, parse_cli_output_data
+
+
+logger = logging.getLogger(__name__)
 
 
 def validate_output_layout(ctx, param, value):
@@ -112,6 +116,10 @@ def main(
     OUTPUT_PATH: Where the output should be saved.
 
     """
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(message)s",
+    )
     try:
         nobubo_input = parse_cli_input_data(
             input_layout_cli, reverse_assembly, input_path
@@ -125,17 +133,18 @@ def main(
             temp_collage_paths: List[pathlib.Path] = nobubo_input.assemble_collage(
                 temp_output_dir
             )
-            print(f"Successfully assembled collage from {input_path}.")
+            logger.info(f"Successfully assembled collage from {input_path}.")
 
             if nobubo_output.output_pagesize is not None:
                 nobubo_output.create_output_files(
                     temp_collage_paths,
-                    nobubo_input,
+                    nobubo_input
                 )
             else:  # default: no output_layout specified, print collage pdf
                 nobubo_output.write_collage(
                     temp_collage_paths,
                 )
+            logger.info("All done, enjoy your sewing!")
 
     except (errors.UsageError, click.BadParameter) as e:
         print(e)

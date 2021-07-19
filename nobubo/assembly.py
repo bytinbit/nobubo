@@ -18,6 +18,7 @@
 """
 Contains functions for various output layouts.
 """
+import logging
 import pathlib
 import random
 import string
@@ -27,6 +28,8 @@ from typing import List, Tuple
 
 from nobubo import errors
 
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class PageSize:
@@ -82,6 +85,16 @@ class NobuboInput:
         self.layout = layout
         self.reverse_assembly = reverse_assembly
 
+    def __repr__(self):
+        return (
+            f"<class '{self.__class__.__name__}': "
+            f"input_filepath: '{self.input_filepath}', "
+            f"number_of_pages: '{self.number_of_pages}', "
+            f"pagesize: '{self.pagesize}', "
+            f"layout: '{self.layout}', "
+            f"reverse_assembly: '{self.reverse_assembly}'>"
+        )
+
     def assemble_collage(self, temp_output_dir: pathlib.Path) -> List[pathlib.Path]:
         """
         Takes a pattern pdf where one page equals a part of the pattern and
@@ -94,8 +107,8 @@ class NobuboInput:
         """
         all_collages_paths: List[pathlib.Path] = []
         for counter, current_layout in enumerate(self.layout):
-            print(f"Assembling overview {counter + 1} of {len(self.layout)}\n")
-            print("Creating collage... Please be patient, this may take some time.")
+            logging.info(f"Assembling overview {counter + 1} of {len(self.layout)}\n")
+            logging.info("Creating collage... Please be patient.")
             all_collages_paths.append(self._assemble(temp_output_dir, current_layout))
         return all_collages_paths
 
@@ -106,6 +119,7 @@ class NobuboInput:
         collage_height = self.pagesize.height * current_layout.rows
 
         if self.reverse_assembly:
+            logging.debug("Reverse assembly chosen")
             start, end, step = reverse_pagerange(current_layout)
             page_range_for_pdflatex = list(
                 reversed(
@@ -151,6 +165,7 @@ class NobuboInput:
             str(input_filepath),
         ]
 
+        logging.debug("Sending command to pdflatex")
         try:
             subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:

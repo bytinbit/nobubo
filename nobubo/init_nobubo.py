@@ -1,3 +1,4 @@
+import logging
 import pathlib
 import re
 from typing import List, Tuple
@@ -9,6 +10,9 @@ from nobubo.assembly import NobuboInput, PageSize, Layout
 from nobubo.disassembly import NobuboOutput
 
 
+logger = logging.getLogger(__name__)
+
+
 def parse_cli_input_data(
     input_layout: List[Tuple[int, int, int]],
     reverse_assembly: bool,
@@ -16,8 +20,10 @@ def parse_cli_input_data(
 ) -> NobuboInput:
     try:
         with pikepdf.open(pathlib.Path(input_path)) as inputfile:
+            logger.info(f"Received an input pdf with {len(input_layout)} overview(s) and {len(inputfile.pages)} pages.")
             # first page (getPage(0)) may contain overview, so get second one
             width, height = page_dimensions(inputfile.pages[1])
+
             input_properties = NobuboInput(
                 input_filepath=pathlib.Path(input_path),
                 number_of_pages=len(inputfile.pages),
@@ -25,6 +31,7 @@ def parse_cli_input_data(
                 layout=parse_input_layouts(input_layout),
                 reverse_assembly=reverse_assembly,
             )
+            logger.debug(f"Parsed input properties: {input_properties}")
     except OSError as e:
         raise errors.UsageError(
             f"While reading the input pdf file, " f"this error occurred:\n{e}"
@@ -44,12 +51,14 @@ def parse_cli_output_data(
     print_margin: int,
     output_path: str,
 ) -> NobuboOutput:
-    return NobuboOutput(
+    output_properties = NobuboOutput(
         output_path=pathlib.Path(output_path),
         output_pagesize=parse_output_layout(output_layout_cli, print_margin)
         if output_layout_cli
         else None,
     )
+    logger.debug(f"Parsed output properties: {output_properties}")
+    return output_properties
 
 
 def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> PageSize:
