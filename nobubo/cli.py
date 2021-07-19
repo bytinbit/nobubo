@@ -33,6 +33,7 @@ from nobubo.init_nobubo import parse_cli_input_data, parse_cli_output_data
 logger = logging.getLogger(__name__)
 console = Console()
 
+
 def validate_output_layout(ctx, param, value):
     p = re.compile(r"(a0)|(us)|(\d+[x]\d+)")
     try:
@@ -124,7 +125,11 @@ def main(
         format="%(message)s",
         handlers=[
             RichHandler(
-                rich_tracebacks=True, show_level=False, show_time=False, show_path=False, highlighter=NullHighlighter()
+                rich_tracebacks=True,
+                show_level=False,
+                show_time=False,
+                show_path=False,
+                highlighter=NullHighlighter(),
             )
         ],
     )
@@ -144,10 +149,7 @@ def main(
             logger.info(f"Successfully assembled collage from {input_path}.")
             console.rule(style="medium_purple3")
             if nobubo_output.output_pagesize is not None:
-                nobubo_output.create_output_files(
-                    temp_collage_paths,
-                    nobubo_input
-                )
+                nobubo_output.create_output_files(temp_collage_paths, nobubo_input)
             else:  # default: no output_layout specified, print collage pdf
                 nobubo_output.write_collage(
                     temp_collage_paths,

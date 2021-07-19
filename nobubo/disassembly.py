@@ -33,6 +33,7 @@ from nobubo.assembly import Layout, PageSize
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class Point:
     """
@@ -69,7 +70,7 @@ class NobuboOutput:
         self.output_pagesize = output_pagesize
 
     def __repr__(self):
-        return(
+        return (
             f"<class '{self.__class__.__name__}': "
             f"output_path: '{self.output_path}', "
             f"output_pagesize: '{self.output_pagesize}'>"

@@ -31,6 +31,7 @@ from nobubo import errors
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class PageSize:
     """
