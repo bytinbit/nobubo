@@ -89,7 +89,6 @@ class NobuboOutput:
                     "Could not open collage file for disassembly:" f"\n{e}."
                 )
             new_outputpath = self.generate_new_outputpath(self.output_path, counter)
-            logger.info("Prepairing files for the desired output layout")
             logger.debug("Chopping up collage")
             chopped_up_files = self._create_output_files(
                 collage,
@@ -98,7 +97,7 @@ class NobuboOutput:
             )
             logger.debug("Successfully chopped up the collage.\n")
             self.write_chops(chopped_up_files, new_outputpath)
-            logger.info(f"Final pdf written to {new_outputpath}.")
+            logger.info(f"Final pdf written to {new_outputpath}.\n")
 
     def write_chops(self, collage: pikepdf.Pdf, output_path: pathlib.Path) -> None:
         logger.info("Writing files...")
@@ -138,6 +137,7 @@ class NobuboOutput:
         :param current_layout: the current layout of the input pdf
         :return: The pdf with several pages, ready to write to disk.
         """
+        logger.info("Using collage to create desired output layout")
         assert self.output_pagesize is not None
         n_up_factor = self.nup_factors(input_pagesize, self.output_pagesize)
         # only two points are needed to be cropped,
