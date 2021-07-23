@@ -18,6 +18,7 @@
 """
 Contains functions for various output layouts.
 """
+import logging
 import math
 import pathlib
 from dataclasses import dataclass
@@ -28,6 +29,9 @@ import pikepdf
 import nobubo.assembly
 from nobubo import errors
 from nobubo.assembly import Layout, PageSize
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -65,6 +69,13 @@ class NobuboOutput:
         self.output_path = output_path
         self.output_pagesize = output_pagesize
 
+    def __repr__(self):
+        return (
+            f"<class '{self.__class__.__name__}': "
+            f"output_path: '{self.output_path}', "
+            f"output_pagesize: '{self.output_pagesize}'>"
+        )
+
     def create_output_files(
         self,
         temp_collage_paths: List[pathlib.Path],
@@ -78,18 +89,18 @@ class NobuboOutput:
                     "Could not open collage file for disassembly:" f"\n{e}."
                 )
             new_outputpath = self.generate_new_outputpath(self.output_path, counter)
-            print("\nChopping up the collage...")
+            logger.debug("Chopping up collage")
             chopped_up_files = self._create_output_files(
                 collage,
                 input_properties.pagesize,
                 input_properties.layout[counter],
             )
-            print("Successfully chopped up the collage.\n")
+            logger.debug("Successfully chopped up the collage.\n")
             self.write_chops(chopped_up_files, new_outputpath)
-            print(f"Final pdf written to {new_outputpath}. Enjoy your sewing :)")
+            logger.info(f"Final pdf written to {new_outputpath}.\n")
 
     def write_chops(self, collage: pikepdf.Pdf, output_path: pathlib.Path) -> None:
-        print("Writing file...")
+        logger.info("Writing files...")
         try:
             collage.save(output_path)
         except OSError as e:
@@ -110,7 +121,7 @@ class NobuboOutput:
                 raise errors.UsageError(
                     f"An error occurred " f"while writing the collage:\n{e}"
                 )
-            print(f"Collage written to {new_outputpath}. Enjoy your sewing :)")
+            logger.info(f"Collage written to {new_outputpath}.")
 
     def _create_output_files(
         self,
@@ -126,6 +137,7 @@ class NobuboOutput:
         :param current_layout: the current layout of the input pdf
         :return: The pdf with several pages, ready to write to disk.
         """
+        logger.info("Using collage to create desired output layout")
         assert self.output_pagesize is not None
         n_up_factor = self.nup_factors(input_pagesize, self.output_pagesize)
         # only two points are needed to be cropped,

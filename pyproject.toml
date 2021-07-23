@@ -78,14 +78,16 @@ description = Run pytest
 deps = 
     pytest
     pytest-cov
+    rich
     textract
 commands = pytest {posargs}
 
 [testenv:mypy]
 description = Check typing with mypy
 deps = mypy
-       pytest
        click
+       pytest
+       rich
        textract
 passenv = TERM
 commands = mypy {posargs} nobubo tests
@@ -99,5 +101,9 @@ commands = flake8 --max-line-length 88 nobubo tests {posargs}
 description = Run project tests against pikepdf-main branch
 deps = 
     git+https://github.com/pikepdf/pikepdf#master
+    pytest
+    pytest-cov
+    rich
+    textract
 commands = pytest {posargs}
 """

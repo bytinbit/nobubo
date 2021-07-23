@@ -39,7 +39,7 @@ $ pip install .
 Check the installation with one of the mock patterns and run nobubo:
 
 ```bash
-$ nobubo --il 2 8 4 --ol a0 "tests/testdata/mockpattern_oneoverview_8x4.pdf" "sample.pdf"
+$ nobubo --il 2 8 4 --ol a0 tests/testdata/mockpattern_oneoverview_8x4.pdf sample.pdf
 ```
 
 ## Usage
@@ -63,7 +63,7 @@ Have a look at the mock patterns in the test folder. Use them with with the abov
 This example pattern has one overview sheet on page 1 with 6 columns and 5 rows (see also picture below) and is assembled from bottom left to top right:
 
 ```bash
-$ nobubo --il 2 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf" "home/alice/patterns/jacket_a0.pdf"
+$ nobubo --il 2 6 5 --ol a0 --reverse home/alice/patterns/jacket.pdf home/alice/patterns/jacket_a0.pdf
 ```
 *  `--il ` (input layout) is required and followed by three numbers:
   * `2`: The first pattern page of all the pages that form the huge rectangle displayed on the overview sheet.
@@ -74,8 +74,8 @@ $ nobubo --il 2 6 5 --ol a0 --reverse "home/alice/patterns/jacket.pdf" "home/ali
   * `mmxmm`: use a custom output size in millimeters, e.g. `920x1187`.
 * if `--ol` is omitted, nobubo just prints a huge collage of all assembled pages without chopping them up into an output layout.
 * `--reverse`: as default, the pattern is assembled from top left to bottom right. Use the `--reverse` flag to assemble it from bottom left to top right, which is for example needed for Burda patterns.
-* `"home/alice/patterns/jacket.pdf"`: the path to the original pattern including filename.
-* `"home/alice/patterns/jacket_a0.pdf"`: the path where the collage should be saved, including filename.
+* `home/alice/patterns/jacket.pdf`: the path to the original pattern including filename.
+* `home/alice/patterns/jacket_a0.pdf`: the path where the collage should be saved, including filename.
 
 The pdf has 6 columns and 5 rows, which means the final pdf collage will be four A0 pages to print, since 16 A4 pages fit on one A0 page. This is how the sample overview sheet might look like and how it will be split up:
 
@@ -88,7 +88,7 @@ Of course, you can still choose to print pages 2-4 on A4 from your original patt
 ### Example with two overview sheets
 
 ```bash
-$ nobubo --il 2 8 4 -il 35 7 3 --ol a0 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
+$ nobubo --il 2 8 4 -il 35 7 3 --ol a0 home/alice/mypattern.pdf  home/alice/results/mypattern_a0.pdf
 ```
 
 The first overview sheet is on page 1 with 8 columns, 4 rows, which means the pattern pages start on page `2`: `--il 2 8 4`.  The second overview sheet is on page 34 with 7 columns, 3 rows, the pattern pages start on page `35`: `--il 35 7 3`. The assembly is from top left to bottom right, the output to be printed on A0.
@@ -96,7 +96,7 @@ The first overview sheet is on page 1 with 8 columns, 4 rows, which means the pa
 ### Example with a collage output
 
 ``` bash
-$ nobubo --il 2 8 4 --il 35 7 3 "home/alice/mypattern.pdf"  "home/alice/results/mypattern_a0.pdf"
+$ nobubo --il 2 8 4 --il 35 7 3 home/alice/mypattern.pdf  home/alice/results/mypattern_a0.pdf
 ```
 
 This prints only two pdfs (=2 overview sheets) which contain each a huge collage.
