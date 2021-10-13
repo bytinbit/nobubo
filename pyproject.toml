@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nobubo"
-version = "1.4.0"
+version = "1.4.1"
 description = "Nobubo assembles a digital pdf sewing pattern and cuts it up into a desired output print size. A specialized n-up tool also suited for non-sewing purposes."
 authors = ["bytinbit"]
 license = "AGPL v3.0"
