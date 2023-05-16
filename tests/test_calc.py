@@ -2,12 +2,10 @@ import pathlib
 
 import pytest
 
-import nobubo.cli
-import nobubo.disassembly
-import nobubo.init_nobubo
+from nobubo import init_nobubo
 from nobubo.assembly import Layout, PageSize
 from nobubo.disassembly import Factor, NobuboOutput
-from nobubo.init_nobubo import to_userspaceunits
+
 
 INPUT_PAGE = PageSize(width=483.307, height=729.917)
 
@@ -54,7 +52,7 @@ class TestOutputCalculations:
         ],
     )
     def test_userspaceunits_conversion(self, format, expected_width, expected_height):
-        paper = to_userspaceunits(format)
+        paper = init_nobubo.to_userspaceunits(format)
         assert paper.width == expected_width
         assert paper.height == expected_height
 
@@ -69,7 +67,7 @@ class TestOutputCalculations:
     def test_calculate_nup_factors(
         self, input_pagesize, output_pagesize, expected_factor, test_outputdata
     ):
-        output_in_userspace_units = to_userspaceunits(output_pagesize)
+        output_in_userspace_units = init_nobubo.to_userspaceunits(output_pagesize)
         factor = test_outputdata.nup_factors(input_pagesize, output_in_userspace_units)
         assert factor.x == expected_factor.x
         assert factor.y == expected_factor.y
@@ -77,7 +75,7 @@ class TestOutputCalculations:
 
 class TestCliHelpers:
     def test_conversion_to_mm(self):
-        mm = nobubo.init_nobubo.to_mm("920x1187")
+        mm = init_nobubo.to_mm("920x1187")
         assert mm[0] == 920
         assert mm[1] == 1187
 
@@ -91,9 +89,9 @@ class TestCliHelpers:
         ],
     )
     def test_parse_output_layout_a0(self, cli_arg, expected_pagesize):
-        assert nobubo.init_nobubo.parse_output_layout(cli_arg) == expected_pagesize
+        assert init_nobubo.parse_output_layout(cli_arg) == expected_pagesize
 
     def test_parse_output_layout_with_margin(self):
-        assert nobubo.init_nobubo.parse_output_layout("a0", 20) == PageSize(
+        assert init_nobubo.parse_output_layout("a0", 20) == PageSize(
             width=2270.551, height=3257.008
         )

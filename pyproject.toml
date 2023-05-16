@@ -13,7 +13,9 @@ classifiers =  [
         "Topic :: Multimedia :: Graphics :: Graphics Conversion",
         "License :: OSI Approved :: GNU Affero General Public License v3",
     ]
-
+packages = [
+	{ include = "nobubo", from = "src"},
+]
 
 [tool.poetry.scripts]
 nobubo = "nobubo.cli:main"

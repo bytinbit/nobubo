@@ -27,10 +27,8 @@ from typing import List, Tuple, Optional
 
 import pikepdf
 
-import nobubo.assembly
 from nobubo import errors
-from nobubo.assembly import Layout, PageSize
-
+from nobubo import assembly
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +59,7 @@ class NobuboOutput:
     the desired output pdf.
     """
 
-    def __init__(self, output_path: pathlib.Path, output_pagesize: Optional[PageSize]):
+    def __init__(self, output_path: pathlib.Path, output_pagesize: Optional[assembly.PageSize]):
         """
         :param output_path: path where the output pdf should be saved.
         :param output_pagesize: The desired page size in user space units (can include
@@ -80,7 +78,7 @@ class NobuboOutput:
     def create_output_files(
         self,
         temp_collage_paths: List[pathlib.Path],
-        input_properties: nobubo.assembly.NobuboInput,
+        input_properties: assembly.NobuboInput,
     ) -> None:
         for counter, collage_path in enumerate(temp_collage_paths):
             try:
@@ -127,8 +125,8 @@ class NobuboOutput:
     def _create_output_files(
         self,
         collage: pikepdf.Pdf,
-        input_pagesize: nobubo.assembly.PageSize,
-        current_layout: nobubo.assembly.Layout,
+        input_pagesize: assembly.PageSize,
+        current_layout: assembly.Layout,
     ) -> pikepdf.Pdf:
         """
         Chops up the collage that consists of all the pattern pages to individual pages
@@ -174,7 +172,7 @@ class NobuboOutput:
 
         return output
 
-    def pages_needed(self, layout: Layout, n_up_factor: Factor) -> int:
+    def pages_needed(self, layout: assembly.Layout, n_up_factor: Factor) -> int:
         """
         Calculate the pages needed for the required output layout.
         :param layout: layout of the input pdf
@@ -186,7 +184,7 @@ class NobuboOutput:
         return math.ceil(x) * math.ceil(y)
 
     def nup_factors(
-        self, input_pagesize: PageSize, output_pagesize: PageSize
+        self, input_pagesize: assembly.PageSize, output_pagesize: assembly.PageSize
     ) -> Factor:
         """
         Calculate the n-up factor for the output pdf, i.e. how many input pages
@@ -211,7 +209,7 @@ def _calculate_colsrows_left(layout_element: int, factor: int, nup_factor: int) 
 
 
 def _calculate_lowerleft_point(
-    lowerleft_factor: Factor, n_up_factor: Factor, pagesize: nobubo.assembly.PageSize
+    lowerleft_factor: Factor, n_up_factor: Factor, pagesize: assembly.PageSize
 ) -> Point:
     return Point(
         x=lowerleft_factor.x * n_up_factor.x * pagesize.width,
@@ -222,8 +220,8 @@ def _calculate_lowerleft_point(
 def _calculate_upperright_point(
     upperright_factor: Factor,
     n_up_factor: Factor,
-    current_layout: nobubo.assembly.Layout,
-    pagesize: nobubo.assembly.PageSize,
+    current_layout: assembly.Layout,
+    pagesize: assembly.PageSize,
 ) -> Point:
     upperright = Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value

@@ -5,8 +5,7 @@ import pikepdf
 import pytest
 from pdfminer.high_level import extract_text
 
-import nobubo.disassembly
-from nobubo.assembly import NobuboInput
+from src.nobubo.assembly import NobuboInput
 
 
 class PdfTester:
@@ -69,7 +68,7 @@ def pdfproperty() -> NobuboInput:
     return NobuboInput(
         input_filepath=pathlib.Path("test.pdf"),
         number_of_pages=57,
-        pagesize=nobubo.assembly.PageSize(width=483.307, height=729.917),
-        layout=[nobubo.assembly.Layout(first_page=2, columns=8, rows=7)],
+        pagesize=src.nobubo.assembly.PageSize(width=483.307, height=729.917),
+        layout=[src.nobubo.assembly.Layout(first_page=2, columns=8, rows=7)],
     )
     # 8 cols, 7 rows + 1 overview page = 57
