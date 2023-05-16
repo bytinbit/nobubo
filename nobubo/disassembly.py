@@ -21,6 +21,7 @@ Contains functions for various output layouts.
 import logging
 import math
 import pathlib
+from copy import copy
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
@@ -145,12 +146,13 @@ class NobuboOutput:
         lowerleft_factor = Factor(x=0, y=0)
         upperright_factor = Factor(x=1, y=1)
 
-        output = pikepdf.Pdf.new()
-        output.copy_foreign(collage.Root)
-        # Root must be copied too, not only the page:
-        # thanks to https://github.com/cfcurtis/sewingutils
+        output = pikepdf.new()
+        # pdfstitcher made me aware of pikepdf and provided some hints
+        # on how to use it, thanks!
+        # https://github.com/cfcurtis/pdfstitcher
+
         for i in range(0, self.pages_needed(current_layout, n_up_factor)):
-            page = output.copy_foreign(collage.pages[0])
+            page = copy(collage.pages[0])
 
             lowerleft: Point = _calculate_lowerleft_point(
                 lowerleft_factor, n_up_factor, input_pagesize
