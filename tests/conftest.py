@@ -3,8 +3,7 @@ from typing import Dict, Any, List
 
 import pikepdf
 import pytest
-
-import textract
+from pdfminer.high_level import extract_text
 
 import nobubo.disassembly
 from nobubo.assembly import NobuboInput
@@ -39,11 +38,10 @@ class PdfTester:
         reader = self.readers[filename]
         return len(reader.pages)
 
-    # TODO is there a better way to check the order of the pages?
     # requires poppler to be installed on the system too
     def pages_order(self, filepath: str) -> List[str]:
-        text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
-        # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
+        text = extract_text(filepath, codec="utf-8").split("-")
+        # remove ascii value '\f' (form feed, \x0c) indicating page break
         res = list(filter(lambda a: a not in "\x0c", text))
         # tests for the first element in the top left corner
         # and the last element in the bottom right corner
