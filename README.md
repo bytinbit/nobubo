@@ -1,17 +1,28 @@
 # Nobubo
+
+Nobubo creates a collage from digital pattern pages and then chops it up into a 
+desired output layout. The collage is assembled according to one or several
+overview sheets. These overviews are usually provided along with the pattern
+pages in the same pdf or in the instructions pdf.
+<div align="center">
+<img src="img/nobubo-logo-dalle-nightcafe-small.png" alt="nobubo logo, nightcafe/dall-e2" width=80%/>
+</div>
+
+# About 
+
 Digital sewing patterns are very handy: No shipping costs and cheaper than physical patterns. There is one drawback: Many digital patterns are distributed in A4 size, and it is up to the sewist to assemble them.
 
-A jacket pattern has around 50 A4 pages that must be glued or taped together. This usually results in an apartment covered in A4 pages and a final collage in which printer irregularities lead to ill-matching pattern lines. Many indie pattern companies already sell their digital patterns as A4 and A0 in the same pattern purchase, but there are still other companies that only provide A4.
+A dress pattern has around 70 A4 pages that must be glued or taped together. This usually results in an apartment covered in A4 pages and a final collage in which small irregularities lead to ill-matching pattern lines. Many indie pattern companies already sell their digital patterns as A4 and A0 in the same pattern purchase, but there are still other companies that only provide A4.
 
 That's why I wrote nobubo: This tool assembles the pages of a digital pdf pattern and chops it into a desired output size, so that you can print it on any page size you want. 
 
-Nobubo has been developed and tested with several download patterns from Burda, Knipmode and other brands successfully. Even though nobubo has been developed with sewing patterns in mind, it is basically a fancy n-up tool for PDFs in general.
+Nobubo has been developed and tested with several download patterns from Burda, Knipmode and other brands successfully. Even though nobubo has been developed with sewing patterns in mind, it is basically a fancy n-up tool for pdfs in general.
 
 ## Prerequisites
 * A digital pattern where each page is made to be printed on A4 or US letter size. **If you haven't purchased a digital pattern, nobubo is useless**.
 * Each page is already cropped, so that only the bare pattern is visible (no white borders around the pattern). Nobubo is able to handle cropped pdfs, but you still have to do it yourself.
-* Usually, the assembled pattern pages form a huge rectangle. Some brands provide a handy overview how all the assembled pages are supposed to look like. Some brands, however, disregard this rectangle shape and the assembled pattern is of a weird "rectangle + n pages" shape. Nobubo can only handle rectangle shapes, so those leftover pages have to be print out and taped by hand.
-* Python >=3.8
+* Usually, the assembled pattern pages form a huge rectangle. Some brands provide a handy overview how all the assembled pages are supposed to look like. Some brands, however, disregard this rectangle shape and the assembled pattern is of a weird "rectangle + n pages" shape. Nobubo can only handle rectangle shapes, so those leftover pages have to be printed out and taped by hand.
+* Python >=3.10
 * `pdflatex` [must be installed](https://tex.stackexchange.com/questions/49569/where-to-download-pdflatex-exe)
 
 ## Installation
@@ -106,10 +117,10 @@ This prints only two pdfs (=2 overview sheets) which contain each a huge collage
 * Check if the pattern must be assembled from top left to bottom right (default) or bottom left to top right (use `--reverse` flag)
 * When you print the final pattern pages,  double-check and measure the control square. Don't forget to print 100% "as is", with any scaling or page fitting off.
 
-**I do not take any responsibility if nobubo leads to ill-matching garments or any other problems whatsoever. You use this tool at your own risk. If in doubt, make a backup of your original pattern pdf. Please have a look at the license if you want to improve the tool yourself.**
+**I do not take any responsibility if nobubo leads to ill-matching garments or any other problems whatsoever. You use this tool at your own risk. Always make a backup of your original pattern pdf. Please have a look at the license if you want to improve the tool yourself.**
 
 ## Thanks
 
 [The_Compiler](https://github.com/The-Compiler) for their invaluable feedback and encouragement.
 
-I was stuck on how to use pikepdf properly, [cfcurtis' sewingutils](https://github.com/cfcurtis/sewingutils) provided an answer.
+I was stuck on how to use pikepdf properly, [cfcurtis' pdfstitcher](https://github.com/cfcurtis/pdfstitcher) provided an answer.

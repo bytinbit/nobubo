@@ -3,11 +3,9 @@ from typing import Dict, Any, List
 
 import pikepdf
 import pytest
+from pdfminer.high_level import extract_text
 
-import textract
-
-import nobubo.disassembly
-from nobubo.assembly import NobuboInput
+from nobubo import assembly
 
 
 class PdfTester:
@@ -39,11 +37,10 @@ class PdfTester:
         reader = self.readers[filename]
         return len(reader.pages)
 
-    # TODO is there a better way to check the order of the pages?
     # requires poppler to be installed on the system too
     def pages_order(self, filepath: str) -> List[str]:
-        text = str(textract.process(filepath, encoding="utf-8"), "utf-8").split("\n\n")
-        # texteract finds ascii value '\f' (form feed, \x0c) that must be removed
+        text = extract_text(filepath, codec="utf-8").split("-")
+        # remove ascii value '\f' (form feed, \x0c) indicating page break
         res = list(filter(lambda a: a not in "\x0c", text))
         # tests for the first element in the top left corner
         # and the last element in the bottom right corner
@@ -67,11 +64,11 @@ def testdata() -> pathlib.Path:
 
 
 @pytest.fixture
-def pdfproperty() -> NobuboInput:
-    return NobuboInput(
+def pdfproperty() -> assembly.NobuboInput:
+    return assembly.NobuboInput(
         input_filepath=pathlib.Path("test.pdf"),
         number_of_pages=57,
-        pagesize=nobubo.assembly.PageSize(width=483.307, height=729.917),
-        layout=[nobubo.assembly.Layout(first_page=2, columns=8, rows=7)],
+        pagesize=assembly.PageSize(width=483.307, height=729.917),
+        layout=[assembly.Layout(first_page=2, columns=8, rows=7)],
     )
     # 8 cols, 7 rows + 1 overview page = 57
