@@ -4,6 +4,9 @@ Nobubo creates a collage from digital pattern pages and then chops it up into a
 desired output layout. The collage is assembled according to one or several
 overview sheets. These overviews are usually provided along with the pattern
 pages in the same pdf or in the instructions pdf.
+<div align="center">
+<img src="img/nobubo-logo-dalle-nightcafe-small.png" alt="nobubo logo, nightcafe/dall-e2" width=80%/>
+</div>
 
 # About 
 
