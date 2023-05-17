@@ -1,9 +1,11 @@
+import decimal
 import logging
 import pathlib
 import re
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Union
 
 import pikepdf
+from pikepdf._core import Object
 
 from nobubo import errors
 from nobubo.assembly import NobuboInput, PageSize, Layout
@@ -64,7 +66,7 @@ def parse_cli_output_data(
     return output_properties
 
 
-def parse_output_layout(output_layout_cli: str, print_margin: int = None) -> PageSize:
+def parse_output_layout(output_layout_cli: str, print_margin: Optional[int] = None) -> PageSize:
     print_size: List[int] = []
     if output_layout_cli == "a0":
         print_size = to_mm("841x1189")
@@ -84,18 +86,22 @@ def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
     Calculate the x, y value for the offset in default user space units
     as defined in the pdf standard.
     :param page: A PDF page.
-    :return: list with x, y value.
+    :return: tuple with x, y value.
     """
-    if not hasattr(page, "CropBox"):
-        # page is of type Object, and either MediaBox, CropBox or TrimBox
+    if not hasattr(page, "cropbox"):
+        # page is of type Object, and either mediabox, cropbox or trimbox
         # are all of type pikepdf.objects.Object
         # they exist (or not) depending on the pdf itself
-        box = page.MediaBox  # type: ignore
+        box: pikepdf.objects.Array = page.mediabox
     else:
-        box = page.CropBox  # type: ignore
-    return round(float(box[2]) - float(box[0]), 2), round(
-        float(box[3]) - float(box[1]), 2
-    )
+        box = page.cropbox
+    # pikepdf has some confusing types here
+    # type(box[2]) returns decimal.Decimal, but mypy/pikepdf insists it's of type Object
+    # the workaround is to convert it to a string, then to a float to calculate the offset
+    # since both Decimal and Object allow the stringification
+    width = float(str(box[2])) - float(str(box[0]))
+    height = float(str(box[3])) - float(str(box[1]))
+    return round(width, 2), round(height, 2)
 
 
 def to_mm(output_layout: str) -> List[int]:
