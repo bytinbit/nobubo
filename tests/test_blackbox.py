@@ -4,7 +4,6 @@ from nobubo.cli import main
 
 
 def test_no_overview_normal_collage(testdata, tmp_path, pdftester):
-
     filepath = testdata / "mockpattern_nooverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()

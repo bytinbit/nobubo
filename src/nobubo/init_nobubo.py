@@ -64,8 +64,9 @@ def parse_cli_output_data(
     return output_properties
 
 
-def parse_output_layout(output_layout_cli: str,
-                        print_margin: Optional[int] = None) -> PageSize:
+def parse_output_layout(
+    output_layout_cli: str, print_margin: Optional[int] = None
+) -> PageSize:
     print_size: List[int] = []
     if output_layout_cli == "a0":
         print_size = to_mm("841x1189")
