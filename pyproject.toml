@@ -67,6 +67,12 @@ pretty = true
 
 ignore_missing_imports = true
 
+[tool.coverage.run]
+omit = [
+    "*/__init__.py",
+    "*/__main__.py",
+    ]
+
 [tool.tox]
 legacy_tox_ini = """
 [tox]
@@ -79,16 +85,13 @@ description = Run pytest
 deps = 
     pytest
     pytest-cov
-    rich
     pdfminer-six
 commands = pytest {posargs}
 
 [testenv:mypy]
 description = Check typing with mypy
 deps = mypy
-       click
        pytest
-       rich
        pdfminer-six
 passenv = TERM
 commands = mypy {posargs} src/nobubo tests
@@ -102,7 +105,8 @@ commands = flake8 --max-line-length 88 src/nobubo tests {posargs}
 description = Run pytest with coverage
 deps = pytest
        pytest-cov
-commands = pytest tests --cov=nobubo --cov-report html --omit=['*__init__.py*','*__main__*'] -Werror
+       pdfminer-six
+commands = pytest tests --cov=nobubo --cov-report html -Werror
 
 [testenv:pikepdf-main]
 description = Run project tests against pikepdf-main branch
