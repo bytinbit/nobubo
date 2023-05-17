@@ -1,11 +1,9 @@
-import decimal
 import logging
 import pathlib
 import re
-from typing import List, Tuple, Optional, Union
+from typing import List, Tuple, Optional
 
 import pikepdf
-from pikepdf._core import Object
 
 from nobubo import errors
 from nobubo.assembly import NobuboInput, PageSize, Layout
@@ -66,7 +64,8 @@ def parse_cli_output_data(
     return output_properties
 
 
-def parse_output_layout(output_layout_cli: str, print_margin: Optional[int] = None) -> PageSize:
+def parse_output_layout(output_layout_cli: str,
+                        print_margin: Optional[int] = None) -> PageSize:
     print_size: List[int] = []
     if output_layout_cli == "a0":
         print_size = to_mm("841x1189")
@@ -97,7 +96,8 @@ def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
         box = page.cropbox
     # pikepdf has some confusing types here
     # type(box[2]) returns decimal.Decimal, but mypy/pikepdf insists it's of type Object
-    # the workaround is to convert it to a string, then to a float to calculate the offset
+    # the workaround is to convert it to a string,
+    # then to a float to calculate the offset
     # since both Decimal and Object allow the stringification
     width = float(str(box[2])) - float(str(box[0]))
     height = float(str(box[3])) - float(str(box[1]))

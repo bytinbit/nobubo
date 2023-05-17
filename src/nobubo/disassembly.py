@@ -59,7 +59,8 @@ class NobuboOutput:
     the desired output pdf.
     """
 
-    def __init__(self, output_path: pathlib.Path, output_pagesize: Optional[assembly.PageSize]):
+    def __init__(self, output_path: pathlib.Path,
+                 output_pagesize: Optional[assembly.PageSize]):
         """
         :param output_path: path where the output pdf should be saved.
         :param output_pagesize: The desired page size in user space units (can include
