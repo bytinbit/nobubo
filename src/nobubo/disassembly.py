@@ -18,6 +18,7 @@
 """
 Contains functions for various output layouts.
 """
+
 import logging
 import math
 import pathlib
@@ -59,9 +60,7 @@ class NobuboOutput:
     the desired output pdf.
     """
 
-    def __init__(
-        self, output_path: pathlib.Path, output_pagesize: Optional[assembly.PageSize]
-    ):
+    def __init__(self, output_path: pathlib.Path, output_pagesize: Optional[assembly.PageSize]):
         """
         :param output_path: path where the output pdf should be saved.
         :param output_pagesize: The desired page size in user space units (can include
@@ -86,9 +85,7 @@ class NobuboOutput:
             try:
                 collage = pikepdf.Pdf.open(collage_path)
             except OSError as e:
-                raise errors.UsageError(
-                    "Could not open collage file for disassembly:" f"\n{e}."
-                )
+                raise errors.UsageError(f"Could not open collage file for disassembly:\n{e}.")
             new_outputpath = self.generate_new_outputpath(self.output_path, counter)
             logger.debug("Chopping up collage")
             chopped_up_files = self._create_output_files(
@@ -105,9 +102,7 @@ class NobuboOutput:
         try:
             collage.save(output_path)
         except OSError as e:
-            raise errors.UsageError(
-                f"An error occurred " f"while writing the output file:\n{e}"
-            )
+            raise errors.UsageError(f"An error occurred while writing the output file:\n{e}")
 
     def write_collage(
         self,
@@ -119,9 +114,7 @@ class NobuboOutput:
                 temp_collage = pikepdf.Pdf.open(collage_path)
                 temp_collage.save(new_outputpath)
             except OSError as e:
-                raise errors.UsageError(
-                    f"An error occurred " f"while writing the collage:\n{e}"
-                )
+                raise errors.UsageError(f"An error occurred while writing the collage:\n{e}")
             logger.info(f"Collage written to {new_outputpath}.")
 
     def _create_output_files(
@@ -199,9 +192,7 @@ class NobuboOutput:
         y_factor = int(output_pagesize.height // input_pagesize.height)
         return Factor(x=x_factor, y=y_factor)
 
-    def generate_new_outputpath(
-        self, output_path: pathlib.Path, page_count: int
-    ) -> pathlib.Path:
+    def generate_new_outputpath(self, output_path: pathlib.Path, page_count: int) -> pathlib.Path:
         new_filename = f"{output_path.stem}_{page_count + 1}{output_path.suffix}"
         return output_path.parent / new_filename
 
@@ -227,9 +218,7 @@ def _calculate_upperright_point(
 ) -> Point:
     upperright = Point(x=0, y=0)
     # Manage ROWS: apply transformation to upper right, y-value
-    rowsleft = _calculate_colsrows_left(
-        current_layout.rows, upperright_factor.y, n_up_factor.y
-    )
+    rowsleft = _calculate_colsrows_left(current_layout.rows, upperright_factor.y, n_up_factor.y)
     if rowsleft < 0:  # end of pattern reached  (full amount of rows reached)
         upperright.y = current_layout.rows * pagesize.height
     else:

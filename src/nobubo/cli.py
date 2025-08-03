@@ -121,17 +121,11 @@ def main(
         format="%(message)s",
     )
     try:
-        nobubo_input = parse_cli_input_data(
-            input_layout_cli, reverse_assembly, input_path
-        )
-        nobubo_output = parse_cli_output_data(
-            output_layout_cli, print_margin, output_path
-        )
+        nobubo_input = parse_cli_input_data(input_layout_cli, reverse_assembly, input_path)
+        nobubo_output = parse_cli_output_data(output_layout_cli, print_margin, output_path)
         with tempfile.TemporaryDirectory() as td:
             temp_output_dir = pathlib.Path(td)
-            temp_collage_paths: List[pathlib.Path] = nobubo_input.assemble_collage(
-                temp_output_dir
-            )
+            temp_collage_paths: List[pathlib.Path] = nobubo_input.assemble_collage(temp_output_dir)
             logger.info(f"Successfully assembled collage from {input_path}.\n")
             if nobubo_output.output_pagesize is not None:
                 nobubo_output.create_output_files(temp_collage_paths, nobubo_input)

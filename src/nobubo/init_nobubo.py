@@ -36,17 +36,12 @@ def parse_cli_input_data(
             )
             logger.debug(f"Parsed input properties: {input_properties}")
     except OSError as e:
-        raise errors.UsageError(
-            f"While reading the input pdf file, " f"this error occurred:\n{e}"
-        )
+        raise errors.UsageError(f"While reading the input pdf file, this error occurred:\n{e}")
     return input_properties
 
 
 def parse_input_layouts(input_layout: List[Tuple[int, int, int]]) -> List[Layout]:
-    return [
-        Layout(first_page=data[0], columns=data[1], rows=data[2])
-        for data in input_layout
-    ]
+    return [Layout(first_page=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
 
 def parse_cli_output_data(
@@ -64,9 +59,7 @@ def parse_cli_output_data(
     return output_properties
 
 
-def parse_output_layout(
-    output_layout_cli: str, print_margin: Optional[int] = None
-) -> PageSize:
+def parse_output_layout(output_layout_cli: str, print_margin: Optional[int] = None) -> PageSize:
     print_size: List[int] = []
     if output_layout_cli == "a0":
         print_size = to_mm("841x1189")
