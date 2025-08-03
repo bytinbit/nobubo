@@ -8,13 +8,13 @@ jobs:
       matrix:
         include:
           - python: "3.12"
-            testenv: py
+            testenv: testing
           - python: "3.13"
-            testenv: py            
+            testenv: testing            
     steps:
       - uses: actions/checkout@v4
       - name: set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "${{ matrix.python }}"
       - name: install tox
@@ -28,17 +28,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        testenv: [mypy, linting]
+        testenv: [typing, linting]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: install tox
         run: pip install tox
       - name: run tox
         run: "tox -e ${{ matrix.testenv}}"
-
-
-# TODO run weekly every sunday-evening pikepdf-main
