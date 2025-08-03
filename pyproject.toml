@@ -7,7 +7,7 @@ license = "AGPL v3.0"
 readme = "README.md"
 homepage = "https://github.com/bytinbit/nobubo"
 repository = "https://github.com/bytinbit/nobubo"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 classifiers =  [
         "Topic :: Printing",
         "Topic :: Utilities",
@@ -36,8 +36,6 @@ tox = "^4.5.1"
 mypy = "^1.14.1"
 ruff = "^0.12.7"
 pdfminer-six = "^20240706"
-
-
 
 [tool.mypy]
 python_version = "3.12"
@@ -116,9 +114,3 @@ commands = [["ruff", "format", "--check",  "src{/}nobubo", "tests"]]
 description = "run pytest with coverage"
 deps = ["pytest", "pytest-cov", "pdfminer-six"]
 commands = [["pytest", "tests", "--cov=nobubo", "--cov-report", "html:htmlcov"]]
-
-[tool.tox.env.pikepdf-main]
-description = "run project tests against pikepdf-main branch"
-deps = ["git+https://github.com/pikepdf/pikepdf#master", "pytest", "pytest-cov", "rich", "pdfminer-six"]
-
-commands = [["pytest", { replace = "posargs", default = ["tests"], extend = true } ]]
