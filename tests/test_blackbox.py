@@ -7,9 +7,7 @@ def test_no_overview_normal_collage(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_nooverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(
-        main, ["--il", "1", "8", "4", str(filepath), str(output_filepath)]
-    )
+    result = runner.invoke(main, ["--il", "1", "8", "4", str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]
@@ -44,9 +42,7 @@ def test_one_overview_normal_collage(testdata, tmp_path, pdftester):
     filepath = testdata / "mockpattern_oneoverview_8x4.pdf"
     output_filepath = tmp_path / "mock.pdf"
     runner = CliRunner()
-    result = runner.invoke(
-        main, ["--il", "2", "8", "4", str(filepath), str(output_filepath)]
-    )
+    result = runner.invoke(main, ["--il", "2", "8", "4", str(filepath), str(output_filepath)])
     print(result.output)
     assert result.exit_code == 0
     assert pdftester.read() == ["mock_1.pdf"]

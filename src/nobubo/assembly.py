@@ -18,6 +18,7 @@
 """
 Contains functions for various output layouts.
 """
+
 import logging
 import pathlib
 import random
@@ -113,9 +114,7 @@ class NobuboInput:
             all_collages_paths.append(self._assemble(temp_output_dir, current_layout))
         return all_collages_paths
 
-    def _assemble(
-        self, temp_output_dir: pathlib.Path, current_layout: Layout
-    ) -> pathlib.Path:
+    def _assemble(self, temp_output_dir: pathlib.Path, current_layout: Layout) -> pathlib.Path:
         collage_width = self.pagesize.width * current_layout.columns
         collage_height = self.pagesize.height * current_layout.rows
 
@@ -123,12 +122,7 @@ class NobuboInput:
             logging.debug("Reverse assembly chosen")
             start, end, step = reverse_pagerange(current_layout)
             page_range_for_pdflatex = list(
-                reversed(
-                    [
-                        (x, x + current_layout.columns - 1)
-                        for x in range(start, end, step)
-                    ]
-                )
+                reversed([(x, x + current_layout.columns - 1) for x in range(start, end, step)])
             )
             tuples = ["-".join(map(str, i)) for i in page_range_for_pdflatex]
             page_range = ",".join(tuples)
@@ -141,8 +135,7 @@ class NobuboInput:
         file_content = [
             "\\batchmode\n",
             "\\documentclass[a4paper,]{article}\n",
-            f"\\usepackage[papersize={{{collage_width}pt,"
-            f"{collage_height}pt}}]{{geometry}}\n",
+            f"\\usepackage[papersize={{{collage_width}pt,{collage_height}pt}}]{{geometry}}\n",
             "\\usepackage[utf8]{inputenc}\n",
             "\\usepackage{pdfpages}\n",
             "\\begin{document}\n",
