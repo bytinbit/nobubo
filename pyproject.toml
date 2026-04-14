@@ -31,11 +31,11 @@ nobubo = "nobubo.cli:main"
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-tox = "^4.5.1"
-mypy = "^1.14.1"
-ruff = "^0.12.7"
-pdfminer-six = "^20240706"
+pytest = "^9.0.3"
+tox = "^4.52.1"
+mypy = "^1.20.1"
+ruff = "^0.15.10"
+pdfminer-six = "^20260107"
 
 [tool.mypy]
 python_version = "3.12"
