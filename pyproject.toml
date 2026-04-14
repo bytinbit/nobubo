@@ -1,6 +1,6 @@
 [project]
 name = "nobubo"
-version = "1.6.1"
+version = "1.6.2"
 description = "Nobubo assembles a digital pdf sewing pattern and cuts it up into a desired output print size. A specialized n-up tool also suited for non-sewing purposes."
 authors = [{ name = "bytinbit" }]
 license = "AGPL v3.0"
