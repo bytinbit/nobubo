@@ -12,9 +12,9 @@ jobs:
           - python: "3.13"
             testenv: testing            
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "${{ matrix.python }}"
       - name: install tox
@@ -30,9 +30,9 @@ jobs:
       matrix:
         testenv: [typing, linting]
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - name: set up Python
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: install tox
