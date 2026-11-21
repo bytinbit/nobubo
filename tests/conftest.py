@@ -1,5 +1,5 @@
 import pathlib
-from typing import Dict, Any, List
+from typing import Any
 
 import pikepdf
 import pytest
@@ -11,8 +11,8 @@ from nobubo import assembly
 class PdfTester:
     def __init__(self, outputdir: pathlib.Path) -> None:
         self.outputdir = outputdir
-        self.readers: Dict[str, Any] = {}  # reader for every generated pdf
-        self._files: List[Any] = []  # save file objects
+        self.readers: dict[str, Any] = {}  # reader for every generated pdf
+        self._files: list[Any] = []  # save file objects
 
     def read(self):
         for filepath in self.outputdir.glob("*.pdf"):
@@ -21,7 +21,7 @@ class PdfTester:
             self.readers[filepath.name] = file
         return sorted(self.readers.keys())
 
-    def pagesize(self, filename: str, pagenumber: int = 0) -> List[float]:
+    def pagesize(self, filename: str, pagenumber: int = 0) -> list[float]:
         reader = self.readers[filename]
         page = reader.pages[pagenumber]
         if not hasattr(page, "CropBox"):
@@ -38,7 +38,7 @@ class PdfTester:
         return len(reader.pages)
 
     # requires poppler to be installed on the system too
-    def pages_order(self, filepath: str) -> List[str]:
+    def pages_order(self, filepath: str) -> list[str]:
         text = extract_text(filepath, codec="utf-8").split("-")
         # remove ascii value '\f' (form feed, \x0c) indicating page break
         res = list(filter(lambda a: a not in "\x0c", text))

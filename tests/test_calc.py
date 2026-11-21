@@ -6,7 +6,6 @@ from nobubo import init_nobubo
 from nobubo.assembly import Layout, PageSize
 from nobubo.disassembly import Factor, NobuboOutput
 
-
 INPUT_PAGE = PageSize(width=483.307, height=729.917)
 
 nup_factor_a0 = Factor(x=4, y=4)

@@ -1,13 +1,13 @@
 [project]
 name = "nobubo"
-version = "1.6.2"
+version = "1.6.3"
 description = "Nobubo assembles a digital pdf sewing pattern and cuts it up into a desired output print size. A specialized n-up tool also suited for non-sewing purposes."
 authors = [{ name = "bytinbit" }]
 license = "AGPL v3.0"
 readme = "README.md"
 homepage = "https://github.com/bytinbit/nobubo"
 repository = "https://github.com/bytinbit/nobubo"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 classifiers =  [
         "Topic :: Printing",
         "Topic :: Utilities",
@@ -33,8 +33,8 @@ nobubo = "nobubo.cli:main"
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.3"
 tox = "^4.52.1"
-mypy = "^1.20.1"
-ruff = "^0.15.10"
+mypy = "^2.4.1"
+ruff = "^0.17.6"
 pdfminer-six = "^20260107"
 
 [tool.mypy]

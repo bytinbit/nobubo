@@ -25,10 +25,8 @@ import random
 import string
 import subprocess
 from dataclasses import dataclass
-from typing import List, Tuple
 
 from nobubo import errors
-
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +66,7 @@ class NobuboInput:
         input_filepath: pathlib.Path,
         number_of_pages: int,
         pagesize: PageSize,
-        layout: List[Layout],
+        layout: list[Layout],
         reverse_assembly: bool = False,
     ):
         """
@@ -97,7 +95,7 @@ class NobuboInput:
             f"reverse_assembly: '{self.reverse_assembly}'>"
         )
 
-    def assemble_collage(self, temp_output_dir: pathlib.Path) -> List[pathlib.Path]:
+    def assemble_collage(self, temp_output_dir: pathlib.Path) -> list[pathlib.Path]:
         """
         Takes a pattern pdf where one page equals a part of the pattern and
         assembles it to one huge collage.
@@ -107,10 +105,10 @@ class NobuboInput:
                 assembled on one single page.
 
         """
-        all_collages_paths: List[pathlib.Path] = []
+        all_collages_paths: list[pathlib.Path] = []
         for counter, current_layout in enumerate(self.layout):
-            logging.info(f"Assembling overview {counter + 1} of {len(self.layout)}\n")
-            logging.info("Creating collage...")
+            logger.info(f"Assembling overview {counter + 1} of {len(self.layout)}\n")
+            logger.info("Creating collage...")
             all_collages_paths.append(self._assemble(temp_output_dir, current_layout))
         return all_collages_paths
 
@@ -119,7 +117,7 @@ class NobuboInput:
         collage_height = self.pagesize.height * current_layout.rows
 
         if self.reverse_assembly:
-            logging.debug("Reverse assembly chosen")
+            logger.debug("Reverse assembly chosen")
             start, end, step = reverse_pagerange(current_layout)
             page_range_for_pdflatex = list(
                 reversed([(x, x + current_layout.columns - 1) for x in range(start, end, step)])
@@ -139,9 +137,7 @@ class NobuboInput:
             "\\usepackage[utf8]{inputenc}\n",
             "\\usepackage{pdfpages}\n",
             "\\begin{document}\n",
-            f"\\includepdfmerge[nup={current_layout.columns}x{current_layout.rows}, "
-            f"noautoscale=true, scale=1.0]"
-            f"{{{str(self.input_filepath)},{page_range} }}\n",
+            f"\\includepdfmerge[nup={current_layout.columns}x{current_layout.rows}, noautoscale=true, scale=1.0] {{{self.input_filepath!s},{page_range} }}\n",
             "\\end{document}\n",
         ]
 
@@ -159,7 +155,7 @@ class NobuboInput:
             str(input_filepath),
         ]
 
-        logging.debug("Sending command to pdflatex")
+        logger.debug("Sending command to pdflatex")
         try:
             subprocess.check_output(command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
@@ -173,7 +169,7 @@ class NobuboInput:
         return temp_output_dir / pathlib.Path(output_filename).with_suffix(".pdf")
 
 
-def reverse_pagerange(layout: Layout) -> Tuple[int, int, int]:
+def reverse_pagerange(layout: Layout) -> tuple[int, int, int]:
     return (
         layout.first_page,
         layout.first_page + (layout.columns * layout.rows) - 1,
