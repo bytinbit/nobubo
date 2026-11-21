@@ -24,12 +24,10 @@ import math
 import pathlib
 from copy import copy
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
 
 import pikepdf
 
-from nobubo import errors
-from nobubo import assembly
+from nobubo import assembly, errors
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +58,7 @@ class NobuboOutput:
     the desired output pdf.
     """
 
-    def __init__(self, output_path: pathlib.Path, output_pagesize: Optional[assembly.PageSize]):
+    def __init__(self, output_path: pathlib.Path, output_pagesize: assembly.PageSize | None):
         """
         :param output_path: path where the output pdf should be saved.
         :param output_pagesize: The desired page size in user space units (can include
@@ -78,7 +76,7 @@ class NobuboOutput:
 
     def create_output_files(
         self,
-        temp_collage_paths: List[pathlib.Path],
+        temp_collage_paths: list[pathlib.Path],
         input_properties: assembly.NobuboInput,
     ) -> None:
         for counter, collage_path in enumerate(temp_collage_paths):
@@ -106,7 +104,7 @@ class NobuboOutput:
 
     def write_collage(
         self,
-        temp_collage_paths: List[pathlib.Path],
+        temp_collage_paths: list[pathlib.Path],
     ) -> None:
         for counter, collage_path in enumerate(temp_collage_paths):
             new_outputpath = self.generate_new_outputpath(self.output_path, counter)
@@ -144,7 +142,7 @@ class NobuboOutput:
         # on how to use it, thanks!
         # https://github.com/cfcurtis/pdfstitcher
 
-        for i in range(0, self.pages_needed(current_layout, n_up_factor)):
+        for i in range(self.pages_needed(current_layout, n_up_factor)):
             page = copy(collage.pages[0])
 
             lowerleft: Point = _calculate_lowerleft_point(
@@ -241,7 +239,7 @@ def _calculate_upperright_point(
 
 def _adjust_factors(
     lowerleft_factor: Factor, upperright_factor: Factor, colsleft: int
-) -> Tuple[Factor, Factor]:
+) -> tuple[Factor, Factor]:
     if colsleft > 0:  # still assembling the same horizontal line
         return _advance_horizontally(lowerleft_factor, upperright_factor)
     else:  # end of line reached, need to go 1 row up
@@ -250,7 +248,7 @@ def _adjust_factors(
 
 def _advance_horizontally(
     lowerleft_factor: Factor, upperright_factor: Factor
-) -> Tuple[Factor, Factor]:
+) -> tuple[Factor, Factor]:
     lowerleft_factor.x += 1
     upperright_factor.x += 1
     return lowerleft_factor, upperright_factor
@@ -258,7 +256,7 @@ def _advance_horizontally(
 
 def _advance_vertically(
     lowerleft_factor: Factor, upperright_factor: Factor
-) -> Tuple[Factor, Factor]:
+) -> tuple[Factor, Factor]:
     lowerleft_factor.x = 0
     lowerleft_factor.y += 1
 

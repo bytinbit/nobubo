@@ -1,20 +1,18 @@
 import logging
 import pathlib
 import re
-from typing import List, Tuple, Optional
 
 import pikepdf
 
 from nobubo import errors
-from nobubo.assembly import NobuboInput, PageSize, Layout
+from nobubo.assembly import Layout, NobuboInput, PageSize
 from nobubo.disassembly import NobuboOutput
-
 
 logger = logging.getLogger(__name__)
 
 
 def parse_cli_input_data(
-    input_layout: List[Tuple[int, int, int]],
+    input_layout: list[tuple[int, int, int]],
     reverse_assembly: bool,
     input_path: str,
 ) -> NobuboInput:
@@ -40,7 +38,7 @@ def parse_cli_input_data(
     return input_properties
 
 
-def parse_input_layouts(input_layout: List[Tuple[int, int, int]]) -> List[Layout]:
+def parse_input_layouts(input_layout: list[tuple[int, int, int]]) -> list[Layout]:
     return [Layout(first_page=data[0], columns=data[1], rows=data[2]) for data in input_layout]
 
 
@@ -59,8 +57,8 @@ def parse_cli_output_data(
     return output_properties
 
 
-def parse_output_layout(output_layout_cli: str, print_margin: Optional[int] = None) -> PageSize:
-    print_size: List[int] = []
+def parse_output_layout(output_layout_cli: str, print_margin: int | None = None) -> PageSize:
+    print_size: list[int] = []
     if output_layout_cli == "a0":
         print_size = to_mm("841x1189")
     if output_layout_cli == "us":  # Arch E /Arch 6 size of 36 × 48 inches
@@ -74,7 +72,7 @@ def parse_output_layout(output_layout_cli: str, print_margin: Optional[int] = No
         return to_userspaceunits(print_size)
 
 
-def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
+def page_dimensions(page: pikepdf.Page) -> tuple[float, float]:
     """
     Calculate the x, y value for the offset in default user space units
     as defined in the pdf standard.
@@ -98,12 +96,12 @@ def page_dimensions(page: pikepdf.Page) -> Tuple[float, float]:
     return round(width, 2), round(height, 2)
 
 
-def to_mm(output_layout: str) -> List[int]:
+def to_mm(output_layout: str) -> list[int]:
     ol_in_mm = re.compile(r"\d+[x]\d+").findall(output_layout)[0].split("x")
     return [int(x) for x in ol_in_mm]
 
 
-def to_userspaceunits(width_height: List[int]) -> PageSize:
+def to_userspaceunits(width_height: list[int]) -> PageSize:
     """
     Convert a page's physical width and height from millimeters to
     default user space unit, which is defined in the pdf standard as 1/72 inch.

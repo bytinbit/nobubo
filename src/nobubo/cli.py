@@ -19,13 +19,11 @@ import pathlib
 import re
 import sys
 import tempfile
-from typing import List
 
 import click
 
 from nobubo import errors
 from nobubo.init_nobubo import parse_cli_input_data, parse_cli_output_data
-
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +123,7 @@ def main(
         nobubo_output = parse_cli_output_data(output_layout_cli, print_margin, output_path)
         with tempfile.TemporaryDirectory() as td:
             temp_output_dir = pathlib.Path(td)
-            temp_collage_paths: List[pathlib.Path] = nobubo_input.assemble_collage(temp_output_dir)
+            temp_collage_paths: list[pathlib.Path] = nobubo_input.assemble_collage(temp_output_dir)
             logger.info(f"Successfully assembled collage from {input_path}.\n")
             if nobubo_output.output_pagesize is not None:
                 nobubo_output.create_output_files(temp_collage_paths, nobubo_input)
